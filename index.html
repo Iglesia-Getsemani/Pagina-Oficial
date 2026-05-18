@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>Ministerios Adventistas</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    /* User greeting card */
+    .user-greeting {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 12px 14px;
+      margin-bottom: 16px;
+    }
+    .user-greeting-avatar {
+      width: 44px; height: 44px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Cinzel', serif;
+      font-size: 16px;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+    .user-greeting-avatar.director {
+      background: var(--gold-dim);
+      border: 2px solid var(--gold);
+      color: var(--gold);
+    }
+    .user-greeting-avatar.asistente {
+      background: var(--blue-dim);
+      border: 2px solid var(--blue);
+      color: var(--blue);
+    }
+    .user-greeting-info { flex: 1; min-width: 0; }
+    .user-greeting-name {
+      font-weight: 700;
+      font-size: 14px;
+      color: var(--text);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .user-greeting-role {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 1px;
+    }
+    .btn-cerrar-sesion {
+      background: none;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--text-muted);
+      font-size: 11px;
+      padding: 4px 8px;
+      cursor: pointer;
+      white-space: nowrap;
+      font-family: 'Nunito', sans-serif;
+    }
+    .btn-cerrar-sesion:active { color: var(--red); border-color: var(--red); }
+
+    /* Ministry section labels */
+    .role-section-label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 10px;
+      margin-top: 4px;
+    }
+    .role-section-label .badge-pill {
+      font-size: 10px;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 20px;
+      letter-spacing: .04em;
+    }
+    .badge-pill.director { background: var(--gold-dim); color: var(--gold); border: 1px solid var(--gold); }
+    .badge-pill.asistente { background: var(--blue-dim); color: var(--blue); border: 1px solid var(--blue); }
+
+    /* Ministry tile locked state */
+    .ministry-tile.locked {
+      opacity: 0.55;
+      cursor: default;
+    }
+    .ministry-tile .tile-role-tag {
+      font-size: 9px;
+      margin-top: 2px;
+      font-weight: 700;
+      letter-spacing: .04em;
+    }
+    .ministry-tile .tile-role-tag.dir { color: var(--gold); }
+    .ministry-tile .tile-role-tag.asi { color: var(--blue); }
+
+    /* Login prompt banner */
+    .login-banner {
+      background: var(--surface2);
+      border: 1px solid var(--gold);
+      border-radius: var(--radius);
+      padding: 14px 16px;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      cursor: pointer;
+    }
+    .login-banner-icon { font-size: 28px; flex-shrink: 0; }
+    .login-banner-text { flex: 1; }
+    .login-banner-title { font-weight: 700; color: var(--gold); font-size: 14px; }
+    .login-banner-sub { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="app-header">
+  <h1 id="churchName">✝ Ministerios</h1>
+  <div class="header-actions">
+    <button class="back-btn" onclick="navigate('setup.html')" title="Configuración">⚙️</button>
+  </div>
+</header>
+
+<!-- TOAST -->
+<div id="toast" class="toast"></div>
+
+<!-- PAGE -->
+<main class="page" id="mainPage">
+
+  <!-- SPLASH (first launch) -->
+  <div id="splashSetup" class="splash" style="display:none; min-height: calc(100vh - 56px);">
+    <div class="logo-cross">✝</div>
+    <h1>Ministerios</h1>
+    <p>Gestiona los ministerios de tu iglesia adventista de forma sencilla.</p>
+    <button class="btn btn-primary" onclick="navigate('setup.html')">✨ Comenzar configuración</button>
+  </div>
+
+  <!-- MAIN CONTENT -->
+  <div id="mainContent" style="display:none;">
+
+    <!-- User greeting / login prompt -->
+    <div id="userGreeting"></div>
+
+    <!-- Stats -->
+    <div class="stat-row" id="statsRow"></div>
+
+    <!-- Mis Ministerios (divididos por rol) -->
+    <div id="ministriesSection"></div>
+
+    <!-- Accesos rápidos -->
+    <div class="section-title">Acceso Rápido</div>
+    <div class="card clickable" onclick="navigate('members.html')">
+      <div style="display:flex; align-items:center; gap:14px;">
+        <div style="font-size:32px;">👥</div>
+        <div>
+          <div style="font-weight:700; color:var(--text);">Lista de Miembros</div>
+          <div style="font-size:12px; color:var(--text-muted);" id="memberCountLabel">Ver y gestionar miembros</div>
+        </div>
+        <div style="margin-left:auto; color:var(--text-dim);">›</div>
+      </div>
+    </div>
+
+    <div class="card clickable" onclick="syncFromServer()">
+      <div style="display:flex; align-items:center; gap:14px;">
+        <div style="font-size:32px;" id="syncIcon">🔄</div>
+        <div>
+          <div style="font-weight:700; color:var(--text);">Sincronizar Servidor</div>
+          <div style="font-size:12px; color:var(--text-muted);" id="syncLabel">Actualizar lista desde servidor</div>
+        </div>
+        <div style="margin-left:auto; color:var(--text-dim);">›</div>
+      </div>
+    </div>
+
+    <!-- Reuniones próximas -->
+    <div class="section-title">Reuniones Próximas</div>
+    <div id="upcomingMeetings"></div>
+
+  </div>
+</main>
+
+<!-- BOTTOM NAV -->
+<nav class="bottom-nav">
+  <a href="index.html" class="active">
+    <span class="nav-icon">✝</span>
+    <span>Inicio</span>
+  </a>
+  <a href="members.html">
+    <span class="nav-icon">👥</span>
+    <span>Miembros</span>
+  </a>
+  <a href="ministry.html">
+    <span class="nav-icon">📋</span>
+    <span>Ministerio</span>
+  </a>
+  <a href="setup.html">
+    <span class="nav-icon">⚙️</span>
+    <span>Ajustes</span>
+  </a>
+</nav>
+
+<script src="app.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', init);
+
+function init() {
+  const churchName = DB.get('church_name', '');
+  if (churchName) {
+    document.getElementById('churchName').textContent = '✝ ' + churchName;
+    document.title = churchName;
+  }
+
+  // Show splash only if server URL not configured yet
+  const serverUrl = DB.get('server_url', '');
+  if (!serverUrl && !churchName) {
+    document.getElementById('splashSetup').style.display = 'flex';
+    document.getElementById('mainContent').style.display = 'none';
+    return;
+  }
+
+  document.getElementById('splashSetup').style.display = 'none';
+  document.getElementById('mainContent').style.display = 'block';
+
+  renderUserGreeting();
+  renderStats();
+  renderMinistriesSection();
+  renderUpcomingMeetings();
+}
+
+// ===== USER GREETING =====
+function renderUserGreeting() {
+  const session = getSessionUser();
+  const el = document.getElementById('userGreeting');
+
+  if (!session) {
+    el.innerHTML = `
+      <div class="login-banner" onclick="requireAuth('ministry', onLoginSuccess)">
+        <div class="login-banner-icon">🔐</div>
+        <div class="login-banner-text">
+          <div class="login-banner-title">Identificarse</div>
+          <div class="login-banner-sub">Ingresa con tu correo para ver tus ministerios asignados</div>
+        </div>
+        <div style="color:var(--gold); font-size:20px;">›</div>
+      </div>`;
+    return;
+  }
+
+  const roles = getUserRoles(session);
+  const isDir = roles.includes('director');
+  const isAsi = roles.includes('asistente');
+  const isVis = roles.includes('visita');
+
+  let roleLabel = '';
+  const parts = [];
+  if (isVis) parts.push('🕊️ Visita');
+  if (isDir) parts.push(`👑 Director · ${(session.dirMinistries || []).length} min.`);
+  if (isAsi && !isVis) parts.push(`👤 Asistente · ${(session.ministries || []).length} min.`);
+  roleLabel = parts.join(' · ');
+
+  const avatarRole = isDir ? 'director' : (isVis ? 'visita' : 'asistente');
+
+  el.innerHTML = `
+    <div class="user-greeting">
+      <div class="user-greeting-avatar ${avatarRole}">${initials(session.name)}</div>
+      <div class="user-greeting-info">
+        <div class="user-greeting-name">${session.name}</div>
+        <div class="user-greeting-role">${roleLabel}</div>
+      </div>
+      <button class="btn-cerrar-sesion" onclick="cerrarSesion()">Salir</button>
+    </div>`;
+}
+
+function onLoginSuccess() {
+  renderUserGreeting();
+  renderStats();
+  renderMinistriesSection();
+}
+
+function cerrarSesion() {
+  if (!confirm('¿Cerrar sesión? Deberás ingresar tu correo nuevamente.')) return;
+  clearSessionUser();
+  renderUserGreeting();
+  renderMinistriesSection();
+}
+
+// ===== STATS =====
+function renderStats() {
+  const members = DB.get('members', []);
+  const meetings = DB.get('meetings', []);
+  const session = getSessionUser();
+
+  // Count ministries: if logged in use user's, else use setup list
+  let minCount = 0;
+  if (session) {
+    const roles = getUserRoles(session);
+    const dirCount = roles.includes('director') ? (session.dirMinistries || []).length : 0;
+    const asiCount = roles.includes('asistente') ? (session.ministries || []).length : 0;
+    minCount = new Set([...(session.dirMinistries||[]), ...(session.ministries||[])]).size;
+  } else {
+    minCount = DB.get('my_ministries', []).length;
+  }
+
+  const today = new Date().toISOString().split('T')[0];
+  const upcoming = meetings.filter(m => m.date >= today).length;
+
+  document.getElementById('statsRow').innerHTML = `
+    <div class="stat-box">
+      <div class="stat-num">${members.length}</div>
+      <div class="stat-label">Miembros</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-num">${minCount}</div>
+      <div class="stat-label">Ministerios</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-num">${upcoming}</div>
+      <div class="stat-label">Reuniones</div>
+    </div>
+  `;
+  document.getElementById('memberCountLabel').textContent = `${members.length} miembros registrados`;
+}
+
+// ===== MINISTRIES SECTION =====
+function renderMinistriesSection() {
+  const session = getSessionUser();
+  const setupMin = DB.get('my_ministries', []);
+  const container = document.getElementById('ministriesSection');
+
+  if (!session) {
+    // Not logged in: show setup ministries without role distinction, all locked
+    container.innerHTML = `
+      <div class="section-title">Mis Ministerios</div>
+      <div class="empty-state" style="padding:20px 0;">
+        <div class="empty-icon">🔐</div>
+        <p>Identifícate para ver tus ministerios asignados.</p>
+      </div>`;
+    return;
+  }
+
+  const roles = getUserRoles(session);
+  const dirMin = session.dirMinistries || [];
+  const asiMin = session.ministries || [];
+
+  const isDir = roles.includes('director');
+  const isAsi = roles.includes('asistente');
+
+  let html = '';
+
+  if (isDir && dirMin.length > 0) {
+    html += `
+      <div class="section-title" style="margin-bottom:6px;">Mis Ministerios</div>
+      <div class="role-section-label">
+        <span class="badge-pill director">👑 Como Director</span>
+      </div>
+      <div class="ministry-grid" id="gridDirector"></div>`;
+  }
+
+  if (isAsi && asiMin.length > 0) {
+    html += `
+      ${isDir ? '<div style="height:8px;"></div>' : '<div class="section-title" style="margin-bottom:6px;">Mis Ministerios</div>'}
+      <div class="role-section-label">
+        <span class="badge-pill asistente">👤 Como Asistente</span>
+      </div>
+      <div class="ministry-grid" id="gridAsistente"></div>`;
+  }
+
+  if ((!isDir || dirMin.length === 0) && (!isAsi || asiMin.length === 0)) {
+    html += `
+      <div class="section-title">Mis Ministerios</div>
+      <div class="empty-state" style="padding:20px 0;">
+        <div class="empty-icon">📋</div>
+        <p>Aún no tienes ministerios asignados.<br>Contacta al administrador.</p>
+      </div>`;
+  }
+
+  html += `<div style="height:4px;"></div>`;
+
+  container.innerHTML = html;
+
+  if (isDir && dirMin.length > 0) {
+    renderMinistryTiles(document.getElementById('gridDirector'), dirMin, 'director');
+  }
+  if (isAsi && asiMin.length > 0) {
+    renderMinistryTiles(document.getElementById('gridAsistente'), asiMin, 'asistente');
+  }
+}
+
+function renderMinistryTiles(grid, ids, roleType) {
+  if (!grid) return;
+  grid.innerHTML = '';
+  ids.forEach(id => {
+    const m = getMinistry(id);
+    const tile = document.createElement('div');
+    tile.className = 'ministry-tile';
+
+    const roleTag = roleType === 'director'
+      ? `<div class="tile-role-tag dir">DIRECTOR</div>`
+      : roleType === 'asistente'
+        ? `<div class="tile-role-tag asi">ASISTENTE</div>`
+        : '';
+
+    tile.innerHTML = `
+      <div class="m-icon">${m.icon}</div>
+      <div class="m-name">${m.name}</div>
+      ${roleTag}
+    `;
+
+    tile.onclick = () => {
+      DB.set('active_ministry', id);
+      navigate('ministry.html');
+    };
+
+    grid.appendChild(tile);
+  });
+}
+
+// ===== UPCOMING MEETINGS =====
+function renderUpcomingMeetings() {
+  const meetings = DB.get('meetings', []);
+  const today = new Date().toISOString().split('T')[0];
+  const session = getSessionUser();
+
+  let relevantIds = null;
+  if (session) {
+    const roles = getUserRoles(session);
+    const ids = [
+      ...(roles.includes('director') ? (session.dirMinistries || []) : []),
+      ...(roles.includes('asistente') ? (session.ministries || []) : [])
+    ];
+    if (ids.length > 0) relevantIds = new Set(ids);
+  }
+
+  let upcoming = meetings.filter(m => m.date >= today);
+  if (relevantIds) {
+    upcoming = upcoming.filter(m => relevantIds.has(m.ministryId));
+  }
+  upcoming = upcoming.sort((a, b) => a.date.localeCompare(b.date)).slice(0, 4);
+
+  const container = document.getElementById('upcomingMeetings');
+  if (upcoming.length === 0) {
+    container.innerHTML = `<div class="empty-state" style="padding:24px 0;">
+      <div class="empty-icon">📅</div>
+      <p>No hay reuniones programadas</p>
+    </div>`;
+    return;
+  }
+  container.innerHTML = upcoming.map(meeting => {
+    const min = getMinistry(meeting.ministryId);
+    return `
+      <div class="list-item" onclick="DB.set('active_ministry', '${meeting.ministryId}'); navigate('ministry.html');">
+        <div class="avatar">${min.icon}</div>
+        <div class="item-info">
+          <div class="item-name">${meeting.title}</div>
+          <div class="item-sub">${min.name} · ${fmtDate(meeting.date)}</div>
+        </div>
+        <div class="item-action">›</div>
+      </div>
+    `;
+  }).join('');
+}
+
+// ===== SYNC =====
+async function syncFromServer() {
+  const url = DB.get('server_url', '');
+  if (!url) {
+    showToast('Configura la URL del servidor primero', 'error');
+    setTimeout(() => navigate('setup.html'), 1200);
+    return;
+  }
+  const icon = document.getElementById('syncIcon');
+  const label = document.getElementById('syncLabel');
+  icon.style.animation = 'spin 1s linear infinite';
+  icon.style.display = 'inline-block';
+  label.textContent = 'Conectando...';
+
+  const members = await fetchMembersFromServer();
+  icon.style.animation = '';
+
+  if (!members) {
+    showToast('No se pudo conectar al servidor', 'error');
+    label.textContent = 'Error al sincronizar';
+    return;
+  }
+
+  DB.set('members', members);
+  DB.set('members_cache', members);
+
+  // Refresh session user data if logged in
+  const session = getSessionUser();
+  if (session) {
+    const updated = members.find(m => m.id === session.id);
+    if (updated) {
+      setSessionUser({
+        id: updated.id,
+        name: updated.name,
+        email: updated.email,
+        roles: Array.isArray(updated.roles) ? updated.roles : [updated.role || 'asistente'],
+        role: updated.role || (Array.isArray(updated.roles) ? updated.roles[0] : 'asistente'),
+        dirMinistries: updated.dirMinistries || [],
+        ministries: updated.ministries || [],
+      });
+    }
+  }
+
+  showToast(`✅ Sincronizado: ${members.length} miembros`, 'success');
+  label.textContent = `Última sync: ${new Date().toLocaleTimeString('es-CO')}`;
+  renderStats();
+  renderUserGreeting();
+  renderMinistriesSection();
+}
+
+// Spin keyframe injection
+const style = document.createElement('style');
+style.textContent = '@keyframes spin { to { transform: rotate(360deg); } }';
+document.head.appendChild(style);
+</script>
+</body>
+</html>

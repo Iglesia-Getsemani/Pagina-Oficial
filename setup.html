@@ -1,0 +1,1064 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <title>Configuración</title>
+  <link rel="stylesheet" href="style.css">
+  <!-- Mismas librerías QR del index grande (colocar en www/js/) -->
+  <script src="cordova.js"></script>
+  <script src="js/qrcode.min.js"></script>
+  <script src="js/html5-qrcode.min.js"></script>
+  <style>
+    /* ── Estilos propios de setup que no están en style.css ── */
+    .qr-scanner-wrap {
+      width: 100%;
+      max-width: 360px;
+      margin: 0 auto 12px;
+      border-radius: 14px;
+      overflow: hidden;
+      background: #000;
+      min-height: 240px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    #setup-qr-reader { width: 100%; }
+
+    /* Modal overlays */
+    .modal-overlay {
+      display: none;
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,.75);
+      z-index: 300;
+      align-items: flex-end;
+      justify-content: center;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal-sheet {
+      background: var(--surface);
+      border-radius: 24px 24px 0 0;
+      width: 100%; max-width: 520px;
+      padding: 20px 20px 40px;
+      max-height: 92vh;
+      overflow-y: auto;
+    }
+    .modal-handle {
+      width: 40px; height: 4px;
+      background: var(--border);
+      border-radius: 2px;
+      margin: 0 auto 18px;
+    }
+    .modal-title {
+      font-family: 'Cinzel', serif;
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--gold);
+      margin-bottom: 4px;
+    }
+
+    /* Inline URL field con botón QR */
+    .url-field-wrap {
+      display: flex;
+      gap: 8px;
+      align-items: stretch;
+    }
+    .url-field-wrap input { flex: 1; min-width: 0; }
+    .btn-qr-scan {
+      flex-shrink: 0;
+      padding: 0 14px;
+      border-radius: var(--radius-sm);
+      background: var(--gold-dim);
+      border: 1px solid var(--gold);
+      color: var(--gold);
+      cursor: pointer;
+      font-size: 18px;
+      display: flex; align-items: center; justify-content: center;
+      transition: var(--transition);
+    }
+    .btn-qr-scan:active { background: var(--gold); color: #000; }
+
+    /* ── Tarjeta de perfil ── */
+    .perfil-card-full { display: flex; flex-direction: column; gap: 16px; }
+    .perfil-header { display: flex; align-items: center; gap: 14px; }
+    .perfil-avatar-lg {
+      width: 60px; height: 60px;
+      border-radius: 50%;
+      background: var(--gold-dim);
+      border: 2px solid var(--gold);
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Cinzel', serif;
+      font-size: 22px; font-weight: 700;
+      color: var(--gold); flex-shrink: 0;
+    }
+    .perfil-info { flex: 1; min-width: 0; }
+    .perfil-nombre-txt {
+      font-family: 'Cinzel', serif;
+      font-size: 15px; font-weight: 700; color: var(--text);
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .perfil-rol-badge {
+      display: inline-flex; align-items: center; gap: 4px;
+      font-size: 11px; font-weight: 700;
+      border-radius: 20px; padding: 2px 8px; margin-top: 4px;
+    }
+    .perfil-rol-director { background: var(--gold-dim); color: var(--gold); border: 1px solid var(--gold); }
+    .perfil-rol-asistente { background: var(--blue-dim); color: var(--blue); border: 1px solid var(--blue); }
+    .perfil-codigo-badge {
+      display: flex; align-items: center; gap: 10px;
+      background: var(--surface2);
+      border: 1px solid var(--green);
+      border-radius: 10px; padding: 10px 14px;
+    }
+    .perfil-codigo-badge .cod-label {
+      font-size: 10px; color: var(--text-muted);
+      text-transform: uppercase; letter-spacing: .05em;
+      flex-shrink: 0;
+    }
+    .perfil-codigo-badge .cod-val {
+      font-family: 'Cinzel', serif;
+      font-size: 18px; font-weight: 700;
+      color: var(--green); letter-spacing: .1em; flex: 1;
+    }
+    .perfil-data-row { display: flex; gap: 8px; }
+    .perfil-data-chip {
+      flex: 1; background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px; padding: 8px 10px; text-align: center;
+    }
+    .chip-label {
+      font-size: 10px; color: var(--text-muted);
+      text-transform: uppercase; letter-spacing: .04em; margin-bottom: 3px;
+    }
+    .chip-val { font-size: 13px; font-weight: 700; color: var(--text); }
+    .perfil-qr-wrap {
+      background: #fff; border-radius: 12px; padding: 12px;
+      display: flex; align-items: center; justify-content: center;
+      width: 164px; height: 164px; margin: 0 auto;
+      box-shadow: 0 2px 14px rgba(0,0,0,.2);
+    }
+    #perfilQRInline { width: 140px; height: 140px; }
+    .perfil-qr-label {
+      text-align: center; font-size: 11px;
+      color: var(--text-muted); margin-top: 6px;
+    }
+    .perfil-actions { display: flex; gap: 8px; }
+
+    /* QR modal ampliado */
+    #user-qr-container {
+      background: #fff; padding: 14px; border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      min-width: 200px; min-height: 200px; margin: 0 auto;
+    }
+    .qr-fallback-code {
+      font-family: 'Cinzel', serif; font-size: 22px;
+      font-weight: 700; color: #000; letter-spacing: 2px;
+    }
+  </style>
+</head>
+<body>
+
+<header class="app-header">
+  <button class="back-btn" onclick="navigate('index.html')">‹</button>
+  <h1>Configuración</h1>
+  <button class="btn btn-sm btn-primary" onclick="saveAll()">Guardar</button>
+</header>
+
+<div id="toast" class="toast"></div>
+
+<!-- ════════════════════════════════════════════
+     MODAL: ESCANEAR QR DE SERVIDOR
+     ════════════════════════════════════════════ -->
+<div class="modal-overlay" id="overlayQRServer">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title">📷 Escanear URL del Servidor</div>
+    <p style="font-size:13px; color:var(--text-muted); margin-bottom:14px;">
+      Apunta la cámara al QR que contiene la URL del servidor.
+    </p>
+    <div class="qr-scanner-wrap">
+      <div id="setup-qr-reader"></div>
+    </div>
+    <div id="setup-qr-status" style="font-size:13px; color:var(--text-muted); text-align:center; min-height:36px; margin-bottom:14px;">
+      Iniciando cámara...
+    </div>
+    <button class="btn btn-secondary btn-block" onclick="cerrarQRServidor()">Cancelar</button>
+  </div>
+</div>
+
+
+<!-- ════════════════════════════════════════════
+     MODAL: MI CÓDIGO QR PERSONAL (ampliado)
+     ════════════════════════════════════════════ -->
+<div class="modal-overlay" id="overlayMiQR">
+  <div class="modal-sheet" style="padding-bottom:32px;">
+    <div class="modal-handle"></div>
+    <div class="modal-title">🪪 Mi Código QR Personal</div>
+    <p style="font-size:12px; color:var(--text-muted); margin-bottom:16px;">
+      Muestra este QR para ser identificado en cualquier ministerio.
+    </p>
+    <div id="user-qr-name" style="font-size:18px; font-weight:700; text-align:center; margin-bottom:4px;"></div>
+    <div id="user-qr-code" style="font-family:'Cinzel',serif; font-size:14px; color:var(--green); font-weight:700; text-align:center; margin-bottom:16px; letter-spacing:.08em;"></div>
+    <div id="user-qr-container"></div>
+    <div style="height:18px;"></div>
+    <div style="display:flex; gap:10px;">
+      <button class="btn btn-secondary" style="flex:1;" onclick="closeOverlay('overlayMiQR')">Cerrar</button>
+      <button class="btn btn-primary" style="flex:1;" id="btnWAPersonal" onclick="compartirCodigoWA()">📤 WhatsApp</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════
+     MODAL: CAMBIAR DE USUARIO
+     ════════════════════════════════════════════ -->
+<div class="modal-overlay" id="overlayCambiarUsuario">
+  <div class="modal-sheet" style="padding-bottom:32px;">
+    <div class="modal-handle"></div>
+    <div class="modal-title">🔄 Cambiar de Usuario</div>
+    <p style="font-size:13px; color:var(--text-muted); margin-bottom:20px;">
+      Se cerrará tu sesión actual. Para volver a entrar necesitarás el correo con que fuiste registrado en el servidor.
+    </p>
+    <div style="background:var(--surface2); border-radius:10px; padding:12px 14px; margin-bottom:20px; display:flex; align-items:center; gap:10px;">
+      <span style="font-size:22px;">⚠️</span>
+      <span style="font-size:12px; color:var(--text-muted);">Tu cuenta y datos permanecen en el servidor. Solo se borra tu acceso en este dispositivo.</span>
+    </div>
+    <div style="display:flex; gap:8px;">
+      <button class="btn btn-secondary" style="flex:1;" onclick="closeOverlay('overlayCambiarUsuario')">Cancelar</button>
+      <button class="btn btn-danger" style="flex:1;" onclick="cerrarSesion()">Cerrar sesión</button>
+    </div>
+  </div>
+</div>
+
+<main class="page">
+
+  <!-- ══════════════════════
+       MI PERFIL
+       ══════════════════════ -->
+  <div class="section-title">Mi Perfil</div>
+  <div class="card" id="cardPerfil">
+
+    <!-- Estado: sin sesión -->
+    <div id="perfilVacio" style="display:none; text-align:center; padding:8px 0;">
+      <div style="font-size:36px; margin-bottom:8px;">🪪</div>
+      <p style="font-size:13px; color:var(--text-muted); margin-bottom:6px;">
+        No has iniciado sesión. Ingresa con el correo con que fuiste registrado en el servidor.
+      </p>
+      <p style="font-size:11px; color:var(--text-dim); margin-bottom:16px;">
+        Si aún no estás en el servidor, pide al administrador que te agregue primero.
+      </p>
+      <button class="btn btn-primary btn-block" onclick="requireAuth('ministry', renderPerfil)">🔑 Iniciar sesión</button>
+    </div>
+
+    <!-- Estado: con sesión activa -->
+    <div id="perfilActivo" style="display:none;">
+      <div class="perfil-card-full">
+
+        <!-- Encabezado: avatar + nombre + rol -->
+        <div class="perfil-header">
+          <div class="perfil-avatar-lg" id="perfilAvatar">?</div>
+          <div class="perfil-info">
+            <div class="perfil-nombre-txt" id="perfilNombreValor">—</div>
+            <div id="perfilRolBadge"></div>
+          </div>
+          <button class="btn btn-secondary btn-sm"
+                  onclick="openOverlay('overlayCambiarUsuario')"
+                  title="Cambiar de usuario" style="flex-shrink:0;">↩️</button>
+        </div>
+
+        <!-- Chips: edad y teléfono -->
+        <div class="perfil-data-row" id="perfilDataRow"></div>
+
+        <!-- Badge de código -->
+        <div class="perfil-codigo-badge">
+          <span class="cod-label">Código</span>
+          <span class="cod-val" id="perfilCodigoValor">—</span>
+        </div>
+
+        <!-- QR inline -->
+        <div>
+          <div class="perfil-qr-wrap">
+            <div id="perfilQRInline"></div>
+          </div>
+          <div class="perfil-qr-label">Escanea para identificarte en cualquier ministerio</div>
+        </div>
+
+        <!-- Acciones -->
+        <div class="perfil-actions">
+          <button class="btn btn-secondary btn-sm" style="flex:1;" onclick="verMiQR()">🔍 Ampliar QR</button>
+          <button class="btn btn-secondary btn-sm" style="flex:1;" id="btnWAInline" onclick="compartirCodigoWA()">📤 WhatsApp</button>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ══════════════════════
+       IGLESIA
+       ══════════════════════ -->
+  <div class="section-title">Iglesia</div>
+  <div class="card">
+    <div class="input-group">
+      <label>Nombre de la Iglesia</label>
+      <input type="text" id="churchName" placeholder="Ej: Iglesia Central" autocomplete="off">
+    </div>
+  </div>
+
+  <!-- ══════════════════════
+       MENSAJE DE BIENVENIDA (Visitas)
+       ══════════════════════ -->
+  <div class="section-title">Mensaje de Bienvenida</div>
+  <div class="card">
+    <p style="font-size:12px; color:var(--text-muted); margin-bottom:10px;">
+      Este mensaje se enviará por WhatsApp al registrar una <strong>Visita</strong>. Deja en blanco para usar el mensaje predeterminado.
+    </p>
+    <div class="input-group">
+      <label>Prefijo de país (WhatsApp)</label>
+      <div style="display:flex; gap:8px; align-items:center;">
+        <span style="font-size:13px; color:var(--text-muted); background:var(--surface2); border:1px solid var(--border); border-radius:var(--radius-sm); padding:10px 12px; flex-shrink:0;">+</span>
+        <input type="tel" id="waCountryCode" placeholder="57" maxlength="4" style="max-width:90px;"
+               autocomplete="off" inputmode="numeric">
+        <span style="font-size:12px; color:var(--text-dim);">Colombia = 57 (predeterminado)</span>
+      </div>
+    </div>
+    <div class="input-group">
+      <label>Mensaje de bienvenida</label>
+      <textarea id="welcomeMessage" rows="5"
+        placeholder="Hola {nombre}! Bienvenido(a) a nuestra iglesia. Fue un gusto tenerte hoy..."></textarea>
+      <p style="font-size:11px; color:var(--text-dim); margin-top:4px;">
+        Usa <code>{nombre}</code> para insertar el nombre de la visita automáticamente.
+      </p>
+    </div>
+    <button class="btn btn-secondary btn-sm" onclick="previewWelcomeMsg()">👁 Vista previa</button>
+    <div id="welcomePreview" style="display:none; margin-top:10px; background:var(--surface2); border-radius:8px; padding:10px; font-size:13px; color:var(--text-muted); white-space:pre-wrap;"></div>
+  </div>
+
+  <!-- ══════════════════════
+       SERVIDOR
+       ══════════════════════ -->
+  <div class="section-title">Servidor de Miembros</div>
+  <div class="card">
+    <div class="input-group">
+      <label>URL del Servidor</label>
+      <div class="url-field-wrap">
+        <input type="url" id="serverUrl"
+               placeholder="http://192.168.1.x:3000/api/miembros"
+               autocomplete="off" autocapitalize="none">
+        <button class="btn-qr-scan" onclick="abrirQRServidor()" title="Escanear QR con la URL">
+          📷
+        </button>
+      </div>
+      <p style="font-size:11px; color:var(--text-muted); margin-top:6px;">
+        Escribe la URL o toca 📷 para leerla desde un código QR.
+      </p>
+    </div>
+    <div style="display:flex; gap:8px; margin-top:8px;">
+      <button class="btn btn-secondary btn-sm" onclick="testConnection()" style="flex:1;">🔌 Probar</button>
+      <button class="btn btn-secondary btn-sm" onclick="syncNow()"       style="flex:1;">🔄 Sincronizar</button>
+      <button class="btn btn-secondary btn-sm" onclick="openDiagnostics()" title="Diagnóstico" style="padding:0 12px;">🩺</button>
+    </div>
+    <div id="connStatus" style="font-size:12px; color:var(--text-muted); margin-top:8px; text-align:center;"></div>
+  </div>
+
+  <!-- ══════════════════════
+       PANEL DE DIAGNÓSTICO
+       ══════════════════════ -->
+  <div class="section-title" style="display:flex;justify-content:space-between;align-items:center;">
+    <span>🩺 Diagnóstico de Servidor</span>
+    <button class="btn btn-sm btn-secondary" onclick="runAllDiagnostics()" id="btnRunDiag">▶ Ejecutar</button>
+  </div>
+  <div class="card" id="diagCard">
+
+    <!-- URL analizada -->
+    <div style="margin-bottom:14px;">
+      <div style="font-size:11px; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:.05em; margin-bottom:8px;">URL Analizada</div>
+      <div id="diagUrlInfo" style="font-size:12px; background:var(--surface2); border-radius:8px; padding:10px; font-family:monospace; color:var(--text); word-break:break-all;">
+        Toca ▶ Ejecutar para comenzar
+      </div>
+    </div>
+
+    <!-- Pasos de diagnóstico -->
+    <div style="font-size:11px; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:.05em; margin-bottom:8px;">Pasos</div>
+    <div id="diagSteps" style="display:flex; flex-direction:column; gap:6px;"></div>
+
+    <!-- Log técnico colapsable -->
+    <details style="margin-top:14px;">
+      <summary style="font-size:12px; color:var(--text-muted); cursor:pointer; user-select:none;">📋 Log técnico detallado</summary>
+      <div id="diagLog" style="margin-top:8px; font-size:11px; font-family:monospace; background:var(--surface2); border-radius:8px; padding:10px; color:var(--text-muted); white-space:pre-wrap; max-height:260px; overflow-y:auto; word-break:break-all;"></div>
+    </details>
+
+    <!-- Soluciones sugeridas -->
+    <div id="diagSolutions" style="margin-top:14px;"></div>
+
+  </div>
+
+  <div style="height:8px;"></div>
+  <button class="btn btn-primary btn-block" onclick="saveAll()">✅ Guardar Configuración</button>
+  <div style="height:8px;"></div>
+
+  <!-- ══════════════════════
+       ZONA AVANZADA
+       ══════════════════════ -->
+  <div class="section-title">Zona Avanzada</div>
+  <div class="card">
+    <button class="btn btn-danger btn-block btn-sm" onclick="clearData()">🗑 Borrar todos los datos locales</button>
+  </div>
+
+</main>
+
+<!-- BOTTOM NAV -->
+<nav class="bottom-nav">
+  <a href="index.html">
+    <span class="nav-icon">✝</span>
+    <span>Inicio</span>
+  </a>
+  <a href="members.html">
+    <span class="nav-icon">👥</span>
+    <span>Miembros</span>
+  </a>
+  <a href="ministry.html">
+    <span class="nav-icon">📋</span>
+    <span>Ministerio</span>
+  </a>
+  <a href="setup.html" class="active">
+    <span class="nav-icon">⚙️</span>
+    <span>Ajustes</span>
+  </a>
+</nav>
+
+<script src="app.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  // Cargar valores guardados
+  document.getElementById('churchName').value = DB.get('church_name', '');
+  document.getElementById('serverUrl').value   = DB.get('server_url', '');
+  document.getElementById('waCountryCode').value = DB.get('wa_country_code', '57');
+  document.getElementById('welcomeMessage').value = DB.get('welcome_message', '');
+
+  // Perfil de usuario
+  renderPerfil();
+
+  // Cerrar modales al tocar el fondo
+  document.querySelectorAll('.modal-overlay').forEach(o => {
+    o.addEventListener('click', e => {
+      if (e.target === o) {
+        if (o.id === 'overlayQRServer') cerrarQRServidor();
+        else o.classList.remove('open');
+      }
+    });
+  });
+});
+
+// ── Guardar todo ──────────────────────────────────────────────
+function saveAll() {
+  DB.set('church_name', document.getElementById('churchName').value.trim());
+  DB.set('server_url',  document.getElementById('serverUrl').value.trim());
+  const code = (document.getElementById('waCountryCode').value || '57').replace(/\D/g, '') || '57';
+  DB.set('wa_country_code', code);
+  DB.set('welcome_message', document.getElementById('welcomeMessage').value.trim());
+  showToast('✅ Configuración guardada', 'success');
+  setTimeout(() => navigate('index.html'), 900);
+}
+
+function previewWelcomeMsg() {
+  const church = document.getElementById('churchName').value.trim() || DB.get('church_name', 'nuestra iglesia') || 'nuestra iglesia';
+  const tmpl = document.getElementById('welcomeMessage').value.trim();
+  const msg = tmpl
+    ? tmpl.replace(/{nombre}/g, 'Nombre Ejemplo')
+    : `¡Hola Nombre Ejemplo! 👋\n\nBienvenido(a) a *${church}*. Fue un gusto tenerte hoy con nosotros. ✝️\n\nSi tienes preguntas o quieres saber más, no dudes en escribirnos. ¡Esperamos verte pronto!`;
+  const el = document.getElementById('welcomePreview');
+  el.textContent = msg;
+  el.style.display = 'block';
+}
+
+// ── Servidor ──────────────────────────────────────────────────
+async function testConnection() {
+  const url    = document.getElementById('serverUrl').value.trim();
+  const status = document.getElementById('connStatus');
+  if (!url) { showToast('Ingresa una URL primero', 'error'); return; }
+  status.textContent = '🔄 Probando...';
+  status.style.color = 'var(--text-muted)';
+  try {
+    const res = await fetch(url, { method: 'GET', signal: AbortSignal.timeout(8000) });
+    if (res.ok) {
+      status.textContent = '✅ Conexión exitosa · HTTP ' + res.status;
+      status.style.color = 'var(--green)';
+    } else {
+      status.textContent = '⚠️ Respuesta HTTP ' + res.status;
+      status.style.color = 'var(--gold)';
+    }
+  } catch (e) {
+    status.textContent = '❌ ' + e.message;
+    status.style.color = 'var(--red)';
+    showToast('Fallo — toca 🩺 para diagnosticar', 'error');
+  }
+}
+
+async function syncNow() {
+  const url = document.getElementById('serverUrl').value.trim();
+  if (!url) { showToast('Ingresa una URL primero', 'error'); return; }
+  DB.set('server_url', url);
+  const status = document.getElementById('connStatus');
+  status.textContent = '🔄 Sincronizando...';
+  const members = await fetchMembersFromServer();
+  if (!members) {
+    status.textContent = '❌ Error al sincronizar';
+    status.style.color = 'var(--red)';
+    showToast('Fallo — toca 🩺 para diagnosticar', 'error');
+    return;
+  }
+  const local    = DB.get('members', []);
+  const localIds = new Set(local.map(m => m.id));
+  let added = 0;
+  members.forEach(m => { if (!localIds.has(m.id)) { local.push(m); added++; } });
+  DB.set('members', local);
+  status.textContent = `✅ ${added} nuevos miembros importados`;
+  status.style.color = 'var(--green)';
+  showToast(`Sincronizados ${added} miembros`, 'success');
+}
+
+// ══════════════════════════════════════════════════════════════
+// DIAGNÓSTICO DE SERVIDOR
+// ══════════════════════════════════════════════════════════════
+
+let _diagLog = '';
+
+function diagLog(msg) {
+  const ts = new Date().toLocaleTimeString('es-CO', { hour12: false });
+  _diagLog += '[' + ts + '] ' + msg + '\n';
+  const el = document.getElementById('diagLog');
+  if (el) { el.textContent = _diagLog; el.scrollTop = el.scrollHeight; }
+}
+
+function diagStep(id, icon, label, detail, color) {
+  const el = document.getElementById('diagStep_' + id);
+  if (!el) return;
+  el.innerHTML =
+    '<div style="display:flex;align-items:flex-start;gap:10px;padding:10px 12px;background:var(--surface2);border-radius:10px;border-left:3px solid ' + color + ';">' +
+      '<div style="font-size:18px;line-height:1;">' + icon + '</div>' +
+      '<div style="flex:1;min-width:0;">' +
+        '<div style="font-size:13px;font-weight:600;color:var(--text);">' + label + '</div>' +
+        (detail ? '<div style="font-size:11px;color:var(--text-muted);margin-top:2px;word-break:break-all;">' + detail + '</div>' : '') +
+      '</div>' +
+    '</div>';
+}
+
+function openDiagnostics() {
+  document.getElementById('diagCard').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  runAllDiagnostics();
+}
+
+async function runAllDiagnostics() {
+  const url = document.getElementById('serverUrl').value.trim();
+  _diagLog = '';
+
+  const steps = document.getElementById('diagSteps');
+  const solutions = document.getElementById('diagSolutions');
+  solutions.innerHTML = '';
+  document.getElementById('diagLog').textContent = '';
+
+  const stepDefs = [
+    { id: 'url',   label: 'Formato de URL' },
+    { id: 'proto', label: 'Protocolo (http/https)' },
+    { id: 'host',  label: 'Host y puerto' },
+    { id: 'net',   label: 'Red disponible' },
+    { id: 'cors',  label: 'Solicitud de red (fetch)' },
+    { id: 'json',  label: 'Respuesta JSON válida' },
+  ];
+  steps.innerHTML = stepDefs.map(function(s) {
+    return '<div id="diagStep_' + s.id + '">' +
+      '<div style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--surface2);border-radius:10px;">' +
+        '<div style="font-size:18px;">⏳</div>' +
+        '<div style="font-size:13px;color:var(--text-muted);">' + s.label + '</div>' +
+      '</div></div>';
+  }).join('');
+
+  document.getElementById('btnRunDiag').disabled = true;
+  document.getElementById('btnRunDiag').textContent = '⏳';
+
+  const issues = [];
+  let parsedUrl = null;
+
+  // PASO 1: Formato URL
+  diagLog('Analizando URL: ' + (url || '(vacía)'));
+  const urlInfo = document.getElementById('diagUrlInfo');
+
+  if (!url) {
+    diagStep('url', '❌', 'URL vacía', 'No hay URL configurada.', 'var(--red)');
+    ['proto','host','net','cors','json'].forEach(function(id) { diagStep(id, '⏭️', 'Omitido', '', '#888'); });
+    issues.push('no_url');
+    _finishDiag(issues);
+    return;
+  }
+
+  try {
+    parsedUrl = new URL(url);
+    const proto = parsedUrl.protocol;
+    const host  = parsedUrl.hostname;
+    const port  = parsedUrl.port || (proto === 'https:' ? '443' : '80');
+    const path  = parsedUrl.pathname;
+    urlInfo.innerHTML = '<b>Protocolo:</b> ' + proto + '<br><b>Host:</b> ' + host + '<br><b>Puerto:</b> ' + port + '<br><b>Ruta:</b> ' + path;
+    diagLog('URL válida → proto=' + proto + ' host=' + host + ' port=' + port + ' path=' + path);
+    diagStep('url', '✅', 'URL válida', proto + '//' + host + ':' + port + path, 'var(--green)');
+  } catch (e) {
+    diagLog('URL inválida: ' + e.message);
+    urlInfo.textContent = 'URL inválida: ' + url;
+    diagStep('url', '❌', 'URL inválida', e.message, 'var(--red)');
+    ['proto','host','net','cors','json'].forEach(function(id) { diagStep(id, '⏭️', 'Omitido', '', '#888'); });
+    issues.push('bad_url');
+    _finishDiag(issues);
+    return;
+  }
+
+  // PASO 2: Protocolo
+  const isHttp  = parsedUrl.protocol === 'http:';
+  const isHttps = parsedUrl.protocol === 'https:';
+  if (isHttp) {
+    diagLog('HTTP detectado — puede ser bloqueado en Android');
+    diagStep('proto', '⚠️', 'HTTP (texto plano detectado)', 'Android 9+ bloquea HTTP por defecto. Requiere configuración en el APK.', 'var(--gold)');
+    issues.push('cleartext');
+  } else if (isHttps) {
+    diagStep('proto', '✅', 'HTTPS — cifrado correcto', '', 'var(--green)');
+  } else {
+    diagStep('proto', '❌', 'Protocolo desconocido: ' + parsedUrl.protocol, '', 'var(--red)');
+    issues.push('bad_proto');
+  }
+
+  // PASO 3: Host y puerto
+  const host = parsedUrl.hostname;
+  const port = parseInt(parsedUrl.port) || (isHttps ? 443 : 80);
+  const isLocal = /^(localhost|127\.|192\.168\.|10\.|172\.(1[6-9]|2\d|3[01])\.)/.test(host);
+  diagLog('Host: ' + host + ' — ' + (isLocal ? 'IP local' : 'dominio público'));
+  if (isLocal) {
+    diagStep('host', '⚠️', 'IP local: ' + host + ':' + port, 'Solo funciona si celular y servidor están en la misma red Wi-Fi.', 'var(--gold)');
+    issues.push('local_ip');
+  } else {
+    diagStep('host', '✅', 'Host: ' + host + ':' + port, 'Dominio o IP pública.', 'var(--green)');
+  }
+
+  // PASO 4: Red
+  const online = navigator.onLine;
+  diagLog('navigator.onLine = ' + online);
+  if (online) {
+    diagStep('net', '✅', 'Red disponible', 'El dispositivo reporta conexión activa.', 'var(--green)');
+  } else {
+    diagStep('net', '❌', 'Sin red detectada', 'Activa el Wi-Fi y conéctate a la red del servidor.', 'var(--red)');
+    issues.push('no_network');
+  }
+
+  // PASO 5: Fetch real
+  diagLog('Ejecutando fetch GET ' + url + ' (timeout 8s)...');
+  let fetchOk = false;
+  let fetchText = '';
+
+  try {
+    const controller = new AbortController();
+    const timer = setTimeout(function() { controller.abort(); }, 8000);
+    const res = await fetch(url, {
+      method: 'GET',
+      headers: { 'Accept': 'application/json' },
+      signal: controller.signal
+    });
+    clearTimeout(timer);
+    fetchText = await res.text();
+    fetchOk = res.ok;
+    diagLog('fetch → HTTP ' + res.status + ', body=' + fetchText.slice(0, 200));
+    if (res.ok) {
+      diagStep('cors', '✅', 'HTTP ' + res.status + ' — Respuesta recibida', fetchText.length + ' bytes recibidos', 'var(--green)');
+    } else {
+      diagStep('cors', '⚠️', 'HTTP ' + res.status + ' — Error del servidor', fetchText.slice(0, 120), 'var(--gold)');
+      issues.push('http_error');
+    }
+  } catch (e) {
+    diagLog('fetch ERROR: ' + e.name + ' — ' + e.message);
+    if (e.name === 'AbortError') {
+      diagStep('cors', '❌', 'Tiempo de espera agotado (8 seg)', '¿Está corriendo el servidor? ¿Misma red Wi-Fi? ¿Firewall bloqueando el puerto?', 'var(--red)');
+      issues.push('timeout');
+    } else if ((e.message || '').toLowerCase().includes('failed to fetch') || (e.message || '').toLowerCase().includes('network')) {
+      diagStep('cors', '❌', 'Failed to fetch — red bloqueada', 'Causa más probable en Android: HTTP no permitido (cleartext). Requiere configuración en el APK.', 'var(--red)');
+      issues.push('failed_to_fetch');
+    } else {
+      diagStep('cors', '❌', (e.name || 'Error') + ': ' + e.message, 'Revisa el log técnico para más detalles.', 'var(--red)');
+      issues.push('network_error');
+    }
+  }
+
+  // PASO 6: JSON
+  if (fetchOk && fetchText) {
+    try {
+      const parsed = JSON.parse(fetchText);
+      if (Array.isArray(parsed)) {
+        diagStep('json', '✅', 'JSON válido — array con ' + parsed.length + ' elementos', 'Formato correcto.', 'var(--green)');
+      } else if (parsed && parsed.members) {
+        diagStep('json', '✅', 'JSON válido — objeto con campo "members"', parsed.members.length + ' miembros', 'var(--green)');
+      } else {
+        diagStep('json', '⚠️', 'JSON válido pero formato inesperado', 'Se esperaba array [] o { members: [] }. Respuesta: ' + fetchText.slice(0, 80), 'var(--gold)');
+        issues.push('bad_json_format');
+      }
+    } catch (e) {
+      diagStep('json', '❌', 'Respuesta no es JSON válido', fetchText.slice(0, 120), 'var(--red)');
+      issues.push('bad_json');
+    }
+  } else if (!fetchOk) {
+    diagStep('json', '⏭️', 'Omitido — no hubo respuesta válida', '', '#888');
+  }
+
+  _finishDiag(issues);
+  document.getElementById('btnRunDiag').disabled = false;
+  document.getElementById('btnRunDiag').textContent = '▶ Ejecutar';
+}
+
+function _finishDiag(issues) {
+  diagLog('Issues detectados: ' + (issues.join(', ') || 'ninguno'));
+  const solutions = document.getElementById('diagSolutions');
+  const fixes = [];
+
+  if (issues.includes('no_url') || issues.includes('bad_url')) {
+    fixes.push({ icon: '1️⃣', title: 'Corrige la URL del servidor', body: 'Ejemplo: <code>http://192.168.1.50:3000/api/miembros</code>' });
+  }
+  if (issues.includes('cleartext') || issues.includes('failed_to_fetch')) {
+    fixes.push({ icon: '🔑', title: 'HTTP bloqueado en Android (cleartext traffic)', body: 'Desde Android 9 (API 28) el SO bloquea peticiones HTTP. Para permitirlo en Cordova:<br><br>' +
+      '<b>Opción A — config.xml</b> (antes del cierre &lt;/widget&gt;):<br>' +
+      '<code>&lt;preference name="AndroidInsecureFileModeEnabled" value="true" /&gt;</code><br><br>' +
+      '<b>Opción B — AndroidManifest.xml</b>, dentro de &lt;application&gt;:<br>' +
+      '<code>android:usesCleartextTraffic="true"</code><br><br>' +
+      '<b>Opción C — red/xml/network_security_config.xml</b> permitiendo el dominio/IP.<br><br>' +
+      'La solución más rápida: en <b>config.xml</b> baja el targetSdkVersion a 27 o activa cleartext.' });
+  }
+  if (issues.includes('local_ip')) {
+    fixes.push({ icon: '📶', title: 'Verifica que estés en la misma red Wi-Fi', body: 'El celular y el PC servidor deben estar conectados al mismo router.<br>Confirma la IP del servidor con: <code>ipconfig</code> (Windows) o <code>ifconfig</code> (Mac/Linux).<br>Si la IP cambió, actualiza la URL en la app.' });
+  }
+  if (issues.includes('timeout')) {
+    fixes.push({ icon: '⏱️', title: 'El servidor no responde', body: '1. Verifica que <code>node server.js</code> esté corriendo en el PC.<br>2. El firewall de Windows puede estar bloqueando el puerto 3000 — agrégalo como excepción.<br>3. Confirma la IP correcta con <code>ipconfig</code>.<br>4. Prueba abrir <code>http://IP:3000</code> en el navegador del PC.' });
+  }
+  if (issues.includes('bad_json_format')) {
+    fixes.push({ icon: '📄', title: 'La ruta devuelve el formato equivocado', body: 'El endpoint <code>/api/miembros</code> debe devolver un array JSON plano. La ruta <code>/</code> devuelve un objeto de estado. Verifica que la URL termine en <code>/api/miembros</code>.' });
+  }
+  if (issues.includes('no_network')) {
+    fixes.push({ icon: '📡', title: 'Sin conexión de red', body: 'Activa el Wi-Fi del dispositivo y conéctate a la red donde está el servidor.' });
+  }
+  if (issues.length === 0) {
+    fixes.push({ icon: '✅', title: '¡Todo funciona correctamente!', body: 'La conexión al servidor es exitosa y la respuesta es válida. Puedes sincronizar con tranquilidad.' });
+  }
+
+  solutions.innerHTML = '<div style="font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px;">💡 Soluciones sugeridas</div>' +
+    fixes.map(function(f) {
+      return '<div style="background:var(--surface2);border-radius:10px;padding:12px 14px;margin-bottom:8px;">' +
+        '<div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px;">' + f.icon + ' ' + f.title + '</div>' +
+        '<div style="font-size:12px;color:var(--text-muted);line-height:1.6;">' + f.body + '</div>' +
+      '</div>';
+    }).join('');
+}
+
+function clearData() {
+  if (!confirm('¿Borrar TODOS los datos locales? Esta acción no se puede deshacer.')) return;
+  localStorage.clear();
+  showToast('Datos borrados', 'error');
+  setTimeout(() => navigate('index.html'), 800);
+}
+
+// ═══════════════════════════════════════════════════════════════
+// ESCANEO QR PARA URL DEL SERVIDOR
+// (Portado exactamente desde el index grande)
+// ═══════════════════════════════════════════════════════════════
+let _serverQrScanner = null;
+
+function abrirQRServidor() {
+  document.getElementById('setup-qr-reader').innerHTML = '';
+  document.getElementById('setup-qr-status').textContent = 'Iniciando cámara...';
+  openOverlay('overlayQRServer');
+  setTimeout(_iniciarEscaneoServidor, 400);
+}
+
+function cerrarQRServidor() {
+  _detenerEscaneoServidor();
+  closeOverlay('overlayQRServer');
+}
+
+function _iniciarEscaneoServidor() {
+  const statusEl = document.getElementById('setup-qr-status');
+  if (typeof Html5Qrcode === 'undefined') {
+    statusEl.innerHTML = '<span style="color:var(--red)">❌ Librería QR no cargada. Agrega html5-qrcode.min.js en www/js/</span>';
+    return;
+  }
+  if (_serverQrScanner) {
+    _serverQrScanner.stop().catch(() => {}).finally(() => {
+      document.getElementById('setup-qr-reader').innerHTML = '';
+      _serverQrScanner = null;
+      setTimeout(() => _arrancarEscaneoServidor(statusEl), 400);
+    });
+    return;
+  }
+  // Solicitar permiso de cámara explícitamente (igual que en index grande)
+  if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+    navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
+      .then(stream => {
+        stream.getTracks().forEach(t => t.stop()); // liberar stream de prueba
+        _arrancarEscaneoServidor(statusEl);
+      })
+      .catch(err => {
+        const msg = err.name || err.toString();
+        if (msg.indexOf('NotReadableError') !== -1 || msg.indexOf('Could not start') !== -1) {
+          statusEl.innerHTML = '<span style="color:var(--red)">❌ Cámara ocupada. Cierra otras apps y vuelve a intentar.</span>';
+        } else if (msg.indexOf('NotAllowedError') !== -1 || msg.indexOf('Permission') !== -1) {
+          statusEl.innerHTML = '<span style="color:var(--red)">❌ Permiso denegado. Ve a Ajustes › Aplicaciones › Permisos › Cámara.</span>';
+        } else {
+          _arrancarEscaneoServidor(statusEl); // intentar igual
+        }
+      });
+  } else {
+    _arrancarEscaneoServidor(statusEl);
+  }
+}
+
+function _arrancarEscaneoServidor(statusEl) {
+  statusEl.textContent = 'Apunta al QR con la URL del servidor...';
+  try {
+    _serverQrScanner = new Html5Qrcode('setup-qr-reader');
+    _serverQrScanner.start(
+      { facingMode: 'environment' },
+      { fps: 10, qrbox: { width: 220, height: 220 } },
+      function(texto) {
+        // Una sola lectura
+        if (!_serverQrScanner) return;
+        const scanner = _serverQrScanner;
+        _serverQrScanner = null;
+        scanner.stop().catch(() => {}).finally(() => {
+          try { scanner.clear(); } catch(e) {}
+          document.getElementById('setup-qr-reader').innerHTML = '';
+          closeOverlay('overlayQRServer');
+          _procesarQRServidor(texto);
+        });
+      },
+      () => {} // silenciar errores de frame
+    ).catch(err => {
+      const msg = err ? err.toString() : '';
+      if (msg.indexOf('NotReadableError') !== -1) {
+        statusEl.innerHTML = '<span style="color:var(--red)">❌ Cámara en uso. Ciérrala y vuelve a intentar.</span>';
+      } else {
+        statusEl.innerHTML = '<span style="color:var(--red)">❌ ' + msg + '</span>';
+      }
+      _serverQrScanner = null;
+    });
+  } catch(e) {
+    statusEl.innerHTML = '<span style="color:var(--red)">❌ Error al iniciar escáner: ' + e.message + '</span>';
+    _serverQrScanner = null;
+  }
+}
+
+function _detenerEscaneoServidor() {
+  if (_serverQrScanner) {
+    const s = _serverQrScanner;
+    _serverQrScanner = null;
+    s.stop().catch(() => {}).finally(() => {
+      try { s.clear(); } catch(e) {}
+      const el = document.getElementById('setup-qr-reader');
+      if (el) el.innerHTML = '';
+    });
+  }
+}
+
+/**
+ * Procesa el texto escaneado del QR del servidor.
+ * Acepta: URL directa, o JSON con campos url / server_url / serverUrl.
+ */
+function _procesarQRServidor(texto) {
+  let url = null;
+  // Intentar JSON primero
+  try {
+    const obj = JSON.parse(texto);
+    url = obj.url || obj.server_url || obj.serverUrl || null;
+  } catch(e) {}
+
+  // Si no es JSON válido con url, asumir que ES la url directamente
+  if (!url) {
+    const t = texto.trim();
+    if (t.startsWith('http://') || t.startsWith('https://')) url = t;
+  }
+
+  if (url) {
+    document.getElementById('serverUrl').value = url;
+    showToast('✅ URL leída del QR', 'success');
+    document.getElementById('connStatus').textContent = '';
+  } else {
+    showToast('QR no contiene una URL válida', 'error');
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// PERFIL — lee siempre desde la sesión del servidor (getSessionUser)
+// ═══════════════════════════════════════════════════════════════
+
+function _buildQR(container, payload, width, height) {
+  container.innerHTML = '';
+  if (typeof QRCode === 'undefined') {
+    container.innerHTML = `<div style="text-align:center;padding:12px;">
+      <div style="font-size:11px;color:#666;margin-bottom:6px;">⚠️ Librería QR no disponible</div>
+      <div class="qr-fallback-code">${payload}</div>
+    </div>`;
+    return;
+  }
+  try {
+    new QRCode(container, {
+      text: payload, width, height,
+      colorDark: '#000000', colorLight: '#ffffff',
+      correctLevel: QRCode.CorrectLevel.M
+    });
+  } catch(e) {
+    container.innerHTML = `<div class="qr-fallback-code" style="color:#000;">${payload}</div>`;
+  }
+}
+
+function renderPerfil() {
+  // Intentar refrescar sesión desde caché si el servidor tiene datos nuevos
+  const u = getSessionUser();
+  const vacio  = document.getElementById('perfilVacio');
+  const activo = document.getElementById('perfilActivo');
+
+  if (!u) {
+    vacio.style.display  = '';
+    activo.style.display = 'none';
+    return;
+  }
+
+  vacio.style.display  = 'none';
+  activo.style.display = '';
+
+  // Avatar
+  const words = (u.name || '').trim().split(/\s+/);
+  const ini = words.length >= 2
+    ? words[0][0] + words[1][0]
+    : (words[0] ? words[0][0] + (words[0][1] || words[0][0]) : '?');
+  document.getElementById('perfilAvatar').textContent     = ini.toUpperCase();
+  document.getElementById('perfilNombreValor').textContent = u.name || '—';
+
+  // Rol
+  const rolBadge = document.getElementById('perfilRolBadge');
+  const roles = getUserRoles(u);
+  let badgesHtml = '';
+  if (roles.includes('visita')) badgesHtml += '<span class="perfil-rol-badge" style="background:rgba(34,197,94,.12);color:var(--green);border:1px solid var(--green);">🕊️ Visita</span> ';
+  if (roles.includes('director')) badgesHtml += '<span class="perfil-rol-badge perfil-rol-director">👑 Director</span> ';
+  if (roles.includes('asistente') && !roles.includes('visita')) badgesHtml += '<span class="perfil-rol-badge perfil-rol-asistente">👤 Asistente</span>';
+  rolBadge.innerHTML = badgesHtml || '<span class="perfil-rol-badge perfil-rol-asistente">👤 Asistente</span>';
+
+  // Código
+  document.getElementById('perfilCodigoValor').textContent = u.code || '—';
+
+  // Chips de datos: buscar en caché del servidor para obtener edad/teléfono
+  const cached = DB.get('members_cache', []);
+  const mData  = cached.find(m => m.id === u.id) || {};
+  const age    = calcAge(mData.birth);
+  const dataRow = document.getElementById('perfilDataRow');
+  let chipsHtml = '';
+  if (age !== null) {
+    chipsHtml += `<div class="perfil-data-chip">
+      <div class="chip-label">Edad</div>
+      <div class="chip-val">${age} años</div>
+    </div>`;
+  }
+  if (mData.phone) {
+    chipsHtml += `<div class="perfil-data-chip">
+      <div class="chip-label">Teléfono</div>
+      <div class="chip-val" style="font-size:11px;">${mData.phone}</div>
+    </div>`;
+  }
+  if (u.email) {
+    chipsHtml += `<div class="perfil-data-chip" style="flex:2;">
+      <div class="chip-label">Correo</div>
+      <div class="chip-val" style="font-size:11px; font-weight:400; color:var(--text-muted);">${u.email}</div>
+    </div>`;
+  }
+  dataRow.innerHTML = chipsHtml || `<div class="perfil-data-chip" style="flex:1;">
+    <div class="chip-label">Datos</div>
+    <div class="chip-val" style="font-weight:400;color:var(--text-muted);font-size:12px;">Sin datos adicionales</div>
+  </div>`;
+
+  // Botón WhatsApp inline
+  const btnWA = document.getElementById('btnWAInline');
+  if (btnWA) btnWA.style.display = mData.phone ? '' : 'none';
+
+  // QR inline
+  const payload = JSON.stringify({
+    code:  u.code  || '',
+    name:  u.name  || '',
+    email: u.email || '',
+    role:  u.role  || ''
+  });
+  _buildQR(document.getElementById('perfilQRInline'), payload, 140, 140);
+}
+
+// ─── Ver QR ampliado ─────────────────────────────────────────
+function verMiQR() {
+  const u = getSessionUser();
+  if (!u) { showToast('Inicia sesión primero', 'error'); return; }
+
+  document.getElementById('user-qr-name').textContent = u.name || '';
+  document.getElementById('user-qr-code').textContent = u.code || '—';
+
+  const cached = DB.get('members_cache', []);
+  const mData  = cached.find(m => m.id === u.id) || {};
+  const btnWA  = document.getElementById('btnWAPersonal');
+  if (btnWA) btnWA.style.display = mData.phone ? '' : 'none';
+
+  const payload = JSON.stringify({
+    code:  u.code  || '',
+    name:  u.name  || '',
+    email: u.email || '',
+    role:  u.role  || ''
+  });
+  _buildQR(document.getElementById('user-qr-container'), payload, 200, 200);
+  openOverlay('overlayMiQR');
+}
+
+// ─── Compartir por WhatsApp ───────────────────────────────────
+function compartirCodigoWA() {
+  const u = getSessionUser();
+  if (!u) { showToast('Inicia sesión primero', 'error'); return; }
+
+  const cached = DB.get('members_cache', []);
+  const mData  = cached.find(m => m.id === u.id) || {};
+  const phone  = (mData.phone || '').replace(/\D/g, '');
+  if (!phone) { showToast('No tienes teléfono registrado', 'error'); return; }
+
+  const msg = encodeURIComponent(
+    `Hola, aquí está mi código de iglesia: *${u.code || '—'}*\n` +
+    `Nombre: ${u.name || ''}\n` +
+    `Con este código pueden identificarme en ministerios y departamentos.`
+  );
+  const urlNativo   = `whatsapp://send?phone=${phone}&text=${msg}`;
+  const urlFallback = `https://wa.me/${phone}?text=${msg}`;
+  try {
+    if (typeof cordova !== 'undefined' && cordova.InAppBrowser) {
+      cordova.InAppBrowser.open(urlNativo, '_system');
+    } else {
+      window.open(urlNativo, '_system');
+    }
+  } catch(e) {
+    try { window.open(urlFallback, '_blank'); } catch(e2) {}
+  }
+  showToast('Abriendo WhatsApp ✓', 'success');
+}
+
+// ─── Cerrar sesión ────────────────────────────────────────────
+function cerrarSesion() {
+  clearSessionUser();
+  closeOverlay('overlayCambiarUsuario');
+  renderPerfil();
+  showToast('Sesión cerrada', 'success');
+}
+
+// ═══════════════════════════════════════════════════════════════
+// HELPERS DE MODAL OVERLAY
+// ═══════════════════════════════════════════════════════════════
+function openOverlay(id) {
+  const el = document.getElementById(id);
+  if (el) el.classList.add('open');
+}
+function closeOverlay(id) {
+  const el = document.getElementById(id);
+  if (el) el.classList.remove('open');
+}
+</script>
+</body>
+</html>
