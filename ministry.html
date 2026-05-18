@@ -1,0 +1,879 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <title>Ministerio</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="app-header">
+  <button class="back-btn" onclick="navigate('index.html')">‹</button>
+  <h1 id="ministryTitle">Ministerio</h1>
+  <div class="header-actions">
+    <button class="back-btn" id="switchMinBtn" onclick="openSwitchModal()" title="Cambiar ministerio">🔀</button>
+  </div>
+</header>
+
+<div id="toast" class="toast"></div>
+<button class="fab" id="mainFab" onclick="fabAction()">＋</button>
+
+<main class="page">
+
+  <!-- Tab bar -->
+  <div style="display:flex; gap:0; background:var(--surface); border:1px solid var(--border); border-radius:10px; margin-bottom:16px; overflow:hidden;">
+    <button class="tab-btn active" id="tab-attendance" onclick="switchTab('attendance')">📋 Asistencia</button>
+    <button class="tab-btn" id="tab-meetings" onclick="switchTab('meetings')">📅 Reuniones</button>
+    <button class="tab-btn" id="tab-tasks" onclick="switchTab('tasks')">✅ Tareas</button>
+  </div>
+
+  <!-- ATTENDANCE TAB -->
+  <div id="tabAttendance">
+    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;">
+      <div class="section-title" style="margin:0;">Lista de asistentes</div>
+      <button class="btn btn-sm btn-secondary" onclick="openSelectMeetingForAttendance()">Reunión: <span id="attMeetingLabel">hoy</span></button>
+    </div>
+
+    <div id="attendanceStats" style="margin-bottom:10px;"></div>
+
+    <div class="search-box">
+      <span class="search-icon">🔍</span>
+      <input type="search" id="attSearch" placeholder="Buscar asistente..." oninput="renderAttendance()">
+    </div>
+
+    <!-- Filter chips -->
+    <div style="display:flex; gap:6px; margin-bottom:12px; overflow-x:auto; padding-bottom:4px;" id="attFilterRow">
+      <div class="pill active" id="attf-all" onclick="setAttFilter('all')">Todos</div>
+      <div class="pill" id="attf-member" onclick="setAttFilter('member')">🌟 Sirve aquí</div>
+      <div class="pill" id="attf-interest" onclick="setAttFilter('interest')">💛 Interesados</div>
+    </div>
+
+    <div id="attendanceList"></div>
+
+    <div style="display:flex; gap:8px; margin-top:12px;">
+      <button class="btn btn-secondary btn-sm" style="flex:1;" onclick="markAll(true)">✓ Todos presentes</button>
+      <button class="btn btn-secondary btn-sm" style="flex:1;" onclick="markAll(false)">✗ Todos ausentes</button>
+    </div>
+    <button class="btn btn-primary btn-block" style="margin-top:10px;" onclick="saveAttendance()">💾 Guardar asistencia</button>
+  </div>
+
+  <!-- MEETINGS TAB -->
+  <div id="tabMeetings" style="display:none;">
+    <div class="section-title">Próximas Reuniones</div>
+    <div id="upcomingMeetingsList"></div>
+
+    <div class="section-title">Historial</div>
+    <div id="pastMeetingsList"></div>
+  </div>
+
+  <!-- TASKS TAB -->
+  <div id="tabTasks" style="display:none;">
+    <div style="display:flex; gap:6px; margin-bottom:12px; overflow-x:auto; padding-bottom:4px;">
+      <div class="pill active" id="tf-all" onclick="setTaskFilter('all')">Todas</div>
+      <div class="pill" id="tf-pending" onclick="setTaskFilter('pending')">⏳ Pendientes</div>
+      <div class="pill" id="tf-free" onclick="setTaskFilter('free')">🕊️ Sin reunión</div>
+      <div class="pill" id="tf-done" onclick="setTaskFilter('done')">✅ Completadas</div>
+    </div>
+    <div id="tasksList"></div>
+  </div>
+
+</main>
+
+<!-- BOTTOM NAV -->
+<nav class="bottom-nav">
+  <a href="index.html">
+    <span class="nav-icon">✝</span>
+    <span>Inicio</span>
+  </a>
+  <a href="members.html">
+    <span class="nav-icon">👥</span>
+    <span>Miembros</span>
+  </a>
+  <a href="ministry.html" class="active" onclick="event.preventDefault(); openActiveMinistry();">
+    <span class="nav-icon">📋</span>
+    <span>Ministerio</span>
+  </a>
+  <a href="setup.html">
+    <span class="nav-icon">⚙️</span>
+    <span>Ajustes</span>
+  </a>
+</nav>
+
+<!-- SWITCH MINISTRY MODAL -->
+<div class="modal-overlay" id="switchModal">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Seleccionar Ministerio</div>
+    <div id="switchMinList"></div>
+    <button class="btn btn-ghost btn-block btn-sm" onclick="closeModal('switchModal')">Cancelar</button>
+  </div>
+</div>
+
+<!-- ADD MEETING MODAL -->
+<div class="modal-overlay" id="meetingModal">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="meetingModalTitle">Nueva Reunión</div>
+    <div class="input-group">
+      <label>Título *</label>
+      <input type="text" id="mTitle" placeholder="Ej: Reunión de planificación">
+    </div>
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+      <div class="input-group">
+        <label>Fecha *</label>
+        <input type="date" id="mDate">
+      </div>
+      <div class="input-group">
+        <label>Hora</label>
+        <input type="time" id="mTime">
+      </div>
+    </div>
+    <div class="input-group">
+      <label>Lugar</label>
+      <input type="text" id="mPlace" placeholder="Salón, templo...">
+    </div>
+    <div class="input-group">
+      <label>Descripción</label>
+      <textarea id="mDesc" placeholder="Tema o agenda..."></textarea>
+    </div>
+    <div style="display:flex; gap:8px;">
+      <button class="btn btn-secondary" style="flex:1;" onclick="closeModal('meetingModal')">Cancelar</button>
+      <button class="btn btn-primary" style="flex:1;" onclick="saveMeeting()">Guardar</button>
+    </div>
+    <div id="deleteMeetingBtn" style="margin-top:8px; display:none;">
+      <button class="btn btn-danger btn-block btn-sm" onclick="deleteMeeting()">🗑 Eliminar reunión</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADD TASK MODAL -->
+<div class="modal-overlay" id="taskModal">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="taskModalTitle">Nueva Tarea</div>
+    <div class="input-group">
+      <label>Tarea *</label>
+      <input type="text" id="tTitle" placeholder="Descripción de la tarea">
+    </div>
+    <div class="input-group">
+      <label>Asignado a</label>
+      <input type="text" id="tAssigned" placeholder="Nombre del responsable">
+    </div>
+    <div class="input-group">
+      <label>Reunión asociada (opcional)</label>
+      <select id="tMeeting">
+        <option value="">Sin reunión específica</option>
+      </select>
+    </div>
+    <div class="input-group">
+      <label>Fecha límite (opcional)</label>
+      <input type="date" id="tDue">
+    </div>
+    <div class="input-group">
+      <label>Notas</label>
+      <textarea id="tNotes" placeholder="Detalles adicionales..."></textarea>
+    </div>
+    <div style="display:flex; gap:8px;">
+      <button class="btn btn-secondary" style="flex:1;" onclick="closeModal('taskModal')">Cancelar</button>
+      <button class="btn btn-primary" style="flex:1;" onclick="saveTask()">Guardar</button>
+    </div>
+    <div id="deleteTaskBtn" style="margin-top:8px; display:none;">
+      <button class="btn btn-danger btn-block btn-sm" onclick="deleteTask()">🗑 Eliminar tarea</button>
+    </div>
+  </div>
+</div>
+
+<!-- SELECT MEETING FOR ATTENDANCE -->
+<div class="modal-overlay" id="selectMeetingModal">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Seleccionar Reunión</div>
+    <div id="selectMeetingList"></div>
+    <button class="btn btn-ghost btn-block btn-sm" style="margin-top:8px;" onclick="closeModal('selectMeetingModal')">Cancelar</button>
+  </div>
+</div>
+
+<style>
+.tab-btn {
+  flex: 1; padding: 10px 4px; border: none; background: transparent;
+  font-family: 'Nunito', sans-serif; font-size: 12px; font-weight: 700;
+  color: var(--text-muted); cursor: pointer; transition: 0.2s;
+  letter-spacing: 0.02em;
+}
+.tab-btn.active { color: var(--gold); border-bottom: 2px solid var(--gold); }
+</style>
+
+<script src="app.js"></script>
+<script>
+let activeTab = 'attendance';
+let activeMinistryId = null;
+let attFilter = 'all';
+let taskFilter = 'all';
+let tempAttendance = {}; // memberId -> true/false
+let editingMeetingId = null;
+let editingTaskId = null;
+let selectedMeetingForAtt = null; // meeting id or null (= free session)
+
+document.addEventListener('DOMContentLoaded', () => {
+  const session = getSessionUser();
+
+  // If no session, require login
+  if (!session) {
+    document.querySelector('.page').style.visibility = 'hidden';
+    requireAuth('ministry', () => window.location.reload());
+    return;
+  }
+
+  const roles = getUserRoles(session);
+  const dirIds = roles.includes('director') ? (session.dirMinistries || []) : [];
+  const asiIds = roles.includes('asistente') ? (session.ministries || []) : [];
+  const allIds = [...new Set([...dirIds, ...asiIds])];
+
+  if (allIds.length === 0) {
+    document.getElementById('ministryTitle').textContent = 'Sin ministerio';
+    document.querySelector('.page').innerHTML = `
+      <div class="empty-state">
+        <div class="empty-icon">⚙️</div>
+        <h3>Sin ministerios asignados</h3>
+        <p>Pide al administrador que te asigne ministerios.</p>
+        <br>
+        <button class="btn btn-primary" onclick="navigate('index.html')">Ir al inicio</button>
+      </div>`;
+    return;
+  }
+
+  // Si el director tiene más de 1 ministerio y no hay uno activo guardado,
+  // mostrar el selector al entrar
+  activeMinistryId = DB.get('active_ministry', null);
+  const isValidActive = activeMinistryId && allIds.includes(activeMinistryId);
+
+  if (roles.includes('director') && dirIds.length > 1 && !isValidActive) {
+    // Mostrar selector de ministerio antes de continuar
+    _showDirectorPicker(session, dirIds, asiIds, () => {
+      updateMinistryHeader();
+      updateAccessBadge();
+      initAttendance();
+      renderMeetings();
+      renderTasks();
+    });
+    return;
+  }
+
+  // Si hay uno válido guardado o solo tiene uno, cargar directo
+  if (!isValidActive) activeMinistryId = allIds[0];
+  DB.set('active_ministry', activeMinistryId);
+
+  updateMinistryHeader();
+  updateAccessBadge();
+  initAttendance();
+  renderMeetings();
+  renderTasks();
+});
+
+// ===== DIRECTOR MINISTRY PICKER =====
+// Se muestra al entrar a la página si el director tiene múltiples ministerios
+function _showDirectorPicker(session, dirIds, asiIds, onPicked) {
+  const page = document.querySelector('.page');
+  // Ocultar contenido normal hasta elegir
+  page.style.visibility = 'hidden';
+  document.getElementById('mainFab').style.display = 'none';
+  document.querySelector('.tab-btn')?.parentElement?.parentElement && null;
+
+  const overlay = document.createElement('div');
+  overlay.className = 'modal-overlay open';
+  overlay.id = 'dirPickerOverlay';
+  overlay.style.cssText = 'background:rgba(0,0,0,.85); z-index:500;';
+
+  const buildItem = (id, isDir) => {
+    const m = getMinistry(id);
+    return `
+      <div class="list-item" style="cursor:pointer;" onclick="_pickMinistry('${id}')">
+        <div class="avatar" style="font-size:20px;">${m.icon}</div>
+        <div class="item-info">
+          <div class="item-name">${m.name}</div>
+          <div class="item-sub">${m.cat} · ${isDir ? '<span style="color:var(--gold);font-weight:700;">👑 Director</span>' : '<span style="color:var(--blue);">👤 Asistente</span>'}</div>
+        </div>
+        <div style="color:var(--gold);font-size:20px;">›</div>
+      </div>`;
+  };
+
+  let itemsHtml = dirIds.map(id => buildItem(id, true)).join('');
+  // Asistente-only ids (no son director de ellos)
+  const dirSet = new Set(dirIds);
+  asiIds.filter(id => !dirSet.has(id)).forEach(id => {
+    itemsHtml += buildItem(id, false);
+  });
+
+  overlay.innerHTML = `
+    <div class="modal-sheet" style="padding-bottom:32px; max-height:80vh; overflow-y:auto;">
+      <div class="modal-handle"></div>
+      <div style="text-align:center; font-size:28px; margin-bottom:4px;">📋</div>
+      <div class="modal-title" style="text-align:center; margin-bottom:4px;">¿Qué ministerio vas a administrar?</div>
+      <p style="font-size:12px; color:var(--text-muted); text-align:center; margin-bottom:16px;">
+        Hola ${session.name.split(' ')[0]}, selecciona el ministerio con el que quieres trabajar hoy.
+      </p>
+      <div id="dirPickerList">${itemsHtml}</div>
+    </div>`;
+
+  document.body.appendChild(overlay);
+  window._onPickerSuccess = onPicked;
+}
+
+function _pickMinistry(id) {
+  openMinistry(id);
+}
+
+function updateMinistryHeader() {
+  const m = getMinistry(activeMinistryId);
+  document.getElementById('ministryTitle').textContent = m.icon + ' ' + m.name;
+}
+
+// Show director / asistente badge in header and configure FAB per role
+function updateAccessBadge() {
+  const session = getSessionUser();
+  const isDir = session && isDirectorOf(activeMinistryId);
+  const fab = document.getElementById('mainFab');
+
+  if (isDir) {
+    fab.style.display = '';
+    fab.title = '';
+  } else {
+    // Asistente: FAB solo guarda asistencia (en otras pestañas se oculta)
+    _updateAsisFab();
+  }
+}
+
+function _updateAsisFab() {
+  const fab = document.getElementById('mainFab');
+  if (activeTab === 'attendance') {
+    fab.style.display = '';
+    fab.textContent = '💾';
+    fab.title = 'Guardar asistencia';
+  } else {
+    // Asistente no puede agregar reuniones ni tareas
+    fab.style.display = 'none';
+  }
+}
+
+// Wrapper: only directors of this ministry can do write operations
+function requireDirector(action) {
+  const session = getSessionUser();
+  if (!session) { showToast('Inicia sesión primero', 'error'); return; }
+  if (!isDirectorOf(activeMinistryId)) {
+    showToast('Solo el director puede realizar esta acción', 'error');
+    return;
+  }
+  action();
+}
+
+// ===== TAB SWITCHING =====
+function switchTab(tab) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + tab).classList.add('active');
+  ['attendance', 'meetings', 'tasks'].forEach(t => {
+    document.getElementById('tabAttendance').style.display = t === 'attendance' ? 'block' : 'none';
+    document.getElementById('tabMeetings').style.display = t === 'meetings' ? 'block' : 'none';
+    document.getElementById('tabTasks').style.display = t === 'tasks' ? 'block' : 'none';
+  });
+  // Re-show the right one
+  document.getElementById('tab' + tab.charAt(0).toUpperCase() + tab.slice(1)).style.display = 'block';
+  activeTab = tab;
+
+  const session = getSessionUser();
+  const isDir = session && isDirectorOf(activeMinistryId);
+  const fab = document.getElementById('mainFab');
+
+  if (isDir) {
+    fab.style.display = '';
+    fab.textContent = tab === 'meetings' ? '📅' : tab === 'tasks' ? '✅' : '💾';
+  } else {
+    // Asistente: solo puede guardar asistencia
+    if (tab === 'attendance') {
+      fab.style.display = '';
+      fab.textContent = '💾';
+    } else {
+      fab.style.display = 'none';
+    }
+  }
+}
+
+function fabAction() {
+  const session = getSessionUser();
+  const isDir = session && isDirectorOf(activeMinistryId);
+  if (activeTab === 'meetings') {
+    if (isDir) openAddMeeting();
+    else showToast('Solo el director puede crear reuniones', 'error');
+  } else if (activeTab === 'tasks') {
+    if (isDir) openAddTask();
+    else showToast('Solo el director puede crear tareas', 'error');
+  } else {
+    // Cualquiera (director o asistente) puede guardar asistencia
+    saveAttendance();
+  }
+}
+
+// ===== SWITCH MINISTRY =====
+function openSwitchModal() {
+  const session = getSessionUser();
+  const roles = getUserRoles(session);
+  const dirIds = roles.includes('director') ? (session.dirMinistries || []) : [];
+  const asiIds = roles.includes('asistente') ? (session.ministries || []) : [];
+  const dirSet = new Set(dirIds);
+  const allIds = [...new Set([...dirIds, ...asiIds])];
+
+  if (allIds.length === 0) {
+    const fallback = DB.get('my_ministries', []);
+    allIds.push(...fallback);
+  }
+
+  document.getElementById('switchMinList').innerHTML = allIds.map(id => {
+    const m = getMinistry(id);
+    const isDir = dirSet.has(id);
+    return `
+      <div class="list-item ${id === activeMinistryId ? 'gold-border' : ''}"
+           onclick="switchMinistry('${id}')">
+        <div class="avatar">${m.icon}</div>
+        <div class="item-info">
+          <div class="item-name">${m.name}</div>
+          <div class="item-sub">${isDir ? '<span style="color:var(--gold);font-weight:700;">👑 Director</span>' : '<span style="color:var(--blue);">👤 Asistente</span>'} · ${m.cat}</div>
+        </div>
+        ${id === activeMinistryId ? '<div style="color:var(--gold)">✓</div>' : ''}
+      </div>
+    `;
+  }).join('');
+  openModal('switchModal');
+}
+
+function switchMinistry(id) {
+  closeModal('switchModal');
+  openMinistry(id);
+}
+
+// ===== ATTENDANCE =====
+function getMinistryMembers() {
+  const members = DB.get('members', []);
+  return members.filter(m =>
+    (m.ministries || []).includes(activeMinistryId) ||
+    (m.interests || []).includes(activeMinistryId)
+  );
+}
+
+function initAttendance() {
+  const members = getMinistryMembers();
+  tempAttendance = {};
+  members.forEach(m => tempAttendance[m.id] = null);
+
+  // Load saved attendance if meeting selected
+  if (selectedMeetingForAtt) {
+    const att = DB.get('attendance_' + activeMinistryId + '_' + selectedMeetingForAtt, {});
+    Object.assign(tempAttendance, att);
+  }
+  renderAttendance();
+}
+
+function setAttFilter(f) {
+  attFilter = f;
+  document.querySelectorAll('#attFilterRow .pill').forEach(p => p.classList.remove('active'));
+  document.getElementById('attf-' + f).classList.add('active');
+  renderAttendance();
+}
+
+function renderAttendance() {
+  let members = getMinistryMembers();
+  const search = (document.getElementById('attSearch').value || '').toLowerCase();
+  if (search) members = members.filter(m => m.name.toLowerCase().includes(search));
+
+  if (attFilter === 'member') members = members.filter(m => (m.ministries || []).includes(activeMinistryId));
+  if (attFilter === 'interest') members = members.filter(m => (m.interests || []).includes(activeMinistryId));
+
+  // Sort: present first, absent, not marked
+  members.sort((a, b) => {
+    const sa = tempAttendance[a.id];
+    const sb = tempAttendance[b.id];
+    if (sa === sb) return a.name.localeCompare(b.name, 'es');
+    if (sa === true) return -1;
+    if (sb === true) return 1;
+    return 0;
+  });
+
+  const total = members.length;
+  const present = members.filter(m => tempAttendance[m.id] === true).length;
+  const absent = members.filter(m => tempAttendance[m.id] === false).length;
+  const pct = total > 0 ? Math.round(present / total * 100) : 0;
+
+  document.getElementById('attendanceStats').innerHTML = `
+    <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
+      <span style="font-size:12px; color:var(--text-muted);">
+        <span style="color:var(--green); font-weight:700;">${present}</span> presentes ·
+        <span style="color:var(--red); font-weight:700;">${absent}</span> ausentes ·
+        ${total - present - absent} sin marcar
+      </span>
+      <span style="font-size:12px; font-family:'Cinzel',serif; color:var(--gold); font-weight:700;">${pct}%</span>
+    </div>
+    <div class="attendance-bar">
+      <div class="bar-fill" style="width:${pct}%"></div>
+    </div>
+  `;
+
+  const container = document.getElementById('attendanceList');
+  if (members.length === 0) {
+    container.innerHTML = `<div class="empty-state">
+      <div class="empty-icon">👤</div>
+      <h3>Sin miembros</h3>
+      <p>Agrega miembros con etiqueta de este ministerio</p>
+    </div>`;
+    return;
+  }
+
+  container.innerHTML = members.map(m => {
+    const state = tempAttendance[m.id];
+    const isPresent = state === true;
+    const isAbsent = state === false;
+    const age = calcAge(m.birth);
+    const isInterest = (m.interests || []).includes(activeMinistryId);
+
+    return `
+      <div class="check-item ${isPresent ? 'checked' : isAbsent ? 'absent' : ''}"
+           onclick="toggleAttendance('${m.id}')">
+        <div class="check-box">${isPresent ? '✓' : isAbsent ? '✗' : ''}</div>
+        <div class="item-info">
+          <div class="item-name">${m.name} ${isInterest ? '<span class="tag tag-blue" style="font-size:10px; padding:1px 6px;">interesado</span>' : ''}</div>
+          <div class="item-sub">${age !== null ? age + ' años' : ''}${m.phone ? ' · ' + m.phone : ''}</div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function toggleAttendance(id) {
+  const cur = tempAttendance[id];
+  if (cur === null || cur === undefined) tempAttendance[id] = true;
+  else if (cur === true) tempAttendance[id] = false;
+  else tempAttendance[id] = null;
+  renderAttendance();
+}
+
+function markAll(present) {
+  const members = getMinistryMembers();
+  members.forEach(m => tempAttendance[m.id] = present);
+  renderAttendance();
+}
+
+function saveAttendance() {
+  const key = 'attendance_' + activeMinistryId + '_' + (selectedMeetingForAtt || 'free_' + new Date().toISOString().split('T')[0]);
+  DB.set(key, tempAttendance);
+  const present = Object.values(tempAttendance).filter(v => v === true).length;
+  showToast(`✅ Asistencia guardada · ${present} presentes`, 'success');
+}
+
+function openSelectMeetingForAttendance() {
+  const meetings = DB.get('meetings', [])
+    .filter(m => m.ministryId === activeMinistryId)
+    .sort((a, b) => b.date.localeCompare(a.date));
+
+  document.getElementById('selectMeetingList').innerHTML = `
+    <div class="list-item" onclick="setAttMeeting(null)">
+      <div class="avatar">📅</div>
+      <div class="item-info">
+        <div class="item-name">Hoy (sin reunión)</div>
+        <div class="item-sub">${new Date().toLocaleDateString('es-CO')}</div>
+      </div>
+      ${!selectedMeetingForAtt ? '<div style="color:var(--gold)">✓</div>' : ''}
+    </div>
+  ` + meetings.map(meet => `
+    <div class="list-item" onclick="setAttMeeting('${meet.id}')">
+      <div class="avatar">📋</div>
+      <div class="item-info">
+        <div class="item-name">${meet.title}</div>
+        <div class="item-sub">${fmtDate(meet.date)}</div>
+      </div>
+      ${selectedMeetingForAtt === meet.id ? '<div style="color:var(--gold)">✓</div>' : ''}
+    </div>
+  `).join('');
+  openModal('selectMeetingModal');
+}
+
+function setAttMeeting(id) {
+  selectedMeetingForAtt = id;
+  const label = id
+    ? (() => { const m = DB.get('meetings', []).find(x => x.id === id); return m ? fmtDate(m.date) : 'reunión'; })()
+    : 'hoy';
+  document.getElementById('attMeetingLabel').textContent = label;
+  closeModal('selectMeetingModal');
+  initAttendance();
+}
+
+// ===== MEETINGS =====
+function renderMeetings() {
+  const meetings = DB.get('meetings', [])
+    .filter(m => m.ministryId === activeMinistryId)
+    .sort((a, b) => a.date.localeCompare(b.date));
+
+  const today = new Date().toISOString().split('T')[0];
+  const upcoming = meetings.filter(m => m.date >= today);
+  const past = meetings.filter(m => m.date < today).reverse();
+
+  renderMeetingList('upcomingMeetingsList', upcoming, true);
+  renderMeetingList('pastMeetingsList', past, false);
+}
+
+function renderMeetingList(containerId, meetings, isUpcoming) {
+  const container = document.getElementById(containerId);
+  if (meetings.length === 0) {
+    container.innerHTML = `<div style="color:var(--text-muted); font-size:13px; padding:12px 0; text-align:center;">
+      ${isUpcoming ? 'No hay reuniones programadas' : 'Sin historial'}
+    </div>`;
+    return;
+  }
+
+  container.innerHTML = meetings.map(meet => {
+    const taskCount = DB.get('tasks', []).filter(t => t.ministryId === activeMinistryId && t.meetingId === meet.id).length;
+    const attKey = 'attendance_' + activeMinistryId + '_' + meet.id;
+    const att = DB.get(attKey, null);
+    const attCount = att ? Object.values(att).filter(v => v === true).length : null;
+
+    return `
+      <div class="card clickable" onclick="requireDirector(() => openEditMeeting('${meet.id}'))">
+        <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:8px;">
+          <div style="flex:1;">
+            <div style="font-weight:700; color:var(--text); margin-bottom:4px;">${meet.title}</div>
+            <div style="font-size:12px; color:var(--text-muted);">
+              📅 ${fmtDate(meet.date)}${meet.time ? ' · ' + meet.time : ''}
+              ${meet.place ? ' · 📍 ' + meet.place : ''}
+            </div>
+            ${meet.desc ? `<div style="font-size:12px; color:var(--text-muted); margin-top:4px;">${meet.desc}</div>` : ''}
+            <div style="display:flex; gap:6px; margin-top:8px; flex-wrap:wrap;">
+              ${taskCount > 0 ? `<span class="tag tag-gold">✅ ${taskCount} tareas</span>` : ''}
+              ${attCount !== null ? `<span class="tag tag-green">👥 ${attCount} presentes</span>` : ''}
+              ${attCount === null ? `<span class="tag tag-gray">Sin asistencia</span>` : ''}
+            </div>
+          </div>
+          <button class="btn btn-sm btn-secondary" onclick="event.stopPropagation(); setAttMeetingDirect('${meet.id}')">📋 Lista</button>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function setAttMeetingDirect(id) {
+  selectedMeetingForAtt = id;
+  const meet = DB.get('meetings', []).find(x => x.id === id);
+  document.getElementById('attMeetingLabel').textContent = meet ? fmtDate(meet.date) : 'reunión';
+  switchTab('attendance');
+  initAttendance();
+}
+
+function openAddMeeting() {
+  editingMeetingId = null;
+  document.getElementById('meetingModalTitle').textContent = 'Nueva Reunión';
+  document.getElementById('mTitle').value = '';
+  document.getElementById('mDate').value = new Date().toISOString().split('T')[0];
+  document.getElementById('mTime').value = '';
+  document.getElementById('mPlace').value = '';
+  document.getElementById('mDesc').value = '';
+  document.getElementById('deleteMeetingBtn').style.display = 'none';
+  openModal('meetingModal');
+}
+
+function openEditMeeting(id) {
+  const meet = DB.get('meetings', []).find(m => m.id === id);
+  if (!meet) return;
+  editingMeetingId = id;
+  document.getElementById('meetingModalTitle').textContent = 'Editar Reunión';
+  document.getElementById('mTitle').value = meet.title || '';
+  document.getElementById('mDate').value = meet.date || '';
+  document.getElementById('mTime').value = meet.time || '';
+  document.getElementById('mPlace').value = meet.place || '';
+  document.getElementById('mDesc').value = meet.desc || '';
+  document.getElementById('deleteMeetingBtn').style.display = 'block';
+  openModal('meetingModal');
+}
+
+function saveMeeting() {
+  const title = document.getElementById('mTitle').value.trim();
+  const date = document.getElementById('mDate').value;
+  if (!title || !date) { showToast('Título y fecha requeridos', 'error'); return; }
+
+  let meetings = DB.get('meetings', []);
+  const data = {
+    title, date,
+    time: document.getElementById('mTime').value,
+    place: document.getElementById('mPlace').value.trim(),
+    desc: document.getElementById('mDesc').value.trim(),
+    ministryId: activeMinistryId
+  };
+
+  if (editingMeetingId) {
+    const idx = meetings.findIndex(m => m.id === editingMeetingId);
+    if (idx >= 0) meetings[idx] = { ...meetings[idx], ...data };
+  } else {
+    data.id = genId();
+    data.createdAt = Date.now();
+    meetings.push(data);
+  }
+
+  DB.set('meetings', meetings);
+  closeModal('meetingModal');
+  showToast(editingMeetingId ? '✅ Reunión actualizada' : '✅ Reunión creada', 'success');
+  renderMeetings();
+}
+
+function deleteMeeting() {
+  if (!confirm('¿Eliminar esta reunión?')) return;
+  let meetings = DB.get('meetings', []);
+  meetings = meetings.filter(m => m.id !== editingMeetingId);
+  DB.set('meetings', meetings);
+  closeModal('meetingModal');
+  showToast('Reunión eliminada', 'error');
+  renderMeetings();
+}
+
+// ===== TASKS =====
+function renderTasks() {
+  let tasks = DB.get('tasks', []).filter(t => t.ministryId === activeMinistryId);
+  const meetings = DB.get('meetings', []).filter(m => m.ministryId === activeMinistryId);
+
+  if (taskFilter === 'pending') tasks = tasks.filter(t => !t.done);
+  if (taskFilter === 'done') tasks = tasks.filter(t => t.done);
+  if (taskFilter === 'free') tasks = tasks.filter(t => !t.meetingId);
+
+  tasks.sort((a, b) => {
+    if (a.done !== b.done) return a.done ? 1 : -1;
+    if (a.dueDate && b.dueDate) return a.dueDate.localeCompare(b.dueDate);
+    return 0;
+  });
+
+  const container = document.getElementById('tasksList');
+  if (tasks.length === 0) {
+    container.innerHTML = `<div class="empty-state">
+      <div class="empty-icon">✅</div>
+      <h3>Sin tareas</h3>
+      <p>Usa el botón + para agregar</p>
+    </div>`;
+    return;
+  }
+
+  container.innerHTML = tasks.map(task => {
+    const meet = task.meetingId ? meetings.find(m => m.id === task.meetingId) : null;
+    return `
+      <div class="task-item ${task.done ? 'done' : ''}">
+        <div class="task-check" onclick="toggleTask('${task.id}')">
+          ${task.done ? '✓' : ''}
+        </div>
+        <div class="task-info">
+          <div class="task-name">${task.title}</div>
+          <div class="task-meta">
+            ${task.assigned ? '👤 ' + task.assigned + ' · ' : ''}
+            ${meet ? '📅 ' + fmtDate(meet.date) : '<span style="color:var(--text-dim)">Sin reunión específica</span>'}
+            ${task.dueDate ? ' · ⏰ ' + fmtDate(task.dueDate) : ''}
+          </div>
+          ${task.notes ? `<div style="font-size:11px; color:var(--text-muted); margin-top:2px;">${task.notes}</div>` : ''}
+        </div>
+        <button class="btn btn-sm btn-ghost" style="padding:6px 8px;" onclick="requireDirector(() => openEditTask('${task.id}'))">✏️</button>
+      </div>
+    `;
+  }).join('');
+}
+
+function setTaskFilter(f) {
+  taskFilter = f;
+  ['all', 'pending', 'free', 'done'].forEach(x => {
+    document.getElementById('tf-' + x).classList.remove('active');
+  });
+  document.getElementById('tf-' + f).classList.add('active');
+  renderTasks();
+}
+
+function toggleTask(id) {
+  let tasks = DB.get('tasks', []);
+  const idx = tasks.findIndex(t => t.id === id);
+  if (idx >= 0) tasks[idx].done = !tasks[idx].done;
+  DB.set('tasks', tasks);
+  renderTasks();
+}
+
+function openAddTask() {
+  editingTaskId = null;
+  document.getElementById('taskModalTitle').textContent = 'Nueva Tarea';
+  document.getElementById('tTitle').value = '';
+  document.getElementById('tAssigned').value = '';
+  document.getElementById('tDue').value = '';
+  document.getElementById('tNotes').value = '';
+  document.getElementById('deleteTaskBtn').style.display = 'none';
+
+  // Populate meetings select
+  const meetings = DB.get('meetings', [])
+    .filter(m => m.ministryId === activeMinistryId)
+    .sort((a, b) => a.date.localeCompare(b.date));
+  const sel = document.getElementById('tMeeting');
+  sel.innerHTML = '<option value="">Sin reunión específica</option>' +
+    meetings.map(m => `<option value="${m.id}">${m.title} (${fmtDate(m.date)})</option>`).join('');
+
+  openModal('taskModal');
+}
+
+function openEditTask(id) {
+  const task = DB.get('tasks', []).find(t => t.id === id);
+  if (!task) return;
+  editingTaskId = id;
+  document.getElementById('taskModalTitle').textContent = 'Editar Tarea';
+  document.getElementById('tTitle').value = task.title || '';
+  document.getElementById('tAssigned').value = task.assigned || '';
+  document.getElementById('tDue').value = task.dueDate || '';
+  document.getElementById('tNotes').value = task.notes || '';
+  document.getElementById('deleteTaskBtn').style.display = 'block';
+
+  const meetings = DB.get('meetings', [])
+    .filter(m => m.ministryId === activeMinistryId)
+    .sort((a, b) => a.date.localeCompare(b.date));
+  const sel = document.getElementById('tMeeting');
+  sel.innerHTML = '<option value="">Sin reunión específica</option>' +
+    meetings.map(m => `<option value="${m.id}" ${task.meetingId === m.id ? 'selected' : ''}>${m.title} (${fmtDate(m.date)})</option>`).join('');
+
+  openModal('taskModal');
+}
+
+function saveTask() {
+  const title = document.getElementById('tTitle').value.trim();
+  if (!title) { showToast('El título es requerido', 'error'); return; }
+
+  let tasks = DB.get('tasks', []);
+  const data = {
+    title,
+    assigned: document.getElementById('tAssigned').value.trim(),
+    meetingId: document.getElementById('tMeeting').value || null,
+    dueDate: document.getElementById('tDue').value || null,
+    notes: document.getElementById('tNotes').value.trim(),
+    ministryId: activeMinistryId,
+    done: false
+  };
+
+  if (editingTaskId) {
+    const idx = tasks.findIndex(t => t.id === editingTaskId);
+    if (idx >= 0) tasks[idx] = { ...tasks[idx], ...data, done: tasks[idx].done };
+  } else {
+    data.id = genId();
+    data.createdAt = Date.now();
+    tasks.push(data);
+  }
+
+  DB.set('tasks', tasks);
+  closeModal('taskModal');
+  showToast(editingTaskId ? '✅ Tarea actualizada' : '✅ Tarea creada', 'success');
+  renderTasks();
+}
+
+function deleteTask() {
+  if (!confirm('¿Eliminar esta tarea?')) return;
+  let tasks = DB.get('tasks', []);
+  tasks = tasks.filter(t => t.id !== editingTaskId);
+  DB.set('tasks', tasks);
+  closeModal('taskModal');
+  showToast('Tarea eliminada', 'error');
+  renderTasks();
+}
+</script>
+</body>
+</html>
