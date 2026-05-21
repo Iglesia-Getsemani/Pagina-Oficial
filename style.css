@@ -618,3 +618,7 @@ html, body {
   .bottom-nav { padding-bottom: env(safe-area-inset-bottom); }
   .page { padding-bottom: calc(80px + env(safe-area-inset-bottom)); }
 }
+
+/* ===== 6-ITEM BOTTOM NAV ===== */
+.bottom-nav a { font-size: 9px; padding: 8px 2px 7px; }
+.bottom-nav a .nav-icon { font-size: 19px; }
