@@ -8,7 +8,7 @@ const IGLESIAS_CATALOG = [
   {
     id: 'getsemani',
     name: 'Iglesia Getsemaní',
-    server: 'https://eatable-preseason-encode.ngrok-free.dev/api/miembros'
+    server: 'https://viewable-retying-mower.ngrok-free.dev'
   }
   // Ejemplo para agregar otra iglesia en el futuro:
   // { id: 'central', name: 'Iglesia Central', server: 'https://otro-servidor.com/api/miembros' }
