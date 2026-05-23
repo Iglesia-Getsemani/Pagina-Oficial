@@ -1,31 +1,33 @@
 // ===== APP.JS — ADVENTIST MINISTRY APP =====
 'use strict';
 
-// ===== CATÁLOGO DE IGLESIAS =====
-// Para agregar más iglesias, añadir un objeto { id, name, server } a este array.
-// La primera iglesia de la lista es la predeterminada si no hay ninguna guardada.
-const IGLESIAS_CATALOG = [
-  {
-    id: 'getsemani',
-    name: 'Iglesia Getsemaní',
-    server: 'https://viewable-retying-mower.ngrok-free.dev/api/miembros'
-  }
-  // Ejemplo para agregar otra iglesia en el futuro:
-  // { id: 'central', name: 'Iglesia Central', server: 'https://otro-servidor.com/api/miembros' }
-];
+// ===== IGLESIA PRINCIPAL =====
+// Servidor fijo de Getsemaní. Aloja el catálogo de todas las iglesias en /api/iglesias.
+// La URL del servidor NUNCA se muestra en el UI — solo se usa internamente.
+const IGLESIA_PRINCIPAL = {
+  id: 'getsemani',
+  name: 'Iglesia Getsemaní',
+  server: 'https://viewable-retying-mower.ngrok-free.dev/api/miembros'
+};
+
+// Endpoint que devuelve el catálogo: [{id, name, server}]
+// El campo "server" contiene la URL real de cada iglesia — se guarda en caché local
+// pero NUNCA se muestra al usuario en el UI.
+const _API_IGLESIAS = 'https://viewable-retying-mower.ngrok-free.dev/api/iglesias';
 
 /**
- * Devuelve la iglesia actualmente seleccionada.
- * Si no hay ninguna guardada, usa la primera del catálogo (predeterminada).
+ * Devuelve la iglesia actualmente seleccionada: { id, name, server }.
+ * Si no hay ninguna guardada, usa la iglesia principal.
  */
 function getIglesiaActual() {
   const savedId = DB.get('iglesia_id', null);
   if (savedId) {
-    const found = IGLESIAS_CATALOG.find(i => i.id === savedId);
+    const catalog = DB.get('iglesias_catalog', []);
+    const found = catalog.find(i => i.id === savedId);
     if (found) return found;
+    if (savedId === IGLESIA_PRINCIPAL.id) return IGLESIA_PRINCIPAL;
   }
-  // Predeterminada: la primera del catálogo
-  return IGLESIAS_CATALOG[0] || null;
+  return IGLESIA_PRINCIPAL;
 }
 
 /**
@@ -33,9 +35,45 @@ function getIglesiaActual() {
  */
 function setIglesiaActual(iglesiaId) {
   DB.set('iglesia_id', iglesiaId);
-  // Sincronizar también el nombre de iglesia para compatibilidad
-  const ig = IGLESIAS_CATALOG.find(i => i.id === iglesiaId);
-  if (ig) DB.set('church_name', ig.name);
+  const catalog = DB.get('iglesias_catalog', []);
+  const found = catalog.find(i => i.id === iglesiaId) ||
+    (iglesiaId === IGLESIA_PRINCIPAL.id ? IGLESIA_PRINCIPAL : null);
+  if (found) DB.set('church_name', found.name);
+}
+
+/**
+ * Descarga el catálogo de iglesias desde el servidor de Getsemaní.
+ * El servidor devuelve [{id, name, server}] — la URL se guarda en caché local
+ * pero el UI solo muestra el nombre.
+ * Si no hay conexión, usa la caché. Si no hay caché, solo muestra Getsemaní.
+ */
+async function fetchIglesiasCatalog() {
+  try {
+    const res = await fetch(_API_IGLESIAS, {
+      method: 'GET',
+      headers: { 'Accept': 'application/json', 'ngrok-skip-browser-warning': '1' },
+      signal: AbortSignal.timeout(8000)
+    });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    // Aceptar array directo o { iglesias: [...] }
+    const lista = Array.isArray(data) ? data : (data.iglesias || []);
+    // Normalizar: guardar id, name y server (URL) — el UI solo usará id y name
+    const catalog = lista.map(i => ({
+      id:     String(i.id),
+      name:   String(i.name),
+      server: String(i.server || '')
+    }));
+    // Asegurar que Getsemaní siempre esté primero y actualizada
+    const sinPrincipal = catalog.filter(i => i.id !== IGLESIA_PRINCIPAL.id);
+    const full = [IGLESIA_PRINCIPAL, ...sinPrincipal];
+    DB.set('iglesias_catalog', full);
+    return full;
+  } catch (e) {
+    console.warn('fetchIglesiasCatalog:', e.message);
+    const cached = DB.get('iglesias_catalog', null);
+    return cached || [IGLESIA_PRINCIPAL];
+  }
 }
 
 // ===== CONTRASEÑA FIJA para gestión de miembros (admin) =====
@@ -479,13 +517,14 @@ function openActiveMinistry() {
 
 // ===== SERVER SYNC =====
 /**
- * Obtiene la URL del servidor activo.
- * Prioridad: iglesia del catálogo seleccionada → server_url guardado manualmente (legado).
+ * Devuelve la URL del servidor de miembros para la iglesia actualmente seleccionada.
+ * La URL proviene del catálogo descargado del servidor de Getsemaní.
+ * NUNCA se muestra en el UI — solo se usa internamente para los fetch.
  */
 function getServerUrl() {
-  const iglesia = getIglesiaActual();
-  if (iglesia && iglesia.server) return iglesia.server;
-  // Compatibilidad con configuración manual anterior
+  const ig = getIglesiaActual();
+  if (ig && ig.server) return ig.server;
+  // Fallback: compatibilidad con configuración manual anterior
   return DB.get('server_url', '');
 }
 
