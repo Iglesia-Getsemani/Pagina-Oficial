@@ -303,13 +303,12 @@
   <div class="section-title">Iglesia</div>
   <div class="card">
     <p style="font-size:12px; color:var(--text-muted); margin-bottom:12px;">
-      Selecciona tu iglesia. El servidor de datos se asignará automáticamente.
+      Selecciona tu iglesia. Los datos se sincronizarán automáticamente.
     </p>
     <div id="iglesiasList" style="display:flex; flex-direction:column; gap:8px;"></div>
-    <!-- Indicador de servidor activo -->
-    <div id="iglesiaServerInfo" style="margin-top:12px; background:var(--surface2); border:1px solid var(--border); border-radius:8px; padding:10px 12px; font-size:11px; color:var(--text-muted); display:none;">
-      <span style="font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:.04em; font-size:10px;">Servidor</span><br>
-      <span id="iglesiaServerUrl" style="font-family:monospace; color:var(--green); word-break:break-all;"></span>
+    <!-- iglesiaServerInfo se mantiene en el DOM pero permanece oculto — nunca se muestra la URL -->
+    <div id="iglesiaServerInfo" style="display:none;">
+      <span id="iglesiaServerUrl"></span>
     </div>
   </div>
 
@@ -464,14 +463,32 @@ function previewWelcomeMsg() {
 }
 
 // ── Iglesias ──────────────────────────────────────────────────
-function renderIglesias() {
+// Renderiza el catálogo: primero muestra lo que haya en caché, luego recarga del servidor.
+async function renderIglesias() {
+  const container = document.getElementById('iglesiasList');
+  if (!container) return;
+
+  // Mostrar estado de carga mientras se obtiene el catálogo remoto
+  container.innerHTML = `
+    <div style="display:flex;align-items:center;gap:10px;padding:12px 4px;color:var(--text-muted);font-size:13px;">
+      <span style="display:inline-block;width:16px;height:16px;border:2px solid var(--border);border-top-color:var(--gold);border-radius:50%;animation:spin .8s linear infinite;flex-shrink:0;"></span>
+      Cargando iglesias...
+    </div>`;
+
+  // Cargar catálogo (usa caché si el servidor no responde)
+  const catalog = await fetchIglesiasCatalog();
+  _renderIglesiaCards(catalog);
+}
+
+function _renderIglesiaCards(catalog) {
   const container = document.getElementById('iglesiasList');
   if (!container) return;
   const iglesiaActual = getIglesiaActual();
   container.innerHTML = '';
 
-  IGLESIAS_CATALOG.forEach(ig => {
+  catalog.forEach(ig => {
     const isSelected = iglesiaActual && iglesiaActual.id === ig.id;
+    const isPrincipal = ig.id === IGLESIA_PRINCIPAL.id;
     const card = document.createElement('div');
     card.style.cssText = `
       display:flex; align-items:center; gap:12px;
@@ -481,29 +498,25 @@ function renderIglesias() {
       border-radius:12px; cursor:pointer;
       transition:var(--transition);
     `;
+    // SOLO se muestra el nombre — nunca la URL del servidor
     card.innerHTML = `
       <div style="font-size:28px; flex-shrink:0;">⛪</div>
       <div style="flex:1; min-width:0;">
         <div style="font-family:'Cinzel',serif; font-size:14px; font-weight:700; color:${isSelected ? 'var(--gold)' : 'var(--text)'};">${ig.name}</div>
-        <div style="font-size:10px; color:var(--text-muted); margin-top:2px; font-family:monospace; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${ig.server}</div>
+        ${isPrincipal ? '<div style="font-size:10px;color:var(--gold);margin-top:2px;font-weight:700;letter-spacing:.04em;">⭐ Iglesia principal</div>' : ''}
       </div>
       <div style="font-size:18px; flex-shrink:0;">${isSelected ? '✅' : '○'}</div>
     `;
     card.addEventListener('click', () => {
       setIglesiaActual(ig.id);
-      renderIglesias();
+      _renderIglesiaCards(catalog);
       showToast('✅ ' + ig.name + ' seleccionada', 'success');
+      // Ocultar info de servidor (no se muestra URL)
+      const serverInfo = document.getElementById('iglesiaServerInfo');
+      if (serverInfo) serverInfo.style.display = 'none';
     });
     container.appendChild(card);
   });
-
-  // Mostrar servidor activo
-  const serverInfo = document.getElementById('iglesiaServerInfo');
-  const serverUrl  = document.getElementById('iglesiaServerUrl');
-  if (iglesiaActual && serverInfo && serverUrl) {
-    serverUrl.textContent = iglesiaActual.server;
-    serverInfo.style.display = 'block';
-  }
 }
 
 // ── Servidor ──────────────────────────────────────────────────
@@ -604,7 +617,8 @@ async function runAllDiagnostics() {
   let parsedUrl = null;
 
   // PASO 1: Formato URL
-  diagLog('Analizando URL: ' + (url || '(vacía)'));
+  // No se registra la URL real en el log por seguridad
+  diagLog('Verificando conexión con servidor principal...');
   const urlInfo = document.getElementById('diagUrlInfo');
 
   if (!url) {
@@ -621,13 +635,13 @@ async function runAllDiagnostics() {
     const host  = parsedUrl.hostname;
     const port  = parsedUrl.port || (proto === 'https:' ? '443' : '80');
     const path  = parsedUrl.pathname;
-    urlInfo.innerHTML = '<b>Protocolo:</b> ' + proto + '<br><b>Host:</b> ' + host + '<br><b>Puerto:</b> ' + port + '<br><b>Ruta:</b> ' + path;
-    diagLog('URL válida → proto=' + proto + ' host=' + host + ' port=' + port + ' path=' + path);
-    diagStep('url', '✅', 'URL válida', proto + '//' + host + ':' + port + path, 'var(--green)');
+    urlInfo.innerHTML = '<b>Protocolo:</b> ' + proto + '<br><b>Host:</b> ' + host + '<br><b>Puerto:</b> ' + port;
+    diagLog('Servidor disponible — protocolo=' + proto + ' host=' + host);
+    diagStep('url', '✅', 'Servidor configurado', host, 'var(--green)');
   } catch (e) {
-    diagLog('URL inválida: ' + e.message);
-    urlInfo.textContent = 'URL inválida: ' + url;
-    diagStep('url', '❌', 'URL inválida', e.message, 'var(--red)');
+    diagLog('Error de configuración de servidor: ' + e.message);
+    urlInfo.textContent = 'Error de configuración. Contacta al administrador.';
+    diagStep('url', '❌', 'Servidor no configurado', e.message, 'var(--red)');
     ['proto','host','net','cors','json'].forEach(function(id) { diagStep(id, '⏭️', 'Omitido', '', '#888'); });
     issues.push('bad_url');
     _finishDiag(issues);
@@ -671,7 +685,7 @@ async function runAllDiagnostics() {
   }
 
   // PASO 5: Fetch real
-  diagLog('Ejecutando fetch GET ' + url + ' (timeout 8s)...');
+  diagLog('Ejecutando fetch al servidor principal (timeout 8s)...');
   let fetchOk = false;
   let fetchText = '';
 
