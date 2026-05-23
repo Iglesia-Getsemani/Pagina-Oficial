@@ -7,13 +7,13 @@
 const IGLESIA_PRINCIPAL = {
   id: 'getsemani',
   name: 'Iglesia Getsemaní',
-  server: 'https://eatable-preseason-encode.ngrok-free.dev/api/miembros'
+  server: 'https://viewable-retying-mower.ngrok-free.dev/api/miembros'
 };
 
 // Endpoint que devuelve el catálogo: [{id, name, server}]
 // El campo "server" contiene la URL real de cada iglesia — se guarda en caché local
 // pero NUNCA se muestra al usuario en el UI.
-const _API_IGLESIAS = 'https://eatable-preseason-encode.ngrok-free.dev/api/iglesias';
+const _API_IGLESIAS = 'https://viewable-retying-mower.ngrok-free.dev/api/iglesias';
 
 /**
  * Devuelve la iglesia actualmente seleccionada: { id, name, server }.
