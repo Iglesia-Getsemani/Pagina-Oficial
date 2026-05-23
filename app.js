@@ -7,13 +7,13 @@
 const IGLESIA_PRINCIPAL = {
   id: 'getsemani',
   name: 'Iglesia Getsemaní',
-  server: 'https://viewable-retying-mower.ngrok-free.dev/api/miembros'
+  server: 'https://eatable-preseason-encode.ngrok-free.dev/api/miembros'
 };
 
 // Endpoint que devuelve el catálogo: [{id, name, server}]
 // El campo "server" contiene la URL real de cada iglesia — se guarda en caché local
 // pero NUNCA se muestra al usuario en el UI.
-const _API_IGLESIAS = 'https://viewable-retying-mower.ngrok-free.dev/api/iglesias';
+const _API_IGLESIAS = 'https://eatable-preseason-encode.ngrok-free.dev/api/iglesias';
 
 /**
  * Devuelve la iglesia actualmente seleccionada: { id, name, server }.
@@ -181,7 +181,7 @@ function _showPasswordModal(onSuccess) {
             <input type="password" id="authPassInput" placeholder="Contraseña de administrador"
                    autocomplete="off" style="padding-right:44px;"
                    onkeydown="if(event.key==='Enter') _authPassSubmit()">
-            <button onclick="_authToggleEye()" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:16px;" id="authEye">👁</button>
+            <button onclick="_authToggleEye()" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:[...]
           </div>
         </div>
         <div id="authError" style="font-size:12px; color:var(--red); margin-bottom:10px; display:none;">Contraseña incorrecta.</div>
