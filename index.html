@@ -1,1053 +1,799 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <meta name="mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <title>Ministerios Adventistas</title>
-  <link rel="stylesheet" href="style.css">
-  <style>
-    /* ===== TAB SYSTEM ===== */
-    .tab-content { display: none; }
-    .tab-content.active { display: block; }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>Sistema de Estudio</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', system-ui, sans-serif; background: #f0f2f5; min-height: 100vh; color: #1a1a2e; }
 
-    /* ===== DAILY CARD ===== */
-    .daily-hero {
-      background: linear-gradient(135deg, rgba(201,168,76,0.12) 0%, rgba(22,27,34,0) 60%);
-      border: 1px solid rgba(201,168,76,0.3);
-      border-radius: var(--radius);
-      padding: 20px 18px 16px;
-      margin-bottom: 16px;
-      position: relative;
-      overflow: hidden;
-    }
-    .daily-hero::before {
-      content: '✝';
-      position: absolute;
-      right: 16px; top: 12px;
-      font-size: 64px;
-      color: rgba(201,168,76,0.06);
-      font-family: 'Cinzel', serif;
-      line-height: 1;
-      pointer-events: none;
-    }
-    .daily-date {
-      font-size: 10px; font-weight: 700;
-      color: var(--gold); letter-spacing: .12em;
-      text-transform: uppercase;
-      margin-bottom: 6px;
-    }
-    .daily-verse-ref {
-      font-family: 'Cinzel', serif;
-      font-size: 16px; font-weight: 700;
-      color: var(--text);
-      margin-bottom: 8px;
-    }
-    .daily-verse-text {
-      font-size: 13px; color: var(--text-muted);
-      font-style: italic; line-height: 1.7;
-    }
-    .daily-verse-text strong { color: var(--gold-light); font-style: normal; }
+  header { background: #1a1a2e; color: #fff; padding: 1rem 2rem; display: flex; align-items: center; gap: 1rem; box-shadow: 0 2px 8px rgba(0,0,0,0.2); }
+  header h1 { font-size: 1.3rem; font-weight: 600; letter-spacing: 0.5px; flex: 1; }
+  header span.logo { font-size: 1.5rem; }
 
-    /* Daily content cards */
-    .daily-section-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      margin-bottom: 12px;
-      overflow: hidden;
-      cursor: pointer;
-      transition: var(--transition);
-    }
-    .daily-section-card:active { background: var(--surface2); transform: scale(0.99); }
-    .daily-section-header {
-      display: flex; align-items: center; gap: 12px;
-      padding: 14px 16px;
-    }
-    .daily-section-icon {
-      width: 42px; height: 42px;
-      border-radius: 10px;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 22px; flex-shrink: 0;
-    }
-    .daily-section-icon.bible  { background: rgba(201,168,76,0.15); }
-    .daily-section-icon.ss     { background: rgba(82,183,136,0.15); }
-    .daily-section-icon.devo   { background: rgba(74,144,217,0.15); }
-    .daily-section-icon.hymn   { background: rgba(180,100,220,0.15); }
-    .daily-section-icon.news   { background: rgba(224,82,82,0.12); }
-    .daily-section-meta { flex: 1; min-width: 0; }
-    .daily-section-label {
-      font-size: 10px; font-weight: 700;
-      letter-spacing: .08em; text-transform: uppercase;
-      color: var(--text-dim); margin-bottom: 2px;
-    }
-    .daily-section-title {
-      font-size: 14px; font-weight: 700; color: var(--text);
-      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-    }
-    .daily-section-sub {
-      font-size: 11px; color: var(--text-muted); margin-top: 2px;
-    }
-    .daily-section-arrow { color: var(--text-dim); font-size: 18px; flex-shrink: 0; }
+  .container { max-width: 1100px; margin: 0 auto; padding: 2rem 1.5rem; }
 
-    /* Expandable body */
-    .daily-section-body {
-      display: none;
-      padding: 0 16px 16px;
-      font-size: 13px; color: var(--text-muted);
-      line-height: 1.75;
-      border-top: 1px solid var(--border);
-    }
-    .daily-section-card.open .daily-section-body { display: block; }
-    .daily-section-card.open .daily-section-header { padding-bottom: 12px; }
-    .daily-section-card.open .daily-section-arrow { transform: rotate(90deg); }
+  .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; gap: 0.75rem; flex-wrap: wrap; }
+  .top-bar h2 { font-size: 1.1rem; font-weight: 600; color: #1a1a2e; }
+  .top-bar-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; }
 
-    /* Loading state */
-    .content-loading {
-      display: flex; align-items: center; gap: 10px;
-      padding: 8px 0;
-      color: var(--text-dim); font-size: 12px;
-    }
-    .spinner {
-      width: 16px; height: 16px;
-      border: 2px solid var(--border);
-      border-top-color: var(--gold);
-      border-radius: 50%;
-      animation: spin 0.8s linear infinite;
-      flex-shrink: 0;
-    }
-    @keyframes spin { to { transform: rotate(360deg); } }
+  .btn { display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.5rem 1.1rem; border-radius: 8px; border: none; cursor: pointer; font-size: 0.875rem; font-weight: 500; transition: all 0.15s; }
+  .btn-primary { background: #4f46e5; color: #fff; }
+  .btn-primary:hover { background: #4338ca; }
+  .btn-ghost { background: transparent; border: 1.5px solid #d1d5db; color: #374151; }
+  .btn-ghost:hover { background: #f3f4f6; }
+  .btn-success { background: #059669; color: #fff; }
+  .btn-success:hover { background: #047857; }
+  .btn-sm { padding: 0.35rem 0.75rem; font-size: 0.8rem; }
 
-    /* ===== FAVORITES (old home) ===== */
-    .user-greeting {
-      display: flex; align-items: center; gap: 12px;
-      background: var(--surface); border: 1px solid var(--border);
-      border-radius: var(--radius); padding: 12px 14px; margin-bottom: 16px;
-    }
-    .user-greeting-avatar {
-      width: 44px; height: 44px; border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
-      font-family: 'Cinzel', serif; font-size: 16px; font-weight: 700; flex-shrink: 0;
-    }
-    .user-greeting-avatar.director { background: var(--gold-dim); border: 2px solid var(--gold); color: var(--gold); }
-    .user-greeting-avatar.asistente { background: var(--blue-dim); border: 2px solid var(--blue); color: var(--blue); }
-    .user-greeting-info { flex: 1; min-width: 0; }
-    .user-greeting-name { font-weight: 700; font-size: 14px; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .user-greeting-role { font-size: 11px; color: var(--text-muted); margin-top: 1px; }
-    .btn-cerrar-sesion {
-      background: none; border: 1px solid var(--border); border-radius: 6px;
-      color: var(--text-muted); font-size: 11px; padding: 4px 8px; cursor: pointer;
-      white-space: nowrap; font-family: 'Nunito', sans-serif;
-    }
-    .btn-cerrar-sesion:active { color: var(--red); border-color: var(--red); }
-    .role-section-label { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; margin-top: 4px; }
-    .role-section-label .badge-pill { font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 20px; letter-spacing: .04em; }
-    .badge-pill.director { background: var(--gold-dim); color: var(--gold); border: 1px solid var(--gold); }
-    .badge-pill.asistente { background: var(--blue-dim); color: var(--blue); border: 1px solid var(--blue); }
-    .ministry-tile.locked { opacity: 0.55; cursor: default; }
-    .ministry-tile .tile-role-tag { font-size: 9px; margin-top: 2px; font-weight: 700; letter-spacing: .04em; }
-    .ministry-tile .tile-role-tag.dir { color: var(--gold); }
-    .ministry-tile .tile-role-tag.asi { color: var(--blue); }
-    .login-banner {
-      background: var(--surface2); border: 1px solid var(--gold);
-      border-radius: var(--radius); padding: 14px 16px; margin-bottom: 16px;
-      display: flex; align-items: center; gap: 12px; cursor: pointer;
-    }
-    .login-banner-icon { font-size: 28px; flex-shrink: 0; }
-    .login-banner-text { flex: 1; }
-    .login-banner-title { font-weight: 700; color: var(--gold); font-size: 14px; }
-    .login-banner-sub { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+  .subjects-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.25rem; }
 
-    /* ===== BOTTOM NAV 6-items ===== */
-    .bottom-nav a { font-size: 9px; padding: 8px 2px 7px; }
-    .bottom-nav a .nav-icon { font-size: 19px; }
+  .subject-card { background: #fff; border-radius: 14px; box-shadow: 0 1px 4px rgba(0,0,0,0.07); overflow: hidden; cursor: pointer; transition: box-shadow 0.15s, transform 0.15s; }
+  .subject-card:hover { box-shadow: 0 4px 18px rgba(0,0,0,0.12); transform: translateY(-2px); }
+  .subject-body { padding: 1.35rem 1.25rem; display: flex; align-items: center; gap: 1rem; }
+  .subject-icon { width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.35rem; flex-shrink: 0; }
+  .subject-name { font-weight: 600; font-size: 1.05rem; }
+  .subject-meta { font-size: 0.78rem; color: #6b7280; margin-top: 3px; }
+  .subject-arrow { margin-left: auto; color: #9ca3af; font-size: 1.1rem; }
+  .subject-card-footer { padding: 0.6rem 1.25rem; border-top: 1px solid #f3f4f6; display: flex; justify-content: flex-end; gap: 0.4rem; }
 
-    /* ===== INICIO SUB-TABS (TikTok style) ===== */
-    .inicio-subtabs {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      gap: 28px;
-      padding: 6px 0 14px;
-      position: sticky;
-      top: 0;
-      z-index: 10;
-      background: var(--bg);
-      margin: 0 -16px;
-      padding-left: 16px;
-      padding-right: 16px;
-    }
-    .inicio-subtab-btn {
-      background: none;
-      border: none;
-      font-family: 'Nunito', sans-serif;
-      font-size: 15px;
-      font-weight: 700;
-      color: var(--text-dim);
-      cursor: pointer;
-      padding: 4px 0;
-      position: relative;
-      transition: color 0.2s;
-      letter-spacing: 0.01em;
-    }
-    .inicio-subtab-btn.active {
-      color: var(--text);
-    }
-    .inicio-subtab-btn::after {
-      content: '';
-      position: absolute;
-      bottom: -4px;
-      left: 50%;
-      transform: translateX(-50%) scaleX(0);
-      width: 24px;
-      height: 2.5px;
-      background: var(--gold);
-      border-radius: 2px;
-      transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
-    }
-    .inicio-subtab-btn.active::after {
-      transform: translateX(-50%) scaleX(1);
-    }
-    .inicio-subpanel { display: none; }
-    .inicio-subpanel.active { display: block; }
+  .empty-state { text-align: center; padding: 3rem 1rem; color: #9ca3af; }
+  .empty-state .icon { font-size: 2.5rem; margin-bottom: 0.75rem; }
+  .empty-state p { font-size: 0.95rem; }
 
-    /* ===== IGLESIA TAB ===== */
-    .iglesia-empty {
-      text-align: center;
-      padding: 40px 20px;
-      color: var(--text-dim);
-    }
-    .iglesia-empty-icon { font-size: 48px; margin-bottom: 12px; }
-    .iglesia-empty-title { font-size: 15px; font-weight: 700; color: var(--text-muted); margin-bottom: 6px; }
-    .iglesia-empty-sub { font-size: 12px; line-height: 1.6; }
+  /* Modal */
+  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 100; align-items: center; justify-content: center; padding: 1rem; }
+  .modal-overlay.open { display: flex; }
+  .modal { background: #fff; border-radius: 14px; padding: 1.75rem; width: 100%; max-width: 420px; box-shadow: 0 8px 32px rgba(0,0,0,0.15); }
+  .modal h3 { font-size: 1.05rem; font-weight: 600; margin-bottom: 1.25rem; }
+  .modal label { display: block; font-size: 0.85rem; color: #374151; margin-bottom: 0.35rem; font-weight: 500; }
+  .modal input { width: 100%; padding: 0.55rem 0.75rem; border: 1.5px solid #d1d5db; border-radius: 8px; font-size: 0.9rem; outline: none; transition: border 0.15s; }
+  .modal input:focus { border-color: #4f46e5; }
+  .modal .form-group { margin-bottom: 1rem; }
+  .modal .emojis { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.35rem; }
+  .modal .emojis span { cursor: pointer; font-size: 1.3rem; padding: 0.2rem 0.3rem; border-radius: 6px; border: 2px solid transparent; transition: border 0.1s; }
+  .modal .emojis span.selected { border-color: #4f46e5; background: #e0e7ff; }
+  .modal-footer { display: flex; justify-content: flex-end; gap: 0.6rem; margin-top: 1.25rem; }
+  .colors-row { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.35rem; }
+  .color-dot { width: 26px; height: 26px; border-radius: 50%; cursor: pointer; border: 3px solid transparent; transition: border 0.1s; }
+  .color-dot.selected { border-color: #1a1a2e; }
 
-    .flyer-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      margin-bottom: 14px;
-      overflow: hidden;
-      cursor: pointer;
-      transition: var(--transition);
-    }
-    .flyer-card:active { transform: scale(0.99); background: var(--surface2); }
-    .flyer-img-wrap {
-      width: 100%;
-      aspect-ratio: 16/9;
-      background: linear-gradient(135deg, var(--surface2) 0%, var(--surface) 100%);
-      display: flex; align-items: center; justify-content: center;
-      font-size: 56px;
-      position: relative;
-      overflow: hidden;
-    }
-    .flyer-img-wrap img {
-      width: 100%; height: 100%; object-fit: cover;
-      position: absolute; top: 0; left: 0;
-    }
-    .flyer-ministry-badge {
-      position: absolute;
-      top: 10px; left: 10px;
-      background: rgba(0,0,0,0.65);
-      color: #fff;
-      font-size: 10px; font-weight: 700;
-      padding: 3px 8px; border-radius: 20px;
-      letter-spacing: .04em;
-      backdrop-filter: blur(4px);
-    }
-    .flyer-body {
-      padding: 12px 14px 14px;
-    }
-    .flyer-meta {
-      display: flex; align-items: center; gap: 8px;
-      margin-bottom: 6px;
-    }
-    .flyer-ministry-icon {
-      width: 28px; height: 28px; border-radius: 8px;
-      background: rgba(201,168,76,0.15);
-      display: flex; align-items: center; justify-content: center;
-      font-size: 16px; flex-shrink: 0;
-    }
-    .flyer-ministry-name {
-      font-size: 11px; font-weight: 700; color: var(--gold);
-      text-transform: uppercase; letter-spacing: .06em;
-    }
-    .flyer-date {
-      margin-left: auto;
-      font-size: 10px; color: var(--text-dim);
-    }
-    .flyer-title {
-      font-size: 15px; font-weight: 800; color: var(--text);
-      margin-bottom: 4px; line-height: 1.3;
-    }
-    .flyer-desc {
-      font-size: 12px; color: var(--text-muted); line-height: 1.6;
-    }
-    .flyer-tag {
-      display: inline-block;
-      margin-top: 8px;
-      background: var(--gold-dim);
-      color: var(--gold);
-      font-size: 10px; font-weight: 700;
-      padding: 2px 8px; border-radius: 20px;
-      border: 1px solid rgba(201,168,76,0.3);
-    }
-    .iglesia-section-header {
-      display: flex; align-items: center; justify-content: space-between;
-      margin-bottom: 12px; margin-top: 4px;
-    }
-    .iglesia-section-title {
-      font-size: 11px; font-weight: 700;
-      color: var(--text-dim); letter-spacing: .1em; text-transform: uppercase;
-    }
-  </style>
+  /* Import modal */
+  .import-drop { border: 2px dashed #d1d5db; border-radius: 10px; padding: 1.75rem 1rem; text-align: center; transition: all 0.2s; cursor: pointer; }
+  .import-drop:hover, .import-drop.dragover { border-color: #4f46e5; background: #f5f3ff; }
+  .import-drop .dz-icon { font-size: 2rem; margin-bottom: 0.5rem; }
+  .import-drop .dz-text { font-size: 0.9rem; color: #374151; font-weight: 500; }
+  .import-drop .dz-sub { font-size: 0.78rem; color: #9ca3af; margin-top: 0.3rem; }
+  .import-status { margin-top: 0.75rem; font-size: 0.82rem; min-height: 1.2rem; }
+
+  .toast { position: fixed; bottom: 1.5rem; right: 1.5rem; background: #1a1a2e; color: #fff; padding: 0.75rem 1.25rem; border-radius: 10px; font-size: 0.875rem; opacity: 0; transform: translateY(10px); transition: all 0.25s; pointer-events: none; z-index: 200; max-width: 300px; }
+  .toast.show { opacity: 1; transform: translateY(0); }
+
+  /* ── Sistema de clave (función de pago) ── */
+  .unlock-bar { background:#fff; border:1.5px solid #e5e7eb; border-radius:12px; padding:1rem 1.25rem; }
+  .unlock-bar.unlocked { background:#f0fdf4; border-color:#86efac; }
+  .unlock-bar-title { font-size:0.8rem; font-weight:600; color:#374151; margin-bottom:0.6rem; display:flex; align-items:center; gap:0.4rem; }
+  .unlock-bar.unlocked .unlock-bar-title { color:#166534; }
+  .unlock-row { display:flex; gap:0.5rem; align-items:center; }
+  .unlock-input { flex:1; padding:0.45rem 0.65rem; border:1.5px solid #d1d5db; border-radius:8px; font-size:0.82rem; font-family:'Courier New',monospace; outline:none; transition:border 0.15s; letter-spacing:0.08em; text-transform:uppercase; }
+  .unlock-input:focus { border-color:#4f46e5; }
+  .unlock-input.ok  { border-color:#22c55e; background:#f0fdf4; }
+  .unlock-input.err { border-color:#ef4444; background:#fef2f2; }
+  .unlock-btn { padding:0.45rem 0.9rem; border-radius:8px; border:none; background:#4f46e5; color:#fff; font-size:0.8rem; font-weight:600; cursor:pointer; white-space:nowrap; }
+  .unlock-btn:hover { background:#4338ca; }
+  .unlock-fb { font-size:0.72rem; margin-top:0.3rem; min-height:1rem; }
+  .unlock-fb.ok  { color:#166534; }
+  .unlock-fb.err { color:#dc2626; }
+  .time-hint { font-size:0.72rem; color:#6b7280; margin-bottom:0.5rem; line-height:1.4; }
+  .time-hint span { font-weight:600; color:#4f46e5; }
+  .devcode-row { display:flex; gap:0.5rem; align-items:center; margin-bottom:0.6rem; }
+  .devcode-box { flex:1; background:#f1f5f9; border:1.5px solid #cbd5e1; border-radius:8px; padding:0.4rem 0.65rem; font-family:'Courier New',monospace; font-size:0.63rem; color:#1e293b; word-break:break-all; line-height:1.5; }
+  .copy-devcode-btn { font-size:0.72rem; padding:0.25rem 0.6rem; border-radius:6px; border:1px solid #cbd5e1; background:#fff; color:#475569; cursor:pointer; white-space:nowrap; }
+  .copy-devcode-btn:hover { background:#f1f5f9; }
+</style>
+  <script src="_nav.js"></script>
+  <script src="cordova.js" onerror="void 0"></script>
+  <script src="_share.js" onerror="void 0"></script>
 </head>
 <body>
 
-<!-- HEADER -->
-<header class="app-header">
-  <h1 id="churchName">✝ Ministerios</h1>
-  <div class="header-actions">
-    <button class="back-btn" onclick="navigate('setup.html')" title="Configuración">⚙️</button>
-  </div>
+<header>
+  <span class="logo">📚</span>
+  <h1>Sistema de Estudio</h1>
 </header>
 
-<!-- TOAST -->
-<div id="toast" class="toast"></div>
-
-<!-- PAGE -->
-<main class="page" id="mainPage">
-
-  <!-- SPLASH (first launch) -->
-  <div id="splashSetup" class="splash" style="display:none; min-height: calc(100vh - 56px);">
-    <div class="logo-cross">✝</div>
-    <h1>Ministerios</h1>
-    <p>Gestiona los ministerios de tu iglesia adventista de forma sencilla.</p>
-    <button class="btn btn-primary" onclick="navigate('setup.html')">✨ Comenzar configuración</button>
+<div class="container">
+  <div class="top-bar">
+    <h2>Mis Asignaturas</h2>
+    <div class="top-bar-actions">
+      <button class="btn btn-ghost btn-sm" onclick="openImport()">📥 Importar</button>
+      <button class="btn btn-primary" onclick="openNewSubject()">+ Nueva Asignatura</button>
+    </div>
   </div>
 
-  <!-- TABS CONTAINER -->
-  <div id="tabsContainer" style="display:none;">
+  <div class="subjects-grid" id="subjectsGrid"></div>
+  <div class="empty-state" id="emptyState" style="display:none;">
+    <div class="icon">🎓</div>
+    <p>No tienes asignaturas todavía.<br>Crea una para comenzar.</p>
+  </div>
+</div>
 
-    <!-- ============================
-         TAB: INICIO (devocional diario)
-         ============================ -->
-    <div id="tab-inicio" class="tab-content active">
+<!-- Modal Nueva/Editar Asignatura -->
+<div class="modal-overlay" id="modalSubject">
+  <div class="modal">
+    <h3 id="modalSubjectTitle">Nueva Asignatura</h3>
+    <div class="form-group">
+      <label>Nombre</label>
+      <input type="text" id="inputSubjectName" placeholder="Ej: Cálculo Diferencial">
+    </div>
+    <div class="form-group">
+      <label>Ícono</label>
+      <div class="emojis" id="emojiPicker"></div>
+    </div>
+    <div class="form-group">
+      <label>Color</label>
+      <div class="colors-row" id="colorPicker"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modalSubject')">Cancelar</button>
+      <button class="btn btn-primary" onclick="saveSubject()">Guardar</button>
+    </div>
+  </div>
+</div>
 
-      <!-- SUB-TABS TIKTOK STYLE -->
-      <div class="inicio-subtabs">
-        <button class="inicio-subtab-btn active" id="subtab-btn-paraHoy" onclick="switchSubTab('paraHoy')">Para Hoy</button>
-        <button class="inicio-subtab-btn" id="subtab-btn-iglesia" onclick="switchSubTab('iglesia')">Iglesia</button>
-      </div>
+<!-- Modal Importar -->
+<div class="modal-overlay" id="modalImport">
+  <div class="modal">
+    <h3>📥 Importar datos</h3>
+    <div class="import-drop" id="importDrop" onclick="document.getElementById('importFileInput').click()"
+         ondragover="event.preventDefault();this.classList.add('dragover')"
+         ondragleave="this.classList.remove('dragover')"
+         ondrop="onImportDrop(event)">
+      <div class="dz-icon">📂</div>
+      <div class="dz-text">Selecciona o arrastra un archivo .json</div>
+      <div class="dz-sub">Exportado desde el Sistema de Estudio</div>
+      <input type="file" id="importFileInput" accept=".json" style="display:none" onchange="onImportFile(this)">
+    </div>
+    <div class="import-status" id="importStatus"></div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modalImport')">Cancelar</button>
+      <button class="btn btn-success" id="btnDoImport" onclick="doImport()" style="display:none">✅ Importar</button>
+    </div>
+  </div>
+</div>
 
-      <!-- ═══ PANEL: PARA HOY ═══ -->
-      <div id="subpanel-paraHoy" class="inicio-subpanel active">
+<!-- Modal: elegir asignatura destino para una CLASE importada -->
+<div class="modal-overlay" id="modalClassTarget">
+  <div class="modal">
+    <h3>📦 ¿A qué asignatura agregar esta clase?</h3>
+    <div id="classTargetIncomingInfo" style="font-size:0.85rem; color:#374151; margin-bottom:0.75rem;"></div>
+    <div id="classTargetList" style="display:flex; flex-direction:column; gap:0.5rem; max-height:300px; overflow:auto;"></div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modalClassTarget')">Cancelar</button>
+    </div>
+  </div>
+</div>
 
-      <!-- Hero: versículo del día -->
-      <div class="daily-hero">
-        <div class="daily-date" id="dailyDate">Cargando...</div>
-        <div class="daily-verse-ref" id="dailyVerseRef">📖</div>
-        <div class="daily-verse-text" id="dailyVerseText">
-          <div class="content-loading"><div class="spinner"></div> Obteniendo versículo del día…</div>
+<!-- Modal de clave — función de pago para Exportar -->
+<div class="modal-overlay" id="modalUnlockExport">
+  <div class="modal" style="max-width:420px;">
+    <h3>🔒 Función de pago</h3>
+    <p id="unlockReasonText" style="font-size:0.82rem; color:#6b7280; margin:-0.75rem 0 1rem;">Exportar asignaturas o clases requiere una clave de activación.</p>
+    <div class="unlock-bar" id="unlockBar">
+      <div class="unlock-bar-title" id="unlockBarTitle">🔒 Función de pago</div>
+      <div id="modeApp" style="display:none;">
+        <div class="time-hint">Copia tu código y envíalo al administrador para recibir tu clave.</div>
+        <div class="devcode-row">
+          <div class="devcode-box" id="devCodeDisplay">Calculando…</div>
+          <button class="copy-devcode-btn" onclick="copyDevCode()">📋 Copiar</button>
         </div>
       </div>
-
-      <!-- Capítulo de la Biblia -->
-      <div class="daily-section-card" id="card-bible" onclick="toggleDailyCard('card-bible')">
-        <div class="daily-section-header">
-          <div class="daily-section-icon bible">📖</div>
-          <div class="daily-section-meta">
-            <div class="daily-section-label">Capítulo del día</div>
-            <div class="daily-section-title" id="bible-title">Cargando...</div>
-            <div class="daily-section-sub" id="bible-sub">Biblia Reina Valera</div>
-          </div>
-          <div class="daily-section-arrow">›</div>
-        </div>
-        <div class="daily-section-body" id="bible-body">
-          <div class="content-loading"><div class="spinner"></div> Cargando capítulo…</div>
-        </div>
+      <div id="modeBrowser" style="display:none;">
+        <div class="time-hint" id="timeHint">El administrador te indicará el momento exacto.<br>Tendrás <span>5 minutos</span> para ingresar la clave.</div>
       </div>
-
-      <!-- Lección Escuela Sabática -->
-      <div class="daily-section-card" id="card-ss" onclick="toggleDailyCard('card-ss')">
-        <div class="daily-section-header">
-          <div class="daily-section-icon ss">📚</div>
-          <div class="daily-section-meta">
-            <div class="daily-section-label">Escuela Sabática</div>
-            <div class="daily-section-title" id="ss-title">Lección de hoy</div>
-            <div class="daily-section-sub" id="ss-sub">Cargando trimestre...</div>
-          </div>
-          <div class="daily-section-arrow">›</div>
+      <div id="unlockInputArea">
+        <div class="unlock-row">
+          <input class="unlock-input" id="unlockKeyInput" placeholder="XXXX-XXXX" oninput="onUnlockInput()">
+          <button class="unlock-btn" onclick="tryUnlock()">🔓 Activar</button>
         </div>
-        <div class="daily-section-body" id="ss-body">
-          <div class="content-loading"><div class="spinner"></div> Cargando lección…</div>
-        </div>
+        <div class="unlock-fb" id="unlockFb"></div>
       </div>
-
-      <!-- Devocional -->
-      <div class="daily-section-card" id="card-devo" onclick="toggleDailyCard('card-devo')">
-        <div class="daily-section-header">
-          <div class="daily-section-icon devo">🙏</div>
-          <div class="daily-section-meta">
-            <div class="daily-section-label">Devocional</div>
-            <div class="daily-section-title" id="devo-title">Meditación del día</div>
-            <div class="daily-section-sub">El Conflicto de los Siglos · E.G. White</div>
-          </div>
-          <div class="daily-section-arrow">›</div>
-        </div>
-        <div class="daily-section-body" id="devo-body">
-          <div class="content-loading"><div class="spinner"></div> Cargando devocional…</div>
-        </div>
+      <div id="unlockActive" style="display:none; align-items:center; gap:0.4rem; font-size:0.82rem; color:#166534;">
+        ✅ Funciones activas <span id="unlockActiveDetail"></span>
       </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modalUnlockExport')">Cancelar</button>
+    </div>
+  </div>
+</div>
 
-      <!-- Himno del día -->
-      <div class="daily-section-card" id="card-hymn" onclick="toggleDailyCard('card-hymn')">
-        <div class="daily-section-header">
-          <div class="daily-section-icon hymn">🎵</div>
-          <div class="daily-section-meta">
-            <div class="daily-section-label">Himno del día</div>
-            <div class="daily-section-title" id="hymn-title">Cargando...</div>
-            <div class="daily-section-sub">Himnario Adventista</div>
-          </div>
-          <div class="daily-section-arrow">›</div>
-        </div>
-        <div class="daily-section-body" id="hymn-body">
-          <div class="content-loading"><div class="spinner"></div> Cargando himno…</div>
-        </div>
-      </div>
+<div class="toast" id="toast"></div>
 
-      <!-- Noticias adventistas -->
-      <div class="daily-section-card" id="card-news" onclick="toggleDailyCard('card-news')">
-        <div class="daily-section-header">
-          <div class="daily-section-icon news">📰</div>
-          <div class="daily-section-meta">
-            <div class="daily-section-label">Noticias Adventistas</div>
-            <div class="daily-section-title" id="news-title">Noticias de hoy</div>
-            <div class="daily-section-sub">adventist.news · ANN</div>
-          </div>
-          <div class="daily-section-arrow">›</div>
-        </div>
-        <div class="daily-section-body" id="news-body">
-          <div class="content-loading"><div class="spinner"></div> Cargando noticias…</div>
-        </div>
-      </div>
-
-      </div><!-- /subpanel-paraHoy -->
-
-      <!-- ═══ PANEL: IGLESIA ═══ -->
-      <div id="subpanel-iglesia" class="inicio-subpanel">
-        <div id="iglesiaFeed"></div>
-      </div><!-- /subpanel-iglesia -->
-
-    </div><!-- /tab-inicio -->
-
-    <!-- ============================
-         TAB: FAVORITOS (contenido personalizado / antiguo inicio)
-         ============================ -->
-    <div id="tab-favoritos" class="tab-content">
-
-      <!-- User greeting / login prompt -->
-      <div id="userGreeting"></div>
-
-      <!-- Stats -->
-      <div class="stat-row" id="statsRow"></div>
-
-      <!-- Mis Ministerios -->
-      <div id="ministriesSection"></div>
-
-      <!-- Accesos rápidos -->
-      <div class="section-title">Acceso Rápido</div>
-      <div class="card clickable" onclick="navigate('members.html')">
-        <div style="display:flex; align-items:center; gap:14px;">
-          <div style="font-size:32px;">👥</div>
-          <div>
-            <div style="font-weight:700; color:var(--text);">Lista de Miembros</div>
-            <div style="font-size:12px; color:var(--text-muted);" id="memberCountLabel">Ver y gestionar miembros</div>
-          </div>
-          <div style="margin-left:auto; color:var(--text-dim);">›</div>
-        </div>
-      </div>
-
-      <div class="card clickable" onclick="syncFromServer()">
-        <div style="display:flex; align-items:center; gap:14px;">
-          <div style="font-size:32px;" id="syncIcon">🔄</div>
-          <div>
-            <div style="font-weight:700; color:var(--text);">Sincronizar Servidor</div>
-            <div style="font-size:12px; color:var(--text-muted);" id="syncLabel">Actualizar lista desde servidor</div>
-          </div>
-          <div style="margin-left:auto; color:var(--text-dim);">›</div>
-        </div>
-      </div>
-
-      <!-- Reuniones próximas -->
-      <div class="section-title">Reuniones Próximas</div>
-      <div id="upcomingMeetings"></div>
-
-    </div><!-- /tab-favoritos -->
-
-  </div><!-- /tabsContainer -->
-
-</main>
-
-<!-- BOTTOM NAV — 6 items -->
-<nav class="bottom-nav" id="bottomNav">
-  <a href="#" id="nav-inicio" class="active" onclick="switchTab('inicio', this)">
-    <span class="nav-icon">🏠</span>
-    <span>Inicio</span>
-  </a>
-  <a href="#" id="nav-favoritos" onclick="switchTab('favoritos', this)">
-    <span class="nav-icon">⭐</span>
-    <span>Favoritos</span>
-  </a>
-  <a href="members.html" id="nav-members">
-    <span class="nav-icon">👥</span>
-    <span>Miembros</span>
-  </a>
-  <a href="ministry.html" id="nav-ministry" onclick="event.preventDefault(); openActiveMinistry();">
-    <span class="nav-icon">📋</span>
-    <span>Ministerio</span>
-  </a>
-  <a href="setup.html" id="nav-ajustes">
-    <span class="nav-icon">⚙️</span>
-    <span>Ajustes</span>
-  </a>
-</nav>
-
-<script src="app.js"></script>
 <script>
-// ===== SPIN KEYFRAME =====
-const _ks = document.createElement('style');
-_ks.textContent = '@keyframes spin { to { transform: rotate(360deg); } }';
-document.head.appendChild(_ks);
+const EMOJIS = ['📘','📗','📙','📕','🔬','🧮','🎨','🖥️','📐','⚗️','🧬','🌍','📊','🎭','🏛️','🔭','⚖️','🎵','🏋️','💡'];
+const COLORS = ['#4f46e5','#0891b2','#059669','#d97706','#dc2626','#7c3aed','#db2777','#1a1a2e','#374151','#0f766e'];
 
-// ===== TAB SWITCHING =====
-let currentTab = 'inicio';
+let subjects = JSON.parse(localStorage.getItem('study_subjects') || '[]');
+let editingSubjectId = null;
+let selectedEmoji = EMOJIS[0];
+let selectedColor = COLORS[0];
+let importPayload = null;
 
-function switchTab(tabId, linkEl) {
-  // Hide all tabs
-  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-  // Remove active from all nav links
-  document.querySelectorAll('.bottom-nav a').forEach(a => a.classList.remove('active'));
+// ── Límites de la versión gratuita (creación + importación cuentan igual) ──
+const MAX_SUBJECTS = 3;
+const MAX_CLASSES_PER_SUBJECT = 3;
+const MAX_ITEMS_PER_TYPE = 2; // contenido / glosario / cuestionario, por clase
 
-  const tabEl = document.getElementById('tab-' + tabId);
-  if (tabEl) {
-    tabEl.classList.add('active');
-    currentTab = tabId;
-  }
-  if (linkEl) linkEl.classList.add('active');
-}
-
-// ===== INICIO SUB-TAB SWITCHING =====
-let currentSubTab = 'paraHoy';
-
-function switchSubTab(id) {
-  document.querySelectorAll('.inicio-subpanel').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.inicio-subtab-btn').forEach(b => b.classList.remove('active'));
-  const panel = document.getElementById('subpanel-' + id);
-  const btn = document.getElementById('subtab-btn-' + id);
-  if (panel) panel.classList.add('active');
-  if (btn) btn.classList.add('active');
-  currentSubTab = id;
-  if (id === 'iglesia') renderIglesiaFeed();
-}
-
-// ===== IGLESIA FEED =====
-function getIglesiaNovedades() {
-  return DB.get('iglesia_novedades', []);
-}
-
-function renderIglesiaFeed() {
-  const container = document.getElementById('iglesiaFeed');
-  const items = getIglesiaNovedades();
-  const ministries = DB.get('ministries', []);
-
-  if (items.length === 0) {
-    container.innerHTML = `
-      <div class="iglesia-empty">
-        <div class="iglesia-empty-icon">🏛️</div>
-        <div class="iglesia-empty-title">Nada por aquí aún</div>
-        <div class="iglesia-empty-sub">Los ministerios podrán publicar novedades,<br>anuncios y flyers aquí.</div>
-      </div>
-      <div style="padding: 0 4px;">
-        <div class="iglesia-section-header">
-          <div class="iglesia-section-title">Ministerios activos</div>
-        </div>
-        ${renderMinistryChips(ministries)}
-      </div>`;
-    return;
-  }
-
-  const sorted = [...items].sort((a, b) => (b.fecha || '').localeCompare(a.fecha || ''));
-  container.innerHTML = `
-    <div style="padding: 0 0 4px;">
-      <div class="iglesia-section-header">
-        <div class="iglesia-section-title">Novedades · ${items.length}</div>
-      </div>
-      ${sorted.map(item => renderFlyerCard(item, ministries)).join('')}
-    </div>`;
-}
-
-function renderMinistryChips(ministries) {
-  const defaults = [
-    { id: 'joven', name: 'Jóvenes', icon: '🔥' },
-    { id: 'musica', name: 'Música', icon: '🎵' },
-    { id: 'damas', name: 'Damas', icon: '👑' },
-    { id: 'misionero', name: 'Misionero', icon: '🌍' },
-    { id: 'ninos', name: 'Niños', icon: '🌈' },
-  ];
-  const list = ministries.length > 0 ? ministries : defaults;
-  return `<div style="display:flex; flex-wrap:wrap; gap:8px; padding-bottom:12px;">
-    ${list.slice(0,8).map(m => `
-      <div style="display:flex; align-items:center; gap:6px; background:var(--surface); border:1px solid var(--border); border-radius:20px; padding:6px 12px; cursor:pointer;"
-           onclick="openMinistry('${m.id}')">
-        <span style="font-size:15px;">${m.icon || '✝'}</span>
-        <span style="font-size:12px; font-weight:700; color:var(--text-muted);">${m.name}</span>
-      </div>`).join('')}
-  </div>`;
-}
-
-function renderFlyerCard(item, ministries) {
-  const min = ministries.find(m => m.id === item.ministryId) || { name: item.ministryName || 'Ministerio', icon: '✝' };
-  const fechaStr = item.fecha ? fmtDate(item.fecha) : '';
-  const imgHtml = item.imgUrl
-    ? `<img src="${item.imgUrl}" alt="${item.title}" loading="lazy" onerror="this.style.display='none'">`
-    : '';
-  const tagHtml = item.tag ? `<div class="flyer-tag">${item.tag}</div>` : '';
-
-  return `
-    <div class="flyer-card" onclick="flyerCardTap('${item.id}')">
-      <div class="flyer-img-wrap">
-        ${imgHtml || `<span style="font-size:52px; opacity:.35;">${min.icon}</span>`}
-        <div class="flyer-ministry-badge">${min.icon} ${min.name}</div>
-      </div>
-      <div class="flyer-body">
-        <div class="flyer-meta">
-          <div class="flyer-ministry-icon">${min.icon}</div>
-          <div class="flyer-ministry-name">${min.name}</div>
-          ${fechaStr ? `<div class="flyer-date">${fechaStr}</div>` : ''}
-        </div>
-        <div class="flyer-title">${item.title}</div>
-        ${item.desc ? `<div class="flyer-desc">${item.desc}</div>` : ''}
-        ${tagHtml}
-      </div>
-    </div>`;
-}
-
-function flyerCardTap(id) {
-  const items = getIglesiaNovedades();
-  const item = items.find(i => i.id === id);
-  if (item && item.ministryId) openMinistry(item.ministryId);
-}
-
-// ===== DAILY CARD TOGGLE =====
-function toggleDailyCard(cardId) {
-  const card = document.getElementById(cardId);
-  const isOpen = card.classList.contains('open');
-  // Close all first
-  document.querySelectorAll('.daily-section-card').forEach(c => c.classList.remove('open'));
-  if (!isOpen) {
-    card.classList.add('open');
-    // Lazy-load content on first open
-    loadDailyCardContent(cardId);
-  }
-}
-
-// ===== INIT =====
-document.addEventListener('DOMContentLoaded', init);
-
-function init() {
-  const ig = getIglesiaActual();
-  if (ig) {
-    document.getElementById('churchName').textContent = '✝ ' + ig.name;
-    document.title = ig.name;
-    DB.set('church_name', ig.name);
-  }
-
-  const churchName = ig ? ig.name : DB.get('church_name', '');
-  const serverUrl  = ig ? ig.server : DB.get('server_url', '');
-  if (!serverUrl && !churchName) {
-    document.getElementById('splashSetup').style.display = 'flex';
-    document.getElementById('tabsContainer').style.display = 'none';
-    return;
-  }
-
-  document.getElementById('splashSetup').style.display = 'none';
-  document.getElementById('tabsContainer').style.display = 'block';
-
-  // Load daily content for "Inicio"
-  loadDailyContent();
-
-  // Load favorites content
-  renderUserGreeting();
-  renderStats();
-  renderMinistriesSection();
-  renderUpcomingMeetings();
-}
-
-// ===== DAILY CONTENT =====
-// Map: day of year → reading plan
-function getDayOfYear() {
-  const now = new Date();
-  const start = new Date(now.getFullYear(), 0, 0);
-  return Math.floor((now - start) / 86400000);
-}
-
-// Curated daily Bible reading plan (simplified: book + chapter cycling)
-const BIBLE_PLAN = [
-  { ref: 'Génesis 1', chapter: 'Génesis', num: 1 },
-  { ref: 'Génesis 2', chapter: 'Génesis', num: 2 },
-  { ref: 'Génesis 3', chapter: 'Génesis', num: 3 },
-  { ref: 'Salmos 23', chapter: 'Salmos', num: 23 },
-  { ref: 'Salmos 91', chapter: 'Salmos', num: 91 },
-  { ref: 'Proverbios 3', chapter: 'Proverbios', num: 3 },
-  { ref: 'Juan 1', chapter: 'Juan', num: 1 },
-  { ref: 'Juan 3', chapter: 'Juan', num: 3 },
-  { ref: 'Romanos 8', chapter: 'Romanos', num: 8 },
-  { ref: 'Apocalipsis 1', chapter: 'Apocalipsis', num: 1 },
-];
-
-const DAILY_VERSES = [
-  { ref: 'Filipenses 4:13', text: '"<strong>Todo lo puedo en Cristo</strong> que me fortalece."' },
-  { ref: 'Jeremías 29:11', text: '"Porque yo sé los pensamientos que tengo acerca de vosotros, dice Jehová, <strong>pensamientos de paz y no de mal</strong>, para daros el fin que esperáis."' },
-  { ref: 'Salmos 23:1', text: '"<strong>Jehová es mi pastor</strong>; nada me faltará."' },
-  { ref: 'Juan 3:16', text: '"Porque de tal manera <strong>amó Dios al mundo</strong>, que ha dado a su Hijo unigénito..."' },
-  { ref: 'Isaías 40:31', text: '"Los que esperan en Jehová tendrán nuevas fuerzas; <strong>levantarán alas como las águilas</strong>."' },
-  { ref: 'Proverbios 3:5-6', text: '"<strong>Confía en Jehová con todo tu corazón</strong> y no te apoyes en tu propia prudencia."' },
-  { ref: 'Romanos 8:28', text: '"Y sabemos que a los que aman a Dios, <strong>todas las cosas les ayudan a bien</strong>."' },
-];
-
-const DAILY_DEVOTIONALS = [
-  { title: 'La gracia que transforma', body: 'Elena G. de White nos recuerda que la gracia de Dios no es simplemente el perdón de los pecados, sino el poder transformador que obra en nosotros cada día. "No podemos hacer nada para recomendarnos a Dios; pero Él nos invita a venir a Él tal como somos, pecaminosos, desvalidos y dependientes." La gracia nos alcanza en nuestra debilidad y nos levanta para vivir una vida que glorifique al Creador. Hoy, abre tu corazón a esa gracia renovadora.' },
-  { title: 'El poder de la oración matutina', body: 'Cada mañana presenta una nueva oportunidad de acercarnos al trono de la gracia. El profeta Daniel oraba tres veces al día sin importar las circunstancias que lo rodeaban. En el silencio del amanecer, Dios habla a quienes están dispuestos a escuchar. Dedica este momento a presentar tu día ante el Señor y recibirás la sabiduría y la fortaleza que necesitas.' },
-  { title: 'Confianza en medio de la tormenta', body: 'Cuando Jesús estaba en la barca con sus discípulos y la tempestad amenazaba con hundirlos, Él dormía en paz. ¿Cómo podía descansar en medio de tal caos? Porque conocía al Padre y sabía que ninguna tormenta puede superar su autoridad. Hoy, si enfrentas tormentas en tu vida, recuerda: el mismo Cristo que calmó el mar puede calmar las angustias de tu corazón.' },
-];
-
-const DAILY_HYMNS = [
-  { num: 1, title: 'Santo, Santo, Santo', verse: 'Santo, Santo, Santo, Señor omnipotente,\nsiempre el labio mío loores te dará;\nSanto, Santo, Santo, te adoro reverente,\nDios en tres personas, bendita Trinidad.' },
-  { num: 67, title: 'Sublime Gracia', verse: 'Sublime gracia del Señor\nque a un infeliz salvó;\nfui ciego mas hoy veo yo,\nperdido y Él me halló.' },
-  { num: 258, title: 'Castillo Fuerte', verse: 'Castillo fuerte es nuestro Dios,\ndefensa y buen escudo;\ncon su poder nos librará\nen todo trance agudo.' },
-  { num: 118, title: '¡Oh, qué amigo nos es Cristo!', verse: '¡Oh, qué amigo nos es Cristo!\nÉl llevó nuestro dolor,\ny nos manda que llevemos\ntodo a Dios en oración.' },
-];
-
-const SS_LESSONS = [
-  { quarter: '2° Trimestre 2025', lesson: 'Lección 8: El reino eterno', topic: 'El reino de Dios que no tiene fin — Daniel 7', memory: '"Su dominio es dominio eterno, que nunca pasará, y su reino uno que no será destruido." — Daniel 7:14' },
-  { quarter: '2° Trimestre 2025', lesson: 'Lección 9: La visión del carnero y el macho cabrío', topic: 'Profecías de Daniel para nuestro tiempo — Daniel 8', memory: '"Entiende, hijo de hombre, que la visión es para el tiempo del fin." — Daniel 8:17' },
-];
-
-const ADVENTIST_NEWS = [
-  { title: 'Congreso de la Asociación General 2025', body: 'La Iglesia Adventista del Séptimo Día se prepara para su Congreso de la Asociación General, donde líderes de todo el mundo se reunirán para definir el rumbo de la misión global. Miles de delegados participarán en decisiones que marcarán el trabajo evangelístico para el próximo quinquenio.' },
-  { title: 'Proyecto ADRA: Impacto en Comunidades Rurales', body: 'ADRA Internacional reporta resultados positivos en sus programas de desarrollo comunitario en Latinoamérica. Más de 50,000 familias han sido beneficiadas con programas de seguridad alimentaria, agua potable y educación durante el último año.' },
-];
-
-function loadDailyContent() {
-  const day = getDayOfYear();
-  const now = new Date();
-
-  // Format date
-  const dias = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
-  const meses = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
-  const fechaStr = `${dias[now.getDay()]}, ${now.getDate()} de ${meses[now.getMonth()]} de ${now.getFullYear()}`;
-  document.getElementById('dailyDate').textContent = fechaStr.toUpperCase();
-
-  // Daily verse
-  const verse = DAILY_VERSES[day % DAILY_VERSES.length];
-  document.getElementById('dailyVerseRef').textContent = '📖 ' + verse.ref;
-  document.getElementById('dailyVerseText').innerHTML = verse.text;
-
-  // Bible reading title
-  const plan = BIBLE_PLAN[day % BIBLE_PLAN.length];
-  document.getElementById('bible-title').textContent = plan.ref;
-  document.getElementById('bible-sub').textContent = 'Biblia Reina Valera 1960';
-
-  // SS
-  const ss = SS_LESSONS[day % SS_LESSONS.length];
-  document.getElementById('ss-title').textContent = ss.lesson;
-  document.getElementById('ss-sub').textContent = ss.quarter;
-
-  // Devo
-  const devo = DAILY_DEVOTIONALS[day % DAILY_DEVOTIONALS.length];
-  document.getElementById('devo-title').textContent = devo.title;
-
-  // Hymn
-  const hymn = DAILY_HYMNS[day % DAILY_HYMNS.length];
-  document.getElementById('hymn-title').textContent = `#${hymn.num} — ${hymn.title}`;
-
-  // News
-  const news = ADVENTIST_NEWS[day % ADVENTIST_NEWS.length];
-  document.getElementById('news-title').textContent = news.title;
-}
-
-function loadDailyCardContent(cardId) {
-  const day = getDayOfYear();
-  const plan = BIBLE_PLAN[day % BIBLE_PLAN.length];
-  const ss = SS_LESSONS[day % SS_LESSONS.length];
-  const devo = DAILY_DEVOTIONALS[day % DAILY_DEVOTIONALS.length];
-  const hymn = DAILY_HYMNS[day % DAILY_HYMNS.length];
-  const news = ADVENTIST_NEWS[day % ADVENTIST_NEWS.length];
-
-  if (cardId === 'card-bible') {
-    document.getElementById('bible-body').innerHTML = `
-      <p style="margin-bottom:10px; color:var(--gold); font-size:12px; font-weight:700; letter-spacing:.06em; text-transform:uppercase;">${plan.ref}</p>
-      <p>Abre tu Biblia en <strong style="color:var(--gold-light);">${plan.ref}</strong> y lee el capítulo completo para hoy.</p>
-      <p style="margin-top:10px;">💡 <em>Consejo:</em> Anota un versículo que te hable hoy y compártelo con alguien.</p>
-      <div style="margin-top:14px; padding-top:12px; border-top:1px solid var(--border); display:flex; gap:10px; flex-wrap:wrap;">
-        <a href="https://www.biblegateway.com/passage/?search=${encodeURIComponent(plan.ref)}&version=RVR1960" target="_blank"
-           style="display:inline-block; background:var(--gold-dim); color:var(--gold); border:1px solid var(--gold); border-radius:8px; padding:7px 14px; font-size:12px; font-weight:700; text-decoration:none;">
-          📖 Leer en BibleGateway
-        </a>
-      </div>`;
-  }
-
-  if (cardId === 'card-ss') {
-    document.getElementById('ss-body').innerHTML = `
-      <p style="margin-bottom:8px; color:var(--green); font-size:12px; font-weight:700; text-transform:uppercase;">${ss.quarter}</p>
-      <p style="font-weight:700; color:var(--text); margin-bottom:8px;">${ss.topic}</p>
-      <div style="background:var(--surface2); border-left:3px solid var(--green); padding:10px 12px; border-radius:0 8px 8px 0; margin-bottom:10px;">
-        <p style="font-size:11px; font-weight:700; color:var(--green); margin-bottom:4px;">TEXTO DE MEMORIA</p>
-        <p style="font-style:italic;">${ss.memory}</p>
-      </div>
-      <div style="margin-top:10px; display:flex; gap:10px; flex-wrap:wrap;">
-        <a href="https://www.ssnet.org" target="_blank"
-           style="display:inline-block; background:var(--green-dim); color:var(--green); border:1px solid var(--green); border-radius:8px; padding:7px 14px; font-size:12px; font-weight:700; text-decoration:none;">
-          📚 Lección completa
-        </a>
-      </div>`;
-  }
-
-  if (cardId === 'card-devo') {
-    document.getElementById('devo-body').innerHTML = `
-      <p style="font-weight:700; color:var(--blue); font-size:13px; margin-bottom:10px;">${devo.title}</p>
-      <p>${devo.body}</p>
-      <p style="margin-top:12px; font-size:11px; color:var(--text-dim);">— Basado en los escritos de Elena G. de White</p>`;
-  }
-
-  if (cardId === 'card-hymn') {
-    document.getElementById('hymn-body').innerHTML = `
-      <p style="font-size:12px; font-weight:700; color:rgba(180,100,220,0.9); text-transform:uppercase; margin-bottom:10px;">Himno #${hymn.num}</p>
-      <pre style="white-space:pre-wrap; font-family:'Nunito',sans-serif; font-size:14px; line-height:1.9; font-style:italic; color:var(--text-muted);">${hymn.verse}</pre>
-      <div style="margin-top:12px; display:flex; gap:10px; flex-wrap:wrap;">
-        <a href="https://www.youtube.com/results?search_query=${encodeURIComponent('himno adventista ' + hymn.title)}" target="_blank"
-           style="display:inline-block; background:rgba(180,100,220,0.12); color:rgba(200,130,255,1); border:1px solid rgba(180,100,220,0.4); border-radius:8px; padding:7px 14px; font-size:12px; font-weight:700; text-decoration:none;">
-          🎵 Escuchar en YouTube
-        </a>
-      </div>`;
-  }
-
-  if (cardId === 'card-news') {
-    document.getElementById('news-body').innerHTML = `
-      <p style="font-weight:700; color:var(--red); font-size:13px; margin-bottom:8px;">${news.title}</p>
-      <p>${news.body}</p>
-      <div style="margin-top:12px; display:flex; gap:10px; flex-wrap:wrap;">
-        <a href="https://adventist.news/es" target="_blank"
-           style="display:inline-block; background:rgba(224,82,82,0.1); color:var(--red); border:1px solid rgba(224,82,82,0.35); border-radius:8px; padding:7px 14px; font-size:12px; font-weight:700; text-decoration:none;">
-          📰 adventist.news
-        </a>
-        <a href="https://news.adventist.org/es" target="_blank"
-           style="display:inline-block; background:rgba(224,82,82,0.1); color:var(--red); border:1px solid rgba(224,82,82,0.35); border-radius:8px; padding:7px 14px; font-size:12px; font-weight:700; text-decoration:none;">
-          📡 ANN en Español
-        </a>
-      </div>`;
-  }
-}
-
-// ===== USER GREETING (Favoritos tab) =====
-function renderUserGreeting() {
-  const session = getSessionUser();
-  const el = document.getElementById('userGreeting');
-  if (!session) {
-    el.innerHTML = `
-      <div class="login-banner" onclick="requireAuth('ministry', onLoginSuccess)">
-        <div class="login-banner-icon">🔐</div>
-        <div class="login-banner-text">
-          <div class="login-banner-title">Identificarse</div>
-          <div class="login-banner-sub">Ingresa con tu correo para ver tus ministerios asignados</div>
-        </div>
-        <div style="color:var(--gold); font-size:20px;">›</div>
-      </div>`;
-    return;
-  }
-  const roles = getUserRoles(session);
-  const isDir = roles.includes('director');
-  const avatarRole = isDir ? 'director' : 'asistente';
-  const roleLabel = isDir ? '👑 Director de ministerio' : '👤 Asistente de ministerio';
-  function initials(name) {
-    return (name || '?').split(' ').slice(0,2).map(w => w[0]).join('').toUpperCase();
-  }
-  el.innerHTML = `
-    <div class="user-greeting">
-      <div class="user-greeting-avatar ${avatarRole}">${initials(session.name)}</div>
-      <div class="user-greeting-info">
-        <div class="user-greeting-name">${session.name}</div>
-        <div class="user-greeting-role">${roleLabel}</div>
-      </div>
-      <button class="btn-cerrar-sesion" onclick="cerrarSesion()">Salir</button>
-    </div>`;
-}
-
-function onLoginSuccess() {
-  renderUserGreeting();
-  renderStats();
-  renderMinistriesSection();
-}
-
-function cerrarSesion() {
-  if (!confirm('¿Cerrar sesión? Deberás ingresar tu correo nuevamente.')) return;
-  clearSessionUser();
-  renderUserGreeting();
-  renderMinistriesSection();
-}
-
-// ===== STATS =====
-function renderStats() {
-  const members = DB.get('members', []);
-  const meetings = DB.get('meetings', []);
-  const session = getSessionUser();
-  let minCount = 0;
-  if (session) {
-    minCount = new Set([...(session.dirMinistries||[]), ...(session.ministries||[])]).size;
-  } else {
-    minCount = DB.get('my_ministries', []).length;
-  }
-  const today = new Date().toISOString().split('T')[0];
-  const upcoming = meetings.filter(m => m.date >= today).length;
-  document.getElementById('statsRow').innerHTML = `
-    <div class="stat-box"><div class="stat-num">${members.length}</div><div class="stat-label">Miembros</div></div>
-    <div class="stat-box"><div class="stat-num">${minCount}</div><div class="stat-label">Ministerios</div></div>
-    <div class="stat-box"><div class="stat-num">${upcoming}</div><div class="stat-label">Reuniones</div></div>`;
-  document.getElementById('memberCountLabel').textContent = `${members.length} miembros registrados`;
-}
-
-// ===== MINISTRIES SECTION =====
-function renderMinistriesSection() {
-  const session = getSessionUser();
-  const container = document.getElementById('ministriesSection');
-  if (!session) {
-    container.innerHTML = `
-      <div class="section-title">Mis Ministerios</div>
-      <div class="empty-state" style="padding:20px 0;">
-        <div class="empty-icon">🔐</div>
-        <p>Identifícate para ver tus ministerios asignados.</p>
-      </div>`;
-    return;
-  }
-  const roles = getUserRoles(session);
-  const dirMin = session.dirMinistries || [];
-  const asiMin = session.ministries || [];
-  const isDir = roles.includes('director');
-  const isAsi = roles.includes('asistente');
-  let html = '';
-  if (isDir && dirMin.length > 0) {
-    html += `<div class="section-title" style="margin-bottom:6px;">Mis Ministerios</div>
-      <div class="role-section-label"><span class="badge-pill director">👑 Como Director</span></div>
-      <div class="ministry-grid" id="gridDirector"></div>`;
-  }
-  if (isAsi && asiMin.length > 0) {
-    html += `${isDir ? '<div style="height:8px;"></div>' : '<div class="section-title" style="margin-bottom:6px;">Mis Ministerios</div>'}
-      <div class="role-section-label"><span class="badge-pill asistente">👤 Como Asistente</span></div>
-      <div class="ministry-grid" id="gridAsistente"></div>`;
-  }
-  if ((!isDir || dirMin.length === 0) && (!isAsi || asiMin.length === 0)) {
-    html += `<div class="section-title">Mis Ministerios</div>
-      <div class="empty-state" style="padding:20px 0;">
-        <div class="empty-icon">📋</div>
-        <p>Aún no tienes ministerios asignados.<br>Contacta al administrador.</p>
-      </div>`;
-  }
-  html += `<div style="height:4px;"></div>`;
-  container.innerHTML = html;
-  if (isDir && dirMin.length > 0) renderMinistryTiles(document.getElementById('gridDirector'), dirMin, 'director');
-  if (isAsi && asiMin.length > 0) renderMinistryTiles(document.getElementById('gridAsistente'), asiMin, 'asistente');
-}
-
-function renderMinistryTiles(grid, ids, roleType) {
-  if (!grid) return;
-  grid.innerHTML = '';
-  ids.forEach(id => {
-    const m = getMinistry(id);
-    const tile = document.createElement('div');
-    tile.className = 'ministry-tile';
-    const roleTag = roleType === 'director'
-      ? `<div class="tile-role-tag dir">DIRECTOR</div>`
-      : `<div class="tile-role-tag asi">ASISTENTE</div>`;
-    tile.innerHTML = `<div class="m-icon">${m.icon}</div><div class="m-name">${m.name}</div>${roleTag}`;
-    tile.onclick = () => openMinistry(id);
-    grid.appendChild(tile);
+function itemCountsExceedLimit(data) {
+  if (!data) return false;
+  return ['contenido','glosario','cuestionario'].some(type => {
+    const idx = data[`${type}s_index`];
+    return idx && idx.length > MAX_ITEMS_PER_TYPE;
   });
 }
 
-// ===== UPCOMING MEETINGS =====
-function renderUpcomingMeetings() {
-  const meetings = DB.get('meetings', []);
-  const today = new Date().toISOString().split('T')[0];
-  const session = getSessionUser();
-  let relevantIds = null;
-  if (session) {
-    const roles = getUserRoles(session);
-    const ids = [
-      ...(roles.includes('director') ? (session.dirMinistries || []) : []),
-      ...(roles.includes('asistente') ? (session.ministries || []) : [])
-    ];
-    if (ids.length > 0) relevantIds = new Set(ids);
-  }
-  let upcoming = meetings.filter(m => m.date >= today);
-  if (relevantIds) upcoming = upcoming.filter(m => relevantIds.has(m.ministryId));
-  upcoming = upcoming.sort((a, b) => a.date.localeCompare(b.date)).slice(0, 4);
-  const container = document.getElementById('upcomingMeetings');
-  if (upcoming.length === 0) {
-    container.innerHTML = `<div class="empty-state" style="padding:24px 0;"><div class="empty-icon">📅</div><p>No hay reuniones programadas</p></div>`;
-    return;
-  }
-  container.innerHTML = upcoming.map(meeting => {
-    const min = getMinistry(meeting.ministryId);
-    return `<div class="list-item" onclick="openMinistry('${meeting.ministryId}');">
-      <div class="avatar">${min.icon}</div>
-      <div class="item-info">
-        <div class="item-name">${meeting.title}</div>
-        <div class="item-sub">${min.name} · ${fmtDate(meeting.date)}</div>
+function save() { localStorage.setItem('study_subjects', JSON.stringify(subjects)); }
+
+function render() {
+  const grid = document.getElementById('subjectsGrid');
+  const empty = document.getElementById('emptyState');
+  grid.innerHTML = '';
+  if (!subjects.length) { empty.style.display = 'block'; return; }
+  empty.style.display = 'none';
+  subjects.forEach(s => {
+    const classCount = (s.classes || []).length;
+    const card = document.createElement('div');
+    card.className = 'subject-card';
+    card.innerHTML = `
+      <div class="subject-body" onclick="openSubject('${s.id}')">
+        <div class="subject-icon" style="background:${s.color}22;">${s.icon}</div>
+        <div>
+          <div class="subject-name">${escH(s.name)}</div>
+          <div class="subject-meta">${classCount} clase${classCount !== 1 ? 's' : ''}</div>
+        </div>
+        <span class="subject-arrow">›</span>
       </div>
-      <div class="item-action">›</div>
-    </div>`;
-  }).join('');
+      <div class="subject-card-footer">
+        <button class="btn btn-ghost btn-sm" onclick="event.stopPropagation(); exportSubject('${s.id}')">📤 Exportar</button>
+        <button class="btn btn-ghost btn-sm" onclick="event.stopPropagation(); openEditSubject('${s.id}')">✏️</button>
+        <button class="btn btn-ghost btn-sm" onclick="event.stopPropagation(); deleteSubject('${s.id}')">🗑️</button>
+      </div>
+    `;
+    grid.appendChild(card);
+  });
 }
 
-// ===== SYNC =====
-async function syncFromServer() {
-  const url = getServerUrl();
-  if (!url) { showToast('No hay servidor configurado', 'error'); return; }
-  const icon = document.getElementById('syncIcon');
-  const label = document.getElementById('syncLabel');
-  icon.style.animation = 'spin 1s linear infinite';
-  icon.style.display = 'inline-block';
-  label.textContent = 'Conectando...';
-  const members = await fetchMembersFromServer();
-  icon.style.animation = '';
-  if (!members) {
-    showToast('No se pudo conectar al servidor', 'error');
-    label.textContent = 'Error al sincronizar';
+function openSubject(id) {
+  navTo(`clases.html?s=${id}`);
+}
+
+// ── Emoji / color pickers ─────────────────────────────────────────
+function buildEmojiPicker() {
+  document.getElementById('emojiPicker').innerHTML = EMOJIS.map(e =>
+    `<span onclick="selectEmoji(this,'${e}')" class="${e===selectedEmoji?'selected':''}">${e}</span>`
+  ).join('');
+}
+function buildColorPicker() {
+  document.getElementById('colorPicker').innerHTML = COLORS.map(c =>
+    `<div class="color-dot${c===selectedColor?' selected':''}" style="background:${c};" onclick="selectColor(this,'${c}')"></div>`
+  ).join('');
+}
+function selectEmoji(el, e) {
+  selectedEmoji = e;
+  document.querySelectorAll('#emojiPicker span').forEach(s => s.classList.remove('selected'));
+  el.classList.add('selected');
+}
+function selectColor(el, c) {
+  selectedColor = c;
+  document.querySelectorAll('.color-dot').forEach(d => d.classList.remove('selected'));
+  el.classList.add('selected');
+}
+
+// ── Subject CRUD ──────────────────────────────────────────────────
+function openNewSubject() {
+  editingSubjectId = null;
+  selectedEmoji = EMOJIS[0]; selectedColor = COLORS[0];
+  document.getElementById('inputSubjectName').value = '';
+  document.getElementById('modalSubjectTitle').textContent = 'Nueva Asignatura';
+  buildEmojiPicker(); buildColorPicker();
+  openModal('modalSubject');
+}
+function openEditSubject(id) {
+  const s = subjects.find(x => x.id === id);
+  if (!s) return;
+  editingSubjectId = id;
+  selectedEmoji = s.icon; selectedColor = s.color;
+  document.getElementById('inputSubjectName').value = s.name;
+  document.getElementById('modalSubjectTitle').textContent = 'Editar Asignatura';
+  buildEmojiPicker(); buildColorPicker();
+  openModal('modalSubject');
+}
+function saveSubject() {
+  const name = document.getElementById('inputSubjectName').value.trim();
+  if (!name) return alert('Escribe un nombre para la asignatura.');
+  if (editingSubjectId) {
+    const s = subjects.find(x => x.id === editingSubjectId);
+    s.name = name; s.icon = selectedEmoji; s.color = selectedColor;
+    save(); render(); closeModal('modalSubject');
     return;
   }
-  DB.set('members', members);
-  DB.set('members_cache', members);
-  const session = getSessionUser();
-  if (session) {
-    const updated = members.find(m => m.id === session.id);
-    if (updated) {
-      setSessionUser({
-        id: updated.id, name: updated.name, email: updated.email,
-        roles: Array.isArray(updated.roles) ? updated.roles : [updated.role || 'asistente'],
-        role: updated.role || (Array.isArray(updated.roles) ? updated.roles[0] : 'asistente'),
-        dirMinistries: updated.dirMinistries || [],
-        ministries: updated.ministries || [],
-      });
+  const create = () => {
+    subjects.push({ id: Date.now().toString(), name, icon: selectedEmoji, color: selectedColor, classes: [] });
+    save(); render(); closeModal('modalSubject');
+  };
+  if (subjects.length >= MAX_SUBJECTS) {
+    requireUnlock(create, `🔒 Límite gratuito: máximo ${MAX_SUBJECTS} asignaturas. Ingresa tu clave para crear más.`);
+  } else {
+    create();
+  }
+}
+function deleteSubject(id) {
+  if (!confirm('¿Eliminar esta asignatura y todas sus clases?')) return;
+  subjects = subjects.filter(s => s.id !== id);
+  save(); render();
+}
+
+// ════════════════════════════════════════════════════════════════
+// SISTEMA DE CLAVE — dual: app (huella) o navegador (tiempo)
+// (Idéntico al de clases.html / tematizacion.html: una misma clave
+//  desbloquea las funciones de pago en toda la app — el estado se
+//  comparte vía localStorage/sessionStorage entre todas las pantallas)
+// ════════════════════════════════════════════════════════════════
+const _SALT = 'EST2025XZ'; // sal interna, no visible para el usuario
+
+function isApp() {
+  return !!(window.cordova || window.PhoneGap || window.phonegap ||
+            (typeof window.device !== 'undefined') ||
+            /^file:\/\//.test(location.protocol) === false && window.cordova);
+}
+function isBrowser() { return !isApp(); }
+
+let _deviceFp = null;
+let _unlocked = false;
+let _unlockMode = 'browser';
+let _pendingUnlockAction = null;
+
+async function getDeviceFingerprint() {
+  const parts = [
+    navigator.userAgent, navigator.language,
+    screen.width + 'x' + screen.height, screen.colorDepth,
+    Intl.DateTimeFormat().resolvedOptions().timeZone,
+    (navigator.hardwareConcurrency || ''), (navigator.platform || '')
+  ];
+  const raw = parts.join('||');
+  if (crypto.subtle) {
+    const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(raw));
+    const hex = Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+    return hex.substring(0,48).toUpperCase().match(/.{1,8}/g).join('-');
+  } else {
+    let h = 0;
+    for (let i = 0; i < raw.length; i++) { h = (Math.imul(31, h) + raw.charCodeAt(i)) | 0; }
+    const hex = (h >>> 0).toString(16).padStart(8,'0').toUpperCase();
+    return hex.match(/.{1,2}/g).join('').padEnd(48,'0').match(/.{1,8}/g).join('-');
+  }
+}
+
+async function computeDeviceKey(fp) {
+  const base = fp.replace(/-/g,'').substring(0,16) + _SALT;
+  if (crypto.subtle) {
+    const km = await crypto.subtle.importKey('raw', new TextEncoder().encode(_SALT),
+      {name:'HMAC',hash:'SHA-256'}, false, ['sign']);
+    const sig = await crypto.subtle.sign('HMAC', km, new TextEncoder().encode(fp.replace(/-/g,'').substring(0,16)));
+    const hex = Array.from(new Uint8Array(sig)).map(b=>b.toString(16).padStart(2,'0')).join('').toUpperCase();
+    return hex.substring(0,4)+'-'+hex.substring(4,8);
+  } else {
+    let h = 0;
+    for (let i=0; i<base.length; i++) { h = (Math.imul(31,h)+base.charCodeAt(i))|0; }
+    const hex = (h>>>0).toString(16).padStart(8,'0').toUpperCase();
+    return hex.substring(0,4)+'-'+hex.substring(4,8);
+  }
+}
+
+function currentTimeBlock() {
+  const n = new Date();
+  const Y = n.getFullYear();
+  const M = String(n.getMonth()+1).padStart(2,'0');
+  const D = String(n.getDate()).padStart(2,'0');
+  const H = String(n.getHours()).padStart(2,'0');
+  const B = String(Math.floor(n.getMinutes()/5)).padStart(2,'0');
+  return `${Y}${M}${D}${H}${B}`;
+}
+
+function simpleHash(str) {
+  let h = 5381;
+  for (let i=0; i<str.length; i++) h = ((h<<5)+h) ^ str.charCodeAt(i);
+  return (h>>>0).toString(16).padStart(8,'0').toUpperCase();
+}
+
+function computeTimeKey(block) {
+  const raw = _SALT + block;
+  const hex = simpleHash(raw);
+  return hex.substring(0,4)+'-'+hex.substring(4,8);
+}
+
+function validTimeKeys() {
+  const now = currentTimeBlock();
+  const prev = (() => {
+    const n = new Date(Date.now() - 5*60*1000);
+    const Y=n.getFullYear(), M=String(n.getMonth()+1).padStart(2,'0'),
+          D=String(n.getDate()).padStart(2,'0'), H=String(n.getHours()).padStart(2,'0'),
+          B=String(Math.floor(n.getMinutes()/5)).padStart(2,'0');
+    return `${Y}${M}${D}${H}${B}`;
+  })();
+  return [computeTimeKey(now), computeTimeKey(prev)];
+}
+
+function applyUnlockState() {
+  const bar = document.getElementById('unlockBar');
+  if (!bar) return;
+  if (_unlocked) {
+    bar.classList.add('unlocked');
+    document.getElementById('unlockBarTitle').textContent = '✅ Funciones activas';
+    document.getElementById('unlockInputArea').style.display = 'none';
+    document.getElementById('modeApp').style.display = 'none';
+    document.getElementById('modeBrowser').style.display = 'none';
+    const act = document.getElementById('unlockActive');
+    act.style.display = 'flex';
+    document.getElementById('unlockActiveDetail').textContent =
+      _unlockMode === 'app' ? 'en este dispositivo' : 'para esta sesión';
+  } else {
+    bar.classList.remove('unlocked');
+    document.getElementById('unlockBarTitle').textContent = '🔒 Función de pago';
+    document.getElementById('unlockInputArea').style.display = 'block';
+    document.getElementById('unlockActive').style.display = 'none';
+    if (_unlockMode === 'app') {
+      document.getElementById('modeApp').style.display = 'block';
+      document.getElementById('modeBrowser').style.display = 'none';
+    } else {
+      document.getElementById('modeApp').style.display = 'none';
+      document.getElementById('modeBrowser').style.display = 'block';
     }
   }
-  showToast(`✅ Sincronizado: ${members.length} miembros`, 'success');
-  label.textContent = `Última sync: ${new Date().toLocaleTimeString('es-CO')}`;
-  renderStats();
-  renderUserGreeting();
-  renderMinistriesSection();
 }
+
+async function initDevUnlock() {
+  _unlockMode = isApp() ? 'app' : 'browser';
+  if (_unlockMode === 'app') {
+    _deviceFp = await getDeviceFingerprint();
+    const el = document.getElementById('devCodeDisplay');
+    if (el) el.textContent = _deviceFp;
+    const saved = localStorage.getItem('study_devkey_unlock');
+    if (saved === _deviceFp) { _unlocked = true; }
+  } else {
+    const sess = sessionStorage.getItem('study_session_unlock');
+    if (sess === 'true') { _unlocked = true; }
+  }
+  applyUnlockState();
+}
+
+function copyDevCode() {
+  if (!_deviceFp) { showToast('⚠️ Código aún calculando'); return; }
+  const fallback = () => {
+    const ta = document.createElement('textarea');
+    ta.value = _deviceFp; ta.style.cssText='position:fixed;opacity:0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); showToast('📋 Código copiado'); } catch {}
+    document.body.removeChild(ta);
+  };
+  if (navigator.clipboard && navigator.clipboard.writeText)
+    navigator.clipboard.writeText(_deviceFp).then(()=>showToast('📋 Código copiado')).catch(fallback);
+  else fallback();
+}
+
+function onUnlockInput() {
+  const inp = document.getElementById('unlockKeyInput');
+  const fb  = document.getElementById('unlockFb');
+  const val = inp.value.trim().toUpperCase();
+  if (!val) { inp.className='unlock-input'; fb.textContent=''; return; }
+  const fmt = /^[A-F0-9]{4}-[A-F0-9]{4}$/;
+  if (fmt.test(val)) {
+    inp.className='unlock-input ok'; fb.textContent=''; fb.className='unlock-fb';
+  } else {
+    inp.className='unlock-input err';
+    fb.textContent='Formato: XXXX-XXXX'; fb.className='unlock-fb err';
+  }
+}
+
+async function tryUnlock() {
+  const entered = (document.getElementById('unlockKeyInput').value||'').trim().toUpperCase();
+  if (!entered) { showToast('⚠️ Ingresa la clave'); return; }
+
+  let valid = false;
+  if (_unlockMode === 'app') {
+    if (!_deviceFp) { showToast('⚠️ Código de dispositivo no listo'); return; }
+    const expected = await computeDeviceKey(_deviceFp);
+    valid = (entered === expected);
+    if (valid) localStorage.setItem('study_devkey_unlock', _deviceFp);
+  } else {
+    const keys = validTimeKeys();
+    valid = keys.includes(entered);
+    if (valid) sessionStorage.setItem('study_session_unlock', 'true');
+  }
+
+  if (valid) {
+    _unlocked = true;
+    applyUnlockState();
+    showToast('✅ Funciones desbloqueadas');
+    closeModal('modalUnlockExport');
+    if (_pendingUnlockAction) { const fn = _pendingUnlockAction; _pendingUnlockAction = null; fn(); }
+  } else {
+    const inp = document.getElementById('unlockKeyInput');
+    const fb  = document.getElementById('unlockFb');
+    inp.className='unlock-input err';
+    fb.textContent='❌ Clave incorrecta'; fb.className='unlock-fb err';
+    showToast('❌ Clave incorrecta');
+  }
+}
+
+// Punto de entrada: exige clave activa antes de ejecutar `action`.
+async function requireUnlock(action, reason) {
+  await initDevUnlock(); // refresca estado (puede haberse desbloqueado en otra pantalla)
+  if (_unlocked) { action(); return; }
+  _pendingUnlockAction = action;
+  const reasonEl = document.getElementById('unlockReasonText');
+  if (reasonEl) reasonEl.textContent = reason || 'Exportar asignaturas o clases requiere una clave de activación.';
+  const inp = document.getElementById('unlockKeyInput');
+  inp.value = ''; inp.className = 'unlock-input';
+  document.getElementById('unlockFb').textContent = '';
+  openModal('modalUnlockExport');
+}
+// ════════════════════════════════════════════════════════════════
+
+// ── Export ────────────────────────────────────────────────────────
+function exportSubject(subjectId) {
+  requireUnlock(() => {
+    const s = subjects.find(x => x.id === subjectId);
+    if (!s) return;
+    const payload = buildExportPayload([s], 'subject');
+    const filename = `asignatura_${slugify(s.name)}.json`;
+    STUDY.shareFile(payload, filename, {
+      message: `📚 Asignatura "${s.name}" — Sistema de Estudio`,
+      subject: filename,
+      onFallback: () => showToast(`📤 "${s.name}" exportada`)
+    });
+  });
+}
+
+function buildExportPayload(subjectList, scope) {
+  const payload = { version: 1, type: 'study_export', scope: scope || 'subject', exportedAt: new Date().toISOString(), subjects: [] };
+  subjectList.forEach(s => {
+    const sExp = { id: s.id, name: s.name, icon: s.icon, color: s.color, classes: [] };
+    (s.classes || []).forEach(cls => {
+      const prefix = `study_${s.id}_${cls.id}`;
+      const clsExp = { id: cls.id, name: cls.name, data: {} };
+      // Tematización: dato único por clase
+      const tRaw = localStorage.getItem(`${prefix}_tematizacion`);
+      if (tRaw) { try { clsExp.data.tematizacion = JSON.parse(tRaw); } catch {} }
+      // Glosario / Cuestionario: espejo legado (compatibilidad con versiones anteriores)
+      ['glosario','cuestionario'].forEach(t => {
+        const raw = localStorage.getItem(`${prefix}_${t}`);
+        if (raw) { try { clsExp.data[t] = JSON.parse(raw); } catch {} }
+      });
+      // Multi-item: Contenido, Glosario, Cuestionario
+      ['contenido','glosario','cuestionario'].forEach(type => {
+        const idxRaw = localStorage.getItem(`${prefix}_${type}s_index`);
+        if (idxRaw) {
+          try {
+            const idx = JSON.parse(idxRaw);
+            clsExp.data[`${type}s_index`] = idx;
+            clsExp.data[`${type}_items`] = {};
+            idx.forEach(item => {
+              const d = localStorage.getItem(`${prefix}_${type}_${item.id}`);
+              if (d) { try { clsExp.data[`${type}_items`][item.id] = JSON.parse(d); } catch {} }
+            });
+          } catch {}
+        }
+      });
+      sExp.classes.push(clsExp);
+    });
+    payload.subjects.push(sExp);
+  });
+  return payload;
+}
+
+function downloadJSON(data, filename) {
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+function slugify(str) { return str.toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,''); }
+
+// ── Import ────────────────────────────────────────────────────────
+function openImport() { importPayload = null; document.getElementById('importStatus').textContent = ''; document.getElementById('btnDoImport').style.display = 'none'; openModal('modalImport'); }
+function onImportDrop(e) { e.preventDefault(); document.getElementById('importDrop').classList.remove('dragover'); const f = e.dataTransfer.files[0]; if (f) readImportFile(f); }
+function onImportFile(input) { if (input.files[0]) readImportFile(input.files[0]); }
+function readImportFile(file) {
+  const st = document.getElementById('importStatus');
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const data = JSON.parse(e.target.result);
+      if (!data.subjects || !Array.isArray(data.subjects)) throw new Error('Formato no reconocido');
+      importPayload = data;
+      const scope = data.scope || 'subject';
+      if (scope === 'class') {
+        const donor = data.subjects[0] || {};
+        const names = (donor.classes || []).map(c => c.name).join(', ');
+        st.textContent = `📄 Clase detectada: ${names}. Al importar, elegirás la asignatura destino.`;
+      } else {
+        const totalClases = data.subjects.reduce((a,s) => a + (s.classes||[]).length, 0);
+        st.textContent = `✅ ${data.subjects.length} asignatura(s) · ${totalClases} clase(s) listas para importar`;
+      }
+      st.style.color = '#166534';
+      document.getElementById('btnDoImport').style.display = 'inline-flex';
+    } catch(err) {
+      st.textContent = `❌ Archivo inválido: ${err.message}`;
+      st.style.color = '#dc2626';
+      importPayload = null;
+      document.getElementById('btnDoImport').style.display = 'none';
+    }
+  };
+  reader.readAsText(file);
+}
+function doImport() {
+  if (!importPayload) return;
+  closeModal('modalImport');
+  applyImportPayload(importPayload);
+  importPayload = null;
+}
+
+// Protocolo único de importación, usado tanto por el selector manual
+// como por archivos .json abiertos/compartidos desde WhatsApp u otra app:
+// - "asignatura" (scope subject, o exports antiguos sin scope) → se crea automáticamente.
+// - "clase" (scope class) → se pregunta a qué asignatura agregarla.
+function applyImportPayload(payload) {
+  if (!payload || payload.type !== 'study_export' || !Array.isArray(payload.subjects)) {
+    showToast('❌ Archivo no reconocido');
+    return;
+  }
+  const scope = payload.scope || 'subject';
+  if (scope === 'class') {
+    promptClassImportTarget(payload);
+  } else {
+    importFullSubjects(payload);
+  }
+}
+
+function restoreClassData(s_id, cls) {
+  const prefix = `study_${s_id}_${cls.id}`;
+  const d = cls.data || {};
+  // Dato único: glosario espejo, cuestionario espejo, tematizacion
+  ['glosario','cuestionario','tematizacion'].forEach(t => {
+    if (d[t]) localStorage.setItem(`${prefix}_${t}`, JSON.stringify(d[t]));
+  });
+  // Multi-item: Contenido, Glosario, Cuestionario
+  ['contenido','glosario','cuestionario'].forEach(type => {
+    const idxKey = `${type}s_index`, itemsKey = `${type}_items`;
+    if (d[idxKey]) {
+      localStorage.setItem(`${prefix}_${idxKey}`, JSON.stringify(d[idxKey]));
+      Object.entries(d[itemsKey] || {}).forEach(([id, val]) => {
+        localStorage.setItem(`${prefix}_${type}_${id}`, JSON.stringify(val));
+      });
+    }
+  });
+}
+
+function subjectImportExceedsLimits(payload) {
+  const newSubjects = payload.subjects.filter(s => !subjects.find(x => x.id === s.id));
+  if (subjects.length + newSubjects.length > MAX_SUBJECTS) return true;
+  for (const s of payload.subjects) {
+    const exists = subjects.find(x => x.id === s.id);
+    if (!exists && (s.classes || []).length > MAX_CLASSES_PER_SUBJECT) return true;
+    for (const cls of (s.classes || [])) {
+      if (itemCountsExceedLimit(cls.data)) return true;
+    }
+  }
+  return false;
+}
+
+async function importFullSubjects(payload) {
+  await initDevUnlock();
+  if (!_unlocked && subjectImportExceedsLimits(payload)) {
+    requireUnlock(() => importFullSubjects(payload),
+      `🔒 Este archivo supera los límites gratuitos (máx. ${MAX_SUBJECTS} asignaturas, ${MAX_CLASSES_PER_SUBJECT} clases por asignatura y ${MAX_ITEMS_PER_TYPE} ítems por sección). Ingresa tu clave para importar todo.`);
+    return;
+  }
+  let added = 0, updated = 0;
+  payload.subjects.forEach(s => {
+    const exists = subjects.find(x => x.id === s.id);
+    if (exists) {
+      // La asignatura ya existe: restaurar datos de localStorage de las clases del export
+      (s.classes || []).forEach(cls => restoreClassData(s.id, cls));
+      updated++;
+      return;
+    }
+    // Nueva asignatura: restaurar todo
+    (s.classes || []).forEach(cls => restoreClassData(s.id, cls));
+    subjects.push({ id: s.id, name: s.name, icon: s.icon, color: s.color, classes: (s.classes||[]).map(c => ({ id: c.id, name: c.name })) });
+    added++;
+  });
+  save(); render();
+  const parts = [];
+  if (added)   parts.push(`${added} asignatura${added !== 1 ? 's' : ''} importada${added !== 1 ? 's' : ''}`);
+  if (updated) parts.push(`${updated} actualizada${updated !== 1 ? 's' : ''} (datos restaurados)`);
+  showToast(`✅ ${parts.join(', ')}`);
+}
+
+let pendingClassPayload = null;
+function promptClassImportTarget(payload) {
+  pendingClassPayload = payload;
+  const donor = payload.subjects[0] || {};
+  const classNames = (donor.classes || []).map(c => c.name).join(', ');
+  document.getElementById('classTargetIncomingInfo').textContent =
+    `Clase${(donor.classes||[]).length > 1 ? 's' : ''}: ${classNames}`;
+  const list = document.getElementById('classTargetList');
+  if (!subjects.length) {
+    list.innerHTML = `<div style="color:#9ca3af; font-size:0.85rem;">No tienes asignaturas todavía. Crea una primero y vuelve a abrir el archivo.</div>`;
+  } else {
+    list.innerHTML = subjects.map(s => `
+      <button class="btn btn-ghost" style="width:100%; justify-content:flex-start;" onclick="confirmClassImportTarget('${s.id}')">
+        <span style="margin-right:0.5rem;">${s.icon}</span>${escH(s.name)}
+      </button>
+    `).join('');
+  }
+  openModal('modalClassTarget');
+}
+async function confirmClassImportTarget(targetSubjectId) {
+  if (!pendingClassPayload) return;
+  const target = subjects.find(s => s.id === targetSubjectId);
+  if (!target) return;
+
+  await initDevUnlock();
+  const incomingClasses = pendingClassPayload.subjects.flatMap(s => s.classes || []);
+  const wouldExceedClasses = (target.classes || []).length + incomingClasses.length > MAX_CLASSES_PER_SUBJECT;
+  const itemsTooMany = incomingClasses.some(cls => itemCountsExceedLimit(cls.data));
+  if (!_unlocked && (wouldExceedClasses || itemsTooMany)) {
+    requireUnlock(() => confirmClassImportTarget(targetSubjectId),
+      `🔒 Esta importación supera el límite gratuito (máx. ${MAX_CLASSES_PER_SUBJECT} clases por asignatura y ${MAX_ITEMS_PER_TYPE} ítems por sección). Ingresa tu clave para continuar.`);
+    return;
+  }
+
+  let imported = 0;
+  pendingClassPayload.subjects.forEach(s => {
+    (s.classes || []).forEach(cls => {
+      const newId = Date.now().toString() + Math.random().toString(36).slice(2,6);
+      if (!target.classes) target.classes = [];
+      target.classes.push({ id: newId, name: cls.name });
+      // Restaurar datos con el nuevo id de clase pero conservando los IDs de los ítems
+      restoreClassData(targetSubjectId, { id: newId, data: cls.data });
+      imported++;
+    });
+  });
+  save(); render();
+  closeModal('modalClassTarget');
+  pendingClassPayload = null;
+  showToast(`✅ ${imported} clase${imported !== 1 ? 's' : ''} agregada${imported !== 1 ? 's' : ''} a "${target.name}"`);
+}
+
+// Recibe archivos .json abiertos/compartidos desde WhatsApp u otra app (vía _share.js)
+function tryConsumeIncomingImport() {
+  if (window.STUDY && typeof STUDY.consumePendingImport === 'function') {
+    const pending = STUDY.consumePendingImport();
+    if (pending) applyImportPayload(pending);
+  }
+}
+window.addEventListener('study:incoming-import', tryConsumeIncomingImport);
+
+// ── Helpers ───────────────────────────────────────────────────────
+function openModal(id)  { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+function escH(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+document.querySelectorAll('.modal-overlay').forEach(m => m.addEventListener('click', e => { if (e.target === m) m.classList.remove('open'); }));
+
+sessionStorage.removeItem('__navStack');
+render();
+tryConsumeIncomingImport();
 </script>
 </body>
 </html>

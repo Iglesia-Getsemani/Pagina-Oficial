@@ -1,0 +1,996 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>Estudiar Glosario</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Segoe UI', system-ui, sans-serif; background: #f0f2f5; min-height: 100vh; color: #1a1a2e; }
+
+/* ── HEADER ── */
+header {
+  background: #1a1a2e;
+  color: #fff;
+  padding: 0.75rem 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  position: sticky; top: 0; z-index: 100;
+}
+.header-back {
+  background: transparent; border: none; color: #fff;
+  font-size: 1rem; cursor: pointer; padding: 0.25rem 0.5rem;
+  border-radius: 6px; transition: background 0.15s; white-space: nowrap;
+}
+.header-back:hover { background: rgba(255,255,255,0.12); }
+.header-title { font-size: 1rem; font-weight: 600; flex: 1; }
+.header-tools { display: flex; gap: 0.25rem; }
+.tool-btn {
+  background: transparent; border: 1.5px solid rgba(255,255,255,0.25);
+  color: #fff; border-radius: 7px; padding: 0.3rem 0.55rem;
+  font-size: 0.78rem; cursor: pointer; transition: all 0.15s; white-space: nowrap;
+}
+.tool-btn.on  { background: #4f46e5; border-color: #4f46e5; }
+.tool-btn:hover { background: rgba(255,255,255,0.1); }
+
+/* ── STATS BAR ── */
+.stats-bar {
+  background: #fff;
+  display: flex; justify-content: space-around; align-items: center;
+  padding: 0.55rem 0.5rem;
+  border-bottom: 1px solid #e5e7eb;
+  font-size: 0.78rem;
+}
+.stat { text-align: center; }
+.stat-label { color: #9ca3af; font-size: 0.68rem; font-weight: 600; letter-spacing: 0.3px; text-transform: uppercase; }
+.stat-val { font-size: 1.1rem; font-weight: 700; }
+.stat-val.blue   { color: #4f46e5; }
+.stat-val.green  { color: #16a34a; }
+.stat-val.red    { color: #dc2626; }
+.stat-val.dark   { color: #1a1a2e; }
+
+/* ── MAIN CARD (definition/term) ── */
+.main-card-wrap { padding: 0.75rem 0.75rem 0; }
+.main-card {
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+  padding: 1rem 1.1rem;
+}
+.card-meta {
+  font-size: 0.72rem; font-weight: 600;
+  color: #4f46e5; margin-bottom: 0.6rem;
+  text-transform: uppercase; letter-spacing: 0.4px;
+}
+.card-label {
+  font-size: 0.8rem; font-weight: 700; color: #6b7280;
+  margin-bottom: 0.4rem; display: flex; justify-content: space-between; align-items: center;
+}
+.definition-text {
+  font-size: 1.1rem;
+  line-height: 1.65;
+  color: #1a1a2e;
+  word-spacing: 2px;
+}
+/* ── DIVIDER ── */
+.divider { height: 1px; background: #e5e7eb; margin: 0.75rem 0; }
+
+/* ── OPTIONS ── */
+.options-wrap { padding: 0 0.75rem 0.5rem; }
+.options-label { font-size: 0.75rem; font-weight: 700; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 0.5rem; }
+.option-card {
+  background: #fff;
+  border: 2px solid #e5e7eb;
+  border-radius: 11px;
+  padding: 0.75rem 0.9rem;
+  margin-bottom: 0.5rem;
+  cursor: pointer;
+  display: flex; align-items: flex-start; gap: 0.7rem;
+  transition: border-color 0.15s, background 0.15s, box-shadow 0.15s;
+  user-select: none;
+}
+.option-card:hover:not(.disabled) { border-color: #4f46e5; box-shadow: 0 0 0 3px rgba(79,70,229,0.08); }
+.option-card.selected { border-color: #4f46e5; background: #eef2ff; }
+.option-card.correct  { border-color: #16a34a; background: #dcfce7; }
+.option-card.wrong    { border-color: #dc2626; background: #fee2e2; }
+.option-card.disabled { cursor: default; }
+.option-radio {
+  width: 18px; height: 18px; border-radius: 50%;
+  border: 2px solid #d1d5db; flex-shrink: 0; margin-top: 2px;
+  display: flex; align-items: center; justify-content: center; transition: all 0.15s;
+}
+.option-card.selected .option-radio { border-color: #4f46e5; background: #4f46e5; }
+.option-card.correct  .option-radio { border-color: #16a34a; background: #16a34a; }
+.option-card.wrong    .option-radio { border-color: #dc2626; background: #dc2626; }
+.option-radio::after { content: ''; width: 7px; height: 7px; border-radius: 50%; background: #fff; display: none; }
+.option-card.selected .option-radio::after,
+.option-card.correct  .option-radio::after,
+.option-card.wrong    .option-radio::after { display: block; }
+.option-text { font-size: 0.95rem; line-height: 1.55; flex: 1; color: #1a1a2e; }
+
+/* ── STATUS ── */
+.status-msg {
+  text-align: center;
+  font-size: 0.95rem; font-weight: 700;
+  padding: 0.5rem;
+  border-radius: 8px;
+  margin: 0.4rem 0.75rem;
+  display: none;
+}
+.status-msg.correct { background: #dcfce7; color: #15803d; display: block; }
+.status-msg.wrong   { background: #fee2e2; color: #dc2626; display: block; }
+
+/* ── BOTTOM BUTTONS ── */
+.bottom-bar {
+  position: sticky; bottom: 0;
+  background: rgba(249,250,251,0.97);
+  backdrop-filter: blur(6px);
+  border-top: 1px solid #e5e7eb;
+  padding: 0.75rem;
+  display: flex; gap: 0.6rem;
+}
+.btn-main {
+  flex: 1;
+  padding: 0.8rem;
+  border: none; border-radius: 10px;
+  font-size: 1rem; font-weight: 600; cursor: pointer;
+  transition: opacity 0.15s, transform 0.1s;
+}
+.btn-main:active { transform: scale(0.97); }
+.btn-show    { background: #4f46e5; color: #fff; }
+.btn-confirm { background: #0ea5e9; color: #fff; }
+.btn-next    { background: #16a34a; color: #fff; }
+.btn-main:disabled { opacity: 0.4; cursor: default; }
+
+/* ── TIME ── */
+.time-badge {
+  text-align: center;
+  font-size: 0.8rem; font-weight: 600; color: #6b7280;
+  padding-bottom: 0.2rem;
+}
+
+/* ── MODE SELECTOR ── */
+.mode-selector {
+  display: flex; gap: 0.75rem;
+  justify-content: center;
+  padding: 0.75rem;
+}
+.mode-btn {
+  flex: 1; max-width: 160px;
+  padding: 0.9rem 0.5rem;
+  border: 2px solid #d1d5db;
+  border-radius: 12px; background: #fff;
+  cursor: pointer; text-align: center;
+  font-size: 0.85rem; font-weight: 600;
+  transition: all 0.15s;
+}
+.mode-btn .mode-icon { font-size: 1.6rem; margin-bottom: 0.3rem; display: block; }
+.mode-btn:hover { border-color: #4f46e5; color: #4f46e5; }
+.mode-btn.active { border-color: #4f46e5; background: #eef2ff; color: #4f46e5; }
+
+/* ── GLOSARIO SELECTOR (cuando hay varios glosarios cargados) ── */
+.glos-screen-intro { padding: 1rem 0.75rem 0.5rem; font-size: 0.9rem; color: #6b7280; text-align: center; }
+.glos-list { display: flex; flex-direction: column; gap: 0.6rem; padding: 0 0.75rem 0.5rem; }
+.glos-card {
+  background: #fff; border: 1.5px solid #e5e7eb; border-radius: 12px;
+  padding: 0.85rem 1rem; display: flex; align-items: center; gap: 0.75rem;
+  cursor: pointer; transition: all 0.15s;
+}
+.glos-card:hover { border-color: #4f46e5; box-shadow: 0 0 0 3px rgba(79,70,229,0.08); }
+.glos-card.glos-all { border-color: #4f46e5; background: #eef2ff; }
+.glos-card.glos-checked { border-color: #4f46e5; background: #eef2ff; }
+.glos-icon { font-size: 1.5rem; flex-shrink: 0; }
+.glos-info { flex: 1; }
+.glos-name { font-size: 0.95rem; font-weight: 700; color: #1a1a2e; }
+.glos-sub { font-size: 0.78rem; color: #6b7280; margin-top: 2px; }
+.glos-arrow { color: #9ca3af; font-size: 1rem; }
+
+/* Checkbox personalizado */
+.glos-checkbox {
+  width: 22px; height: 22px; border-radius: 6px;
+  border: 2px solid #d1d5db; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.15s; font-size: 0.85rem;
+  background: #fff;
+}
+.glos-card.glos-checked .glos-checkbox {
+  background: #4f46e5; border-color: #4f46e5; color: #fff;
+}
+
+/* Botón de confirmar selección */
+.glos-confirm-bar {
+  padding: 0.75rem;
+  position: sticky; bottom: 0;
+  background: rgba(249,250,251,0.97);
+  backdrop-filter: blur(6px);
+  border-top: 1px solid #e5e7eb;
+}
+.glos-confirm-btn {
+  width: 100%; padding: 0.85rem;
+  border: none; border-radius: 10px;
+  background: #4f46e5; color: #fff;
+  font-size: 1rem; font-weight: 600; cursor: pointer;
+  transition: opacity 0.15s;
+}
+.glos-confirm-btn:disabled { opacity: 0.35; cursor: default; }
+.glos-confirm-btn:not(:disabled):hover { background: #4338ca; }
+.glos-sel-count {
+  text-align: center; font-size: 0.78rem; color: #6b7280;
+  margin-bottom: 0.5rem;
+}
+
+/* ── COMPLETED ── */
+.completed-wrap {
+  display: flex; flex-direction: column; align-items: center;
+  justify-content: center; min-height: 70vh;
+  padding: 2rem 1rem; text-align: center;
+}
+.completed-icon { font-size: 4rem; margin-bottom: 1rem; }
+.completed-title { font-size: 1.4rem; font-weight: 700; margin-bottom: 1rem; }
+.completed-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; width: 100%; max-width: 300px; margin-bottom: 1.5rem; }
+.completed-stat { background: #fff; border-radius: 10px; padding: 0.75rem; }
+.completed-stat-label { font-size: 0.72rem; color: #9ca3af; font-weight: 600; text-transform: uppercase; }
+.completed-stat-val { font-size: 1.5rem; font-weight: 700; }
+
+/* ── EMPTY/ERROR ── */
+.info-box { padding: 2rem 1.5rem; text-align: center; color: #9ca3af; }
+.error-box { background: #fef2f2; border: 1px solid #fca5a5; border-radius: 10px; padding: 1.5rem; margin: 1rem; text-align: center; color: #dc2626; }
+
+/* ── LOADING ── */
+#loadingScreen {
+  position: fixed; inset: 0; background: #f0f2f5;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.1rem; color: #6b7280;
+}
+
+.spinner {
+  width: 36px; height: 36px;
+  border: 3px solid #e0e7ff;
+  border-top-color: #4f46e5;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  margin-bottom: 0.75rem;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* dark letter shadows — replicated from dart */
+.letter-colored {
+  font-weight: 700;
+  text-shadow:
+    0.5px 0.5px 1px #000,
+    -0.5px -0.5px 1px #000,
+    0.5px -0.5px 1px #000,
+    -0.5px 0.5px 1px #000;
+}
+</style>
+</head>
+<body>
+
+<div id="loadingScreen">
+  <div style="text-align:center">
+    <div class="spinner"></div>
+    Cargando términos…
+  </div>
+</div>
+
+<div id="app" style="display:none">
+
+  <!-- HEADER -->
+  <header>
+    <button class="header-back" id="btnBack">← Volver</button>
+    <span class="header-title" id="headerTitle">Estudiar Glosario</span>
+    <div class="header-tools">
+      <button class="tool-btn" id="btnChangeGlosario" title="Cambiar glosario" style="display:none" onclick="backToSelector()">📚 Cambiar</button>
+      <button class="tool-btn" id="btnEnd" title="Terminar sesión">⏹</button>
+    </div>
+  </header>
+
+  <!-- GLOSARIO SELECT (shown only if there are 2+ glosarios loaded for this class) -->
+  <div id="glosarioScreen" style="display:none">
+    <div class="glos-screen-intro">Selecciona uno o más glosarios para estudiar</div>
+    <div class="glos-list" id="glosarioList"></div>
+    <div class="glos-confirm-bar">
+      <div class="glos-sel-count" id="glosSelCount">Ningún glosario seleccionado</div>
+      <button class="glos-confirm-btn" id="btnConfirmGlos" disabled onclick="confirmGlosarioSelection()">Estudiar seleccionados →</button>
+    </div>
+  </div>
+
+  <!-- MODE SELECT (shown before game starts) -->
+  <div id="modeScreen" style="display:none">
+    <div style="padding: 1rem 0.75rem 0.5rem; font-size: 0.9rem; color: #6b7280; text-align:center;">
+      ¿Cómo quieres estudiar?
+    </div>
+    <div class="mode-selector">
+      <div class="mode-btn" id="modeStudy">
+        <span class="mode-icon">📖</span>
+        Lee la definición<br><small style="font-weight:400">→ elige el término</small>
+      </div>
+      <div class="mode-btn" id="modeInverso">
+        <span class="mode-icon">🔄</span>
+        Lee el término<br><small style="font-weight:400">→ elige la definición</small>
+      </div>
+    </div>
+    <div id="modeError" class="error-box" style="display:none"></div>
+  </div>
+
+  <!-- GAME SCREEN -->
+  <div id="gameScreen" style="display:none">
+    <!-- stats bar -->
+    <div class="stats-bar">
+      <div class="stat">
+        <div class="stat-label">Ronda</div>
+        <div class="stat-val blue" id="statRound">1</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">✓ Correctas</div>
+        <div class="stat-val green" id="statCorrect">0</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">✗ Incorrectas</div>
+        <div class="stat-val red" id="statWrong">0</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Total</div>
+        <div class="stat-val dark" id="statTotal">0</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Precisión</div>
+        <div class="stat-val blue" id="statAcc">—</div>
+      </div>
+    </div>
+
+    <!-- main definition/term card -->
+    <div class="main-card-wrap">
+      <div class="main-card">
+        <div class="card-meta" id="cardMeta"></div>
+        <div class="card-label">
+          <span id="cardLabel">Definición</span>
+        </div>
+        <div class="definition-text" id="mainText"></div>
+      </div>
+    </div>
+
+    <!-- status message -->
+    <div class="status-msg" id="statusMsg"></div>
+
+    <!-- options -->
+    <div class="options-wrap" id="optionsWrap" style="visibility:hidden; pointer-events:none">
+      <div class="options-label" id="optionsLabel">Elige el término correcto</div>
+      <div id="optionsList"></div>
+    </div>
+
+    <!-- bottom bar -->
+    <div class="bottom-bar">
+      <div style="flex:1; display:flex; flex-direction:column; gap:0.3rem;">
+        <div class="time-badge" id="timeBadge"></div>
+        <button class="btn-main btn-show"    id="btnShow">Mostrar opciones</button>
+        <button class="btn-main btn-confirm" id="btnConfirm" style="display:none">Confirmar</button>
+        <button class="btn-main btn-next"    id="btnNext"    style="display:none">Siguiente →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- COMPLETED SCREEN -->
+  <div id="completedScreen" style="display:none">
+    <div class="completed-wrap">
+      <div class="completed-icon">🎉</div>
+      <div class="completed-title">¡Sesión completada!</div>
+      <div class="completed-stats">
+        <div class="completed-stat">
+          <div class="completed-stat-label">Términos</div>
+          <div class="completed-stat-val dark" id="cTotal"></div>
+        </div>
+        <div class="completed-stat">
+          <div class="completed-stat-label">Correctas</div>
+          <div class="completed-stat-val" id="cCorrect" style="color:#16a34a"></div>
+        </div>
+        <div class="completed-stat">
+          <div class="completed-stat-label">Incorrectas</div>
+          <div class="completed-stat-val" id="cWrong" style="color:#dc2626"></div>
+        </div>
+        <div class="completed-stat">
+          <div class="completed-stat-label">Precisión</div>
+          <div class="completed-stat-val" id="cAcc" style="color:#4f46e5"></div>
+        </div>
+      </div>
+      <button class="btn-main btn-show" id="btnReset" style="max-width:220px">Volver a estudiar</button>
+    </div>
+  </div>
+
+</div><!-- #app -->
+
+<script src="_nav.js" onerror="void 0"></script>
+<script src="cordova.js" onerror="void 0"></script>
+<script src="_share.js" onerror="void 0"></script>
+<script>
+// ── CONFIG ──────────────────────────────────────────────────────────────
+const params     = new URLSearchParams(location.search);
+const subjectId   = params.get('s');
+const classId     = params.get('c');
+const gidParam    = params.get('gid');
+const KEY_PREFIX  = `study_${subjectId}_${classId}`;
+const LEGACY_KEY  = `${KEY_PREFIX}_glosario`;
+const INDEX_KEY   = `${KEY_PREFIX}_glosarios_index`;
+
+// ── LETTER COLORS (from dart) ────────────────────────────────────────────
+const LETTER_COLORS = {
+  'a':'#ffff00','á':'#ffff00',
+  'b':'#ff0000',
+  'c':'#92d050',
+  'd':'#00aff0',
+  'e':'#002060','é':'#002060',
+  'f':'#0070c0',
+  'g':'#7030a0',
+  'h':'#808080',
+  'i':'#e800ff','í':'#e800ff',
+  'j':'#00ffaa',
+  'k':'#ffc000',
+  'l':'#00b050',
+  'm':'#c00000',
+  'n':'#000000',
+  'ñ':'#009e9e',
+  'o':'#7030a0','ó':'#7030a0',
+  'p':'#808080',
+  'q':'#375623',
+  'r':'#da5800',
+  's':'#d1cc00',
+  't':'#00c800',
+  'u':'#333f4f','ú':'#333f4f',
+  'v':'#da5800',
+  'w':'#00c800',
+  'x':'#009e9e',
+  'y':'#d1cc00',
+  'z':'#375623',
+};
+const SYMBOLS_IGNORE = new Set(['¿','¡','/','(','[','{','<','"',"'",'*','-','_']);
+const SYMBOLS_PUNCT  = new Set(['¿','¡','/','(','[','{','<','"',"'",'*','-','_','.', ',',';',':','?','!',')',']','}','>']);
+
+// ── STATE ────────────────────────────────────────────────────────────────
+let allTerms      = [];
+let roundTerms    = [];
+let currentTerm   = null;
+let currentOptions= [];
+let selectedAns   = null;
+let showingOpts   = false;
+let answerDone    = false;
+let correctCount  = 0;
+let wrongCount    = 0;
+let totalCount    = 0;
+let currentRound  = 1;
+let totalTerms    = 0;
+let wrongTerms    = [];
+let slowTerms     = [];
+let correctTerms  = [];
+let timerStart    = 0;
+let colorize      = false;
+let compress      = false;
+let studyMode     = 'study'; // 'study' = def→term | 'inverso' = term→def
+let glosarioIndex = [];      // [{id, name}] de todos los glosarios cargados en la clase
+let multiSourceMode = false; // true si se combinaron 2+ glosarios en una sesión
+let selectedGlosarioNames = [];
+let baseHeaderTitle = 'Estudiar Glosario';
+
+// ── HELPERS ──────────────────────────────────────────────────────────────
+function shuffle(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+function findFirstLetter(word) {
+  for (const ch of word) if (!SYMBOLS_IGNORE.has(ch)) return ch;
+  return word[0] || '';
+}
+
+function compressText(text) {
+  return text.split(' ').map(word => {
+    if (!word) return '';
+    let start = '', clean = word;
+    while (clean.length && SYMBOLS_PUNCT.has(clean[0])) { start += clean[0]; clean = clean.slice(1); }
+    let end = '';
+    while (clean.length && SYMBOLS_PUNCT.has(clean[clean.length-1])) { end = clean[clean.length-1] + end; clean = clean.slice(0,-1); }
+    const first = clean.length ? findFirstLetter(clean) || clean[0] : '';
+    return start + first + end;
+  }).join(' ');
+}
+
+function buildColoredHTML(text) {
+  const display = compress ? compressText(text) : text;
+  if (!colorize) return escH(display);
+  return display.split(' ').map(word => {
+    if (!word) return '';
+    const fl = findFirstLetter(word);
+    const idx = word.indexOf(fl);
+    if (idx < 0) return escH(word);
+    const before = escH(word.slice(0, idx));
+    const after  = escH(word.slice(idx + 1));
+    const color  = LETTER_COLORS[fl.toLowerCase()] || '#1a1a2e';
+    const span   = `<span class="letter-colored" style="color:${color}">${escH(fl)}</span>`;
+    return before + span + after;
+  }).join(' ');
+}
+
+function escH(s) {
+  return String(s)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ── LOAD ─────────────────────────────────────────────────────────────────
+function loadIndexList() {
+  try { return JSON.parse(localStorage.getItem(INDEX_KEY) || '[]'); } catch { return []; }
+}
+
+function parseGlosarioRaw(raw) {
+  if (!raw) return null;
+  try {
+    const data = JSON.parse(raw);
+    return (data.glosario || data || []).filter(t => t.termino && t.definicion);
+  } catch { return null; }
+}
+
+function readGlosarioById(id) {
+  return parseGlosarioRaw(localStorage.getItem(`${KEY_PREFIX}_glosario_${id}`));
+}
+
+function readLegacyGlosario() {
+  return parseGlosarioRaw(localStorage.getItem(LEGACY_KEY));
+}
+
+function init() {
+  // header meta
+  try {
+    const subjects = JSON.parse(localStorage.getItem('study_subjects') || '[]');
+    const subject  = subjects.find(s => s.id === subjectId);
+    const cls      = subject?.classes?.find(c => c.id === classId);
+    baseHeaderTitle = cls ? cls.name : 'Estudiar Glosario';
+    document.getElementById('headerTitle').textContent = baseHeaderTitle;
+  } catch(e){}
+
+  document.getElementById('loadingScreen').style.display = 'none';
+  document.getElementById('app').style.display = '';
+  bindButtons();
+
+  glosarioIndex = loadIndexList();
+
+  // 1) Enlace directo a un glosario específico (?gid=...)
+  if (gidParam) {
+    const terms = readGlosarioById(gidParam);
+    if (!terms) { showLoadError(); return; }
+    const item = glosarioIndex.find(i => i.id === gidParam);
+    finalizeSelection([{ id: gidParam, name: item ? item.name : 'Glosario', terms }]);
+    return;
+  }
+
+  // 2) Sin sistema multi-glosario (formato antiguo) → usar la clave heredada
+  if (!glosarioIndex.length) {
+    const terms = readLegacyGlosario();
+    if (!terms) { showLoadError(); return; }
+    finalizeSelection([{ id: null, name: null, terms }]);
+    return;
+  }
+
+  // 3) Un solo glosario cargado → usarlo directamente, sin pedir nada
+  if (glosarioIndex.length === 1) {
+    const only  = glosarioIndex[0];
+    const terms = readGlosarioById(only.id);
+    if (!terms) { showLoadError(); return; }
+    finalizeSelection([{ id: only.id, name: only.name, terms }]);
+    return;
+  }
+
+  // 4) Varios glosarios cargados → preguntar cuál(es) estudiar
+  showGlosarioSelector();
+}
+
+function showLoadError(msg) {
+  document.getElementById('modeError').textContent =
+    msg || '⚠️ No hay glosario cargado para esta clase. Vuelve y carga el JSON de glosario.';
+  document.getElementById('modeError').style.display = '';
+  document.getElementById('glosarioScreen').style.display = 'none';
+  document.getElementById('modeScreen').style.display = '';
+}
+
+let selectedGlosIds = new Set(); // ids de glosarios marcados con checkbox
+
+function showGlosarioSelector() {
+  selectedGlosIds = new Set();
+  const wrap = document.getElementById('glosarioList');
+
+  const allCard = `<div class="glos-card glos-all" data-id="__all__" id="glosCardAll">
+    <span class="glos-icon">📚</span>
+    <div class="glos-info">
+      <div class="glos-name">Todos los glosarios</div>
+      <div class="glos-sub">Combina los ${glosarioIndex.length} glosarios en una sola sesión</div>
+    </div>
+    <span class="glos-arrow">›</span>
+  </div>`;
+
+  const cards = glosarioIndex.map(item => {
+    const n = (readGlosarioById(item.id) || []).length;
+    return `<div class="glos-card" data-id="${item.id}">
+      <span class="glos-icon">📖</span>
+      <div class="glos-info">
+        <div class="glos-name">${escH(item.name)}</div>
+        <div class="glos-sub">${n} término${n !== 1 ? 's' : ''}</div>
+      </div>
+      <div class="glos-checkbox" data-cb="${item.id}"></div>
+    </div>`;
+  }).join('');
+
+  wrap.innerHTML = allCard + cards;
+  updateGlosConfirmBar();
+
+  document.getElementById('modeScreen').style.display = 'none';
+  document.getElementById('modeError').style.display = 'none';
+  document.getElementById('glosarioScreen').style.display = '';
+}
+
+function toggleGlosCard(id) {
+  if (selectedGlosIds.has(id)) selectedGlosIds.delete(id);
+  else selectedGlosIds.add(id);
+
+  // Actualizar visual de la tarjeta
+  const card = document.querySelector(`.glos-card[data-id="${id}"]`);
+  if (card) card.classList.toggle('glos-checked', selectedGlosIds.has(id));
+  const cb = document.querySelector(`.glos-checkbox[data-cb="${id}"]`);
+  if (cb) cb.textContent = selectedGlosIds.has(id) ? '✓' : '';
+
+  updateGlosConfirmBar();
+}
+
+function updateGlosConfirmBar() {
+  const n = selectedGlosIds.size;
+  const btn = document.getElementById('btnConfirmGlos');
+  const cnt = document.getElementById('glosSelCount');
+  if (n === 0) {
+    cnt.textContent = 'Ningún glosario seleccionado';
+    btn.disabled = true;
+    btn.textContent = 'Estudiar seleccionados →';
+  } else if (n === 1) {
+    const id = [...selectedGlosIds][0];
+    const item = glosarioIndex.find(i => i.id === id);
+    cnt.textContent = `1 glosario seleccionado · ${item ? escH(item.name) : ''}`;
+    btn.disabled = false;
+    btn.textContent = 'Estudiar →';
+  } else {
+    // Calcular total de términos de los seleccionados
+    let total = 0;
+    selectedGlosIds.forEach(id => { total += (readGlosarioById(id) || []).length; });
+    cnt.textContent = `${n} glosarios · ${total} términos en total`;
+    btn.disabled = false;
+    btn.textContent = `Estudiar los ${n} juntos →`;
+  }
+}
+
+function confirmGlosarioSelection() {
+  if (!selectedGlosIds.size) return;
+  document.getElementById('glosarioScreen').style.display = 'none';
+  const sources = [...selectedGlosIds].map(id => {
+    const item = glosarioIndex.find(i => i.id === id);
+    return { id, name: item ? item.name : 'Glosario', terms: readGlosarioById(id) || [] };
+  });
+  finalizeSelection(sources);
+}
+
+// Mantener compatibilidad con delegación de clics en glosarioList
+function pickGlosario(id) {
+  // Ahora no se usa directamente, pero se conserva por si hay referencias externas
+  if (id === '__all__') {
+    document.getElementById('glosarioScreen').style.display = 'none';
+    const sources = glosarioIndex.map(item => ({ id: item.id, name: item.name, terms: readGlosarioById(item.id) || [] }));
+    finalizeSelection(sources);
+  } else {
+    toggleGlosCard(id);
+  }
+}
+
+function backToSelector() {
+  document.getElementById('modeScreen').style.display = 'none';
+  document.getElementById('gameScreen').style.display = 'none';
+  document.getElementById('completedScreen').style.display = 'none';
+  document.getElementById('modeError').style.display = 'none';
+  showGlosarioSelector();
+}
+
+function finalizeSelection(sources) {
+  multiSourceMode = sources.length > 1;
+  selectedGlosarioNames = sources.map(s => s.name).filter(Boolean);
+
+  allTerms = [];
+  sources.forEach(src => {
+    (src.terms || []).forEach(t => {
+      allTerms.push(src.name ? { ...t, _glosario: src.name } : t);
+    });
+  });
+  totalTerms = allTerms.length;
+
+  document.getElementById('btnChangeGlosario').style.display = glosarioIndex.length > 1 ? '' : 'none';
+
+  if (!allTerms.length) {
+    showLoadError('⚠️ El glosario no tiene términos con definición.');
+    return;
+  }
+
+  updateHeaderSubtitle();
+  document.getElementById('modeError').style.display = 'none';
+  document.getElementById('glosarioScreen').style.display = 'none';
+  document.getElementById('modeScreen').style.display = '';
+}
+
+function updateHeaderSubtitle() {
+  let extra = '';
+  if (multiSourceMode) {
+    if (selectedGlosarioNames.length === glosarioIndex.length) {
+      extra = ' · Todos los glosarios';
+    } else {
+      extra = ` · ${selectedGlosarioNames.length} glosarios`;
+    }
+  } else if (selectedGlosarioNames.length === 1 && glosarioIndex.length > 1) {
+    extra = ` · ${selectedGlosarioNames[0]}`;
+  }
+  document.getElementById('headerTitle').textContent = baseHeaderTitle + extra;
+}
+
+function bindButtons() {
+  document.getElementById('btnBack').onclick = () => {
+    if (typeof navBack === 'function') navBack();
+    else history.back();
+  };
+  document.getElementById('btnEnd').onclick  = () => showCompleted();
+
+  document.getElementById('modeStudy').addEventListener('click', () => startMode('study'));
+  document.getElementById('modeInverso').addEventListener('click', () => startMode('inverso'));
+  document.getElementById('btnShow').addEventListener('click', () => showOptions());
+  document.getElementById('btnConfirm').addEventListener('click', () => submitAnswer());
+  document.getElementById('btnNext').addEventListener('click', () => nextTerm());
+  document.getElementById('btnReset').addEventListener('click', () => resetSession());
+
+  // Delegación para las opciones generadas dinámicamente
+  document.getElementById('optionsList').addEventListener('click', (e) => {
+    const card = e.target.closest('.option-card');
+    if (card && card.dataset.index !== undefined) {
+      selectOption(parseInt(card.dataset.index, 10));
+    }
+  });
+
+  // Delegación para las tarjetas de selección de glosario
+  document.getElementById('glosarioList').addEventListener('click', (e) => {
+    const card = e.target.closest('.glos-card');
+    if (!card || card.dataset.id === undefined) return;
+    pickGlosario(card.dataset.id);
+  });
+}
+
+// ── START MODE ────────────────────────────────────────────────────────────
+function startMode(mode) {
+  studyMode = mode;
+  correctCount=0; wrongCount=0; totalCount=0;
+  wrongTerms=[]; slowTerms=[]; correctTerms=[];
+  currentRound=1;
+  document.getElementById('modeScreen').style.display  = 'none';
+  document.getElementById('gameScreen').style.display  = '';
+  document.getElementById('completedScreen').style.display = 'none';
+  document.getElementById('optionsLabel').textContent =
+    mode==='study' ? 'Elige el término correcto' : 'Elige la definición correcta';
+  startRound1();
+}
+
+function startRound1() {
+  currentRound=1;
+  roundTerms = shuffle([...allTerms]);
+  wrongTerms=[]; slowTerms=[]; correctTerms=[];
+  updateStats();
+  loadNextTerm();
+}
+
+function startNextRound() {
+  currentRound++;
+  roundTerms = [];
+  wrongTerms.forEach(t => { roundTerms.push(t); roundTerms.push(t); });
+  slowTerms.forEach(t  => roundTerms.push(t));
+  shuffle(roundTerms);
+  wrongTerms=[]; slowTerms=[];
+  updateStats();
+  if (roundTerms.length) loadNextTerm();
+  else startRound1();
+}
+
+// ── TERM FLOW ─────────────────────────────────────────────────────────────
+function loadNextTerm() {
+  if (!roundTerms.length) {
+    if (wrongTerms.length || slowTerms.length) startNextRound();
+    else startRound1();
+    return;
+  }
+  currentTerm   = roundTerms.pop();
+  selectedAns   = null;
+  showingOpts   = false;
+  answerDone    = false;
+
+  // generate options
+  const correctKey = studyMode==='study' ? currentTerm.termino : currentTerm.definicion;
+  let pool = allTerms
+    .filter(t => t !== currentTerm)
+    .map(t => studyMode==='study' ? t.termino : t.definicion);
+  // prefer same group
+  let sameGroup = allTerms
+    .filter(t => t !== currentTerm && t.grupo === currentTerm.grupo)
+    .map(t => studyMode==='study' ? t.termino : t.definicion);
+  let distractors = sameGroup.length >= 5 ? sameGroup : pool;
+  distractors = [...new Set(distractors)].filter(o => o !== correctKey);
+  shuffle(distractors);
+  currentOptions = shuffle([correctKey, ...distractors.slice(0,5)]);
+
+  refreshMainText();
+  renderOptions();
+  setPhase('show');
+  updateStats();
+}
+
+function refreshMainText() {
+  if (!currentTerm) return;
+  const text  = studyMode==='study' ? currentTerm.definicion : currentTerm.termino;
+  const label = studyMode==='study' ? 'Definición' : 'Término';
+  document.getElementById('cardLabel').textContent = label;
+  document.getElementById('mainText').innerHTML    = buildColoredHTML(text);
+  const metaParts = [];
+  if (multiSourceMode && currentTerm._glosario) metaParts.push(currentTerm._glosario);
+  if (currentTerm.grupo) metaParts.push(currentTerm.grupo);
+  metaParts.push(`Ronda ${currentRound}`);
+  document.getElementById('cardMeta').textContent = metaParts.join(' · ');
+}
+
+function refreshOptions() {
+  if (!showingOpts || !currentOptions.length) return;
+  renderOptions();
+}
+
+function renderOptions() {
+  const list = document.getElementById('optionsList');
+  list.innerHTML = currentOptions.map((opt, i) => {
+    let cls = 'option-card';
+    if (answerDone) {
+      cls += ' disabled';
+      const isCorrect = studyMode==='study'
+        ? opt === currentTerm.termino
+        : opt === currentTerm.definicion;
+      if (isCorrect) cls += ' correct';
+      else if (opt === selectedAns) cls += ' wrong';
+    } else if (opt === selectedAns) cls += ' selected';
+
+    const displayText = opt;
+    const htmlText    = colorize ? buildColoredHTML(displayText) : escH(displayText);
+    return `<div class="${cls}" data-index="${i}">
+      <div class="option-radio"></div>
+      <div class="option-text">${htmlText}</div>
+    </div>`;
+  }).join('');
+}
+
+function selectOption(i) {
+  if (answerDone) return;
+  selectedAns = currentOptions[i];
+  renderOptions();
+}
+
+function setPhase(phase) {
+  requestAnimationFrame(() => {
+    const elShow    = document.getElementById('btnShow');
+    const elConfirm = document.getElementById('btnConfirm');
+    const elNext    = document.getElementById('btnNext');
+    const elOpts    = document.getElementById('optionsWrap');
+
+    elShow.style.display    = phase === 'show'    ? '' : 'none';
+    elConfirm.style.display = phase === 'confirm' ? '' : 'none';
+    elNext.style.display    = phase === 'next'    ? '' : 'none';
+
+    // visibility+pointer-events en vez de display:none para que el layout
+    // ya exista en Android WebView y no requiera reflow al mostrarse
+    if (phase === 'show') {
+      elOpts.style.visibility   = 'hidden';
+      elOpts.style.pointerEvents= 'none';
+      document.getElementById('statusMsg').className = 'status-msg';
+      document.getElementById('timeBadge').textContent = '';
+    } else {
+      elOpts.style.visibility   = 'visible';
+      elOpts.style.pointerEvents= '';
+    }
+  });
+}
+
+function showOptions() {
+  showingOpts = true;
+  timerStart  = performance.now();
+  renderOptions();
+  setPhase('confirm');
+}
+
+function submitAnswer() {
+  if (!selectedAns) {
+    document.getElementById('statusMsg').className='status-msg wrong';
+    document.getElementById('statusMsg').textContent='Por favor, selecciona una respuesta.';
+    return;
+  }
+  const elapsed = performance.now() - timerStart;
+  const correctKey = studyMode==='study' ? currentTerm.termino : currentTerm.definicion;
+  const isCorrect  = selectedAns === correctKey;
+
+  answerDone = true;
+  totalCount++;
+  document.getElementById('timeBadge').textContent = `Tiempo: ${(elapsed/1000).toFixed(1)}s`;
+
+  if (isCorrect) {
+    correctCount++;
+    document.getElementById('statusMsg').className='status-msg correct';
+    document.getElementById('statusMsg').textContent='✓ ¡Correcto!';
+    if (elapsed > 3000) slowTerms.push(currentTerm);
+    else correctTerms.push(currentTerm);
+  } else {
+    wrongCount++;
+    document.getElementById('statusMsg').className='status-msg wrong';
+    document.getElementById('statusMsg').textContent=`✗ Incorrecto. La respuesta era: "${correctKey}"`;
+    wrongTerms.push(currentTerm);
+  }
+
+  renderOptions();
+  setPhase('next');
+  updateStats();
+}
+
+function nextTerm() { loadNextTerm(); }
+
+function updateStats() {
+  document.getElementById('statRound').textContent   = currentRound;
+  document.getElementById('statCorrect').textContent = correctCount;
+  document.getElementById('statWrong').textContent   = wrongCount;
+  document.getElementById('statTotal').textContent   = totalCount;
+  document.getElementById('statAcc').textContent     = totalCount
+    ? Math.round(correctCount/totalCount*100)+'%' : '—';
+}
+
+function showCompleted() {
+  document.getElementById('gameScreen').style.display  = 'none';
+  document.getElementById('completedScreen').style.display = '';
+  document.getElementById('cTotal').textContent   = totalTerms;
+  document.getElementById('cCorrect').textContent = correctCount;
+  document.getElementById('cWrong').textContent   = wrongCount;
+  const acc = totalCount ? Math.round(correctCount/totalCount*100) : 0;
+  const el  = document.getElementById('cAcc');
+  el.textContent = totalCount ? acc+'%' : '—';
+  el.style.color = acc>=80 ? '#16a34a' : acc>=60 ? '#d97706' : '#dc2626';
+
+  // Guardar historial de sesión en localStorage
+  try {
+    const histKey = `${KEY_PREFIX}_glosario_history`;
+    const history = JSON.parse(localStorage.getItem(histKey) || '[]');
+    history.push({
+      timestamp: Date.now(),
+      glosarioNames: selectedGlosarioNames.length ? selectedGlosarioNames : ['Glosario'],
+      multiSource: multiSourceMode,
+      totalTerms,
+      correctCount,
+      wrongCount,
+      totalAnswers: totalCount,
+      accuracy: acc
+    });
+    if (history.length > 100) history.splice(0, history.length - 100);
+    localStorage.setItem(histKey, JSON.stringify(history));
+  } catch(e) {}
+}
+
+function resetSession() {
+  document.getElementById('completedScreen').style.display = 'none';
+  document.getElementById('modeScreen').style.display = '';
+  correctCount=0; wrongCount=0; totalCount=0;
+  wrongTerms=[]; slowTerms=[]; correctTerms=[];
+}
+
+// ── KICK OFF ──────────────────────────────────────────────────────────────
+init();
+</script>
+</body>
+</html>

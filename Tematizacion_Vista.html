@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>Tematización</title>
+<style>
+  :root {
+    --bg: #f5f4f0;
+    --surface: #ffffff;
+    --ink: #1c1917;
+    --ink-2: #44403c;
+    --ink-3: #78716c;
+    --rule: #e7e5e4;
+    --accent: #4f46e5;
+    --accent-light: #ede9fe;
+    --accent-mid: #818cf8;
+    --gold: #b45309;
+    --gold-light: #fef3c7;
+    --green: #059669;
+    --green-light: #d1fae5;
+    --radius: 12px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ── HEADER ── */
+  header {
+    background: var(--ink);
+    color: #fff;
+    padding: 0.875rem 1.75rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    border-bottom: 1px solid rgba(255,255,255,0.07);
+  }
+  .header-back {
+    background: rgba(255,255,255,0.08);
+    border: none;
+    color: #fff;
+    font-size: 0.85rem;
+    cursor: pointer;
+    padding: 0.35rem 0.75rem;
+    border-radius: 6px;
+    transition: background 0.15s;
+    white-space: nowrap;
+  }
+  .header-back:hover { background: rgba(255,255,255,0.16); }
+  .header-info { flex: 1; min-width: 0; }
+  .header-info .sub { font-size: 0.72rem; opacity: 0.55; font-weight: 400; letter-spacing: 0.4px; }
+  .header-info .title { font-size: 1rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+  /* ── LAYOUT ── */
+  .layout {
+    display: flex;
+    flex: 1;
+    max-width: 1200px;
+    margin: 0 auto;
+    width: 100%;
+    padding: 2rem 1.5rem;
+    gap: 2rem;
+    align-items: flex-start;
+  }
+
+  /* ── SIDEBAR ── */
+  .sidebar {
+    width: 240px;
+    flex-shrink: 0;
+    position: sticky;
+    top: 5rem;
+  }
+  .sidebar-label {
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    margin-bottom: 0.75rem;
+    padding-left: 0.25rem;
+  }
+  .nav-list { list-style: none; display: flex; flex-direction: column; gap: 2px; }
+  .nav-item {
+    padding: 0.45rem 0.75rem;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.82rem;
+    color: var(--ink-2);
+    transition: background 0.12s, color 0.12s;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    border-left: 2px solid transparent;
+  }
+  .nav-item:hover { background: var(--rule); color: var(--ink); }
+  .nav-item.active { background: var(--accent-light); color: var(--accent); border-left-color: var(--accent); font-weight: 600; }
+  .nav-item .nav-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; flex-shrink: 0; }
+  .nav-item.subtitulo-nav { padding-left: 1.5rem; font-size: 0.78rem; }
+  .nav-item.titulo-nav { font-weight: 600; }
+  .nav-divider { height: 1px; background: var(--rule); margin: 0.5rem 0; }
+
+  /* ── MAIN ── */
+  main { flex: 1; min-width: 0; }
+
+  /* ── TITULO BLOCK ── */
+  .titulo-block {
+    margin-bottom: 2.5rem;
+  }
+  .titulo-hero {
+    background: var(--ink);
+    color: #fff;
+    border-radius: var(--radius);
+    padding: 2rem 2rem 1.75rem;
+    margin-bottom: 1.5rem;
+    position: relative;
+    overflow: hidden;
+  }
+  .titulo-hero::before {
+    content: '';
+    position: absolute;
+    top: -30px; right: -30px;
+    width: 160px; height: 160px;
+    border-radius: 50%;
+    background: rgba(99,102,241,0.15);
+    pointer-events: none;
+  }
+  .block-eyebrow {
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 1.4px;
+    text-transform: uppercase;
+    margin-bottom: 0.6rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .block-eyebrow.light { color: var(--accent-mid); }
+  .block-eyebrow.dark  { color: var(--ink-3); }
+  .block-eyebrow.gold  { color: #d97706; }
+  .block-eyebrow.green { color: var(--green); }
+
+  .titulo-name {
+    font-family: Georgia, 'Times New Roman', serif;
+    font-size: 1.6rem;
+    font-weight: 600;
+    line-height: 1.3;
+    margin-bottom: 1.25rem;
+  }
+  .tema-pill-row { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1.25rem; }
+  .tema-pill {
+    background: rgba(99,102,241,0.18);
+    color: #a5b4fc;
+    font-size: 0.72rem;
+    font-weight: 600;
+    padding: 0.3rem 0.7rem;
+    border-radius: 99px;
+    border: 1px solid rgba(99,102,241,0.3);
+  }
+  .fragmento-block {
+    border-left: 3px solid #818cf8;
+    padding: 0.85rem 1rem;
+    background: rgba(99,102,241,0.08);
+    border-radius: 0 8px 8px 0;
+  }
+  .fragmento-block .frag-label {
+    font-size: 0.62rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: #a5b4fc;
+    margin-bottom: 0.35rem;
+  }
+  .fragmento-block .frag-text {
+    font-family: Georgia, 'Times New Roman', serif;
+    font-style: italic;
+    font-size: 0.9rem;
+    line-height: 1.7;
+    color: #e0e7ff;
+  }
+
+  /* ── SUBTEMAS DEL TITULO ── */
+  .subtemas-section { margin-bottom: 1rem; }
+  .section-heading {
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    margin-bottom: 0.75rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .section-heading::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--rule);
+  }
+
+  .subtemas-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 0.875rem;
+  }
+
+  .subtema-card {
+    background: var(--surface);
+    border-radius: var(--radius);
+    border: 1px solid var(--rule);
+    overflow: hidden;
+    transition: box-shadow 0.15s, transform 0.15s;
+  }
+  .subtema-card:hover {
+    box-shadow: 0 4px 16px rgba(0,0,0,0.07);
+    transform: translateY(-1px);
+  }
+  .subtema-card-header {
+    padding: 0.875rem 1rem 0.75rem;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    cursor: pointer;
+    user-select: none;
+  }
+  .subtema-num {
+    width: 26px; height: 26px;
+    border-radius: 6px;
+    background: var(--accent-light);
+    color: var(--accent);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.72rem; font-weight: 700;
+    flex-shrink: 0;
+  }
+  .subtema-title-text {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--ink);
+    line-height: 1.35;
+    flex: 1;
+  }
+  .subtema-chevron {
+    color: var(--ink-3);
+    font-size: 0.75rem;
+    transition: transform 0.2s;
+    margin-top: 3px;
+  }
+  .subtema-card.open .subtema-chevron { transform: rotate(180deg); }
+
+  .subtema-card-body {
+    display: none;
+    padding: 0 1rem 1rem;
+  }
+  .subtema-card.open .subtema-card-body { display: block; }
+
+  .subtema-frag {
+    border-left: 2px solid var(--accent);
+    padding: 0.65rem 0.85rem;
+    background: var(--accent-light);
+    border-radius: 0 7px 7px 0;
+  }
+  .subtema-frag .sf-label {
+    font-size: 0.6rem;
+    font-weight: 700;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 0.3rem;
+  }
+  .subtema-frag .sf-text {
+    font-family: Georgia, 'Times New Roman', serif;
+    font-style: italic;
+    font-size: 0.83rem;
+    line-height: 1.65;
+    color: var(--ink-2);
+  }
+
+  /* ── SUBTITULOS ── */
+  .subtitulo-block {
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-radius: var(--radius);
+    margin-bottom: 1.25rem;
+    overflow: hidden;
+  }
+  .subtitulo-header {
+    padding: 1.25rem 1.5rem;
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    cursor: pointer;
+    user-select: none;
+    border-bottom: 1px solid transparent;
+    transition: border-color 0.15s, background 0.12s;
+  }
+  .subtitulo-header:hover { background: #fafaf9; }
+  .subtitulo-block.open .subtitulo-header { border-bottom-color: var(--rule); background: #fafaf9; }
+
+  .subtitulo-idx {
+    background: var(--gold-light);
+    color: var(--gold);
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 0.2rem 0.5rem;
+    border-radius: 5px;
+    white-space: nowrap;
+    margin-top: 2px;
+    flex-shrink: 0;
+    border: 1px solid #fde68a;
+  }
+  .subtitulo-header-text { flex: 1; min-width: 0; }
+  .subtitulo-name {
+    font-family: Georgia, 'Times New Roman', serif;
+    font-size: 1.05rem;
+    font-weight: 600;
+    line-height: 1.3;
+    color: var(--ink);
+    margin-bottom: 0.25rem;
+  }
+  .subtitulo-tema-preview {
+    font-size: 0.78rem;
+    color: var(--ink-3);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .subtitulo-meta {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-shrink: 0;
+  }
+  .subtemas-badge {
+    background: var(--green-light);
+    color: var(--green);
+    font-size: 0.7rem;
+    font-weight: 600;
+    padding: 0.2rem 0.55rem;
+    border-radius: 99px;
+    border: 1px solid #6ee7b7;
+    white-space: nowrap;
+  }
+  .subtitulo-chevron { color: var(--ink-3); font-size: 0.8rem; transition: transform 0.2s; }
+  .subtitulo-block.open .subtitulo-chevron { transform: rotate(180deg); }
+
+  .subtitulo-body { display: none; padding: 1.5rem; }
+  .subtitulo-block.open .subtitulo-body { display: block; }
+
+  /* Tema principal del subtítulo */
+  .tema-sub-block {
+    border-left: 3px solid var(--gold);
+    padding: 0.85rem 1rem;
+    background: var(--gold-light);
+    border-radius: 0 8px 8px 0;
+    margin-bottom: 1.25rem;
+    border: 1px solid #fde68a;
+    border-left: 3px solid var(--gold);
+  }
+  .tema-sub-block .tsb-eyebrow {
+    font-size: 0.62rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 0.35rem;
+  }
+  .tema-sub-block .tsb-tema {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--ink);
+    margin-bottom: 0.75rem;
+    line-height: 1.4;
+  }
+  .tema-sub-block .tsb-frag-label {
+    font-size: 0.6rem;
+    font-weight: 700;
+    letter-spacing: 0.9px;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 0.3rem;
+  }
+  .tema-sub-block .tsb-frag {
+    font-family: Georgia, 'Times New Roman', serif;
+    font-style: italic;
+    font-size: 0.85rem;
+    line-height: 1.65;
+    color: var(--ink-2);
+  }
+
+  /* ── EMPTY / ERROR ── */
+  .empty-state {
+    text-align: center;
+    padding: 3rem 2rem;
+    color: var(--ink-3);
+  }
+  .empty-state .es-icon { font-size: 2.5rem; margin-bottom: 1rem; }
+  .empty-state p { font-size: 0.9rem; line-height: 1.6; }
+  .error-box {
+    background: #fef2f2; border: 1px solid #fca5a5;
+    border-radius: var(--radius); padding: 1.5rem;
+    color: #dc2626; text-align: center; font-size: 0.9rem;
+  }
+
+  /* ── SCROLL ANCHOR ── */
+  .scroll-anchor { scroll-margin-top: 5.5rem; }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 700px) {
+    .layout { flex-direction: column; padding: 1rem; gap: 1rem; }
+    .sidebar { display: none; }
+    .subtemas-grid { grid-template-columns: 1fr; }
+    .titulo-name { font-size: 1.3rem; }
+  }
+</style>
+  <script src="_nav.js"></script>
+  <script src="cordova.js" onerror="void 0"></script>
+  <script src="_share.js" onerror="void 0"></script>
+</head>
+<body>
+
+<header>
+  <button class="header-back" onclick="navBack()">← Volver</button>
+  <div class="header-info">
+    <div class="sub" id="headerSub">Tematización</div>
+    <div class="title" id="headerTitle">Temas y Subtemas</div>
+  </div>
+</header>
+
+<div class="layout">
+  <aside class="sidebar">
+    <div class="sidebar-label">Contenido</div>
+    <ul class="nav-list" id="navList"></ul>
+  </aside>
+  <main id="root"></main>
+</div>
+
+<script>
+const params = new URLSearchParams(location.search);
+const subjectId = params.get('s');
+const classId = params.get('c');
+const KEY = `study_${subjectId}_${classId}_tematizacion`;
+
+// Update header
+const subjects = JSON.parse(localStorage.getItem('study_subjects') || '[]');
+const subject = subjects.find(s => s.id === subjectId);
+const cls = subject?.classes?.find(c => c.id === classId);
+document.getElementById('headerSub').textContent = cls ? cls.name : 'Tematización';
+document.getElementById('headerTitle').textContent = subject ? `${subject.icon} ${subject.name}` : 'Temas y Subtemas';
+
+const root = document.getElementById('root');
+const navList = document.getElementById('navList');
+
+// ── Load data ──────────────────────────────────────────────────────
+const raw = localStorage.getItem(KEY);
+
+if (!raw) {
+  root.innerHTML = `<div class="error-box">⚠️ No hay tematización cargada para esta clase.<br>Vuelve y carga el JSON de tematización.</div>`;
+} else {
+  try {
+    render(JSON.parse(raw));
+  } catch(e) {
+    root.innerHTML = `<div class="error-box">❌ El JSON no es válido: ${e.message}</div>`;
+  }
+}
+
+// ── Render ──────────────────────────────────────────────────────────
+function render(d) {
+  const titulo = d.titulo || '(Sin título)';
+  const temaTitulo = d.tema_principal_titulo || '';
+  const fragTitulo = d.fragmento_tema_principal_titulo || '';
+  const subtemasTitulo = Array.isArray(d.subtemas_del_titulo) ? d.subtemas_del_titulo : [];
+  const subtitulos = Array.isArray(d.subtitulos) ? d.subtitulos : [];
+
+  let html = '';
+  let navHTML = '';
+
+  // ── TÍTULO BLOCK ──
+  const tituloId = 'sec-titulo';
+  navHTML += `<li class="nav-item titulo-nav scroll-nav" data-target="${tituloId}">
+    <span class="nav-dot"></span>${escH(titulo)}
+  </li>`;
+
+  html += `<div class="titulo-block scroll-anchor" id="${tituloId}">`;
+
+  // Hero card
+  html += `<div class="titulo-hero">
+    <div class="block-eyebrow light">🗂️ Título</div>
+    <div class="titulo-name">${escH(titulo)}</div>`;
+
+  if (temaTitulo) {
+    html += `<div class="tema-pill-row"><span class="tema-pill">📌 ${escH(temaTitulo)}</span></div>`;
+  }
+  if (fragTitulo) {
+    html += `<div class="fragmento-block">
+      <div class="frag-label">💬 Fragmento representativo</div>
+      <div class="frag-text">${escH(fragTitulo)}</div>
+    </div>`;
+  }
+  html += `</div>`; // end titulo-hero
+
+  // Subtemas del título
+  if (subtemasTitulo.length) {
+    html += `<div class="subtemas-section">
+      <div class="section-heading">Subtemas del título (${subtemasTitulo.length})</div>
+      <div class="subtemas-grid">`;
+    subtemasTitulo.forEach((s, i) => {
+      const id = `st_titulo_${i}`;
+      html += buildSubtemaCard(s, i, id);
+    });
+    html += `</div></div>`;
+  }
+
+  html += `</div>`; // end titulo-block
+
+  // ── SUBTÍTULOS ──
+  if (subtitulos.length) {
+    navHTML += `<li class="nav-divider" role="separator"></li>`;
+    navHTML += `<li class="nav-item" style="font-size:0.63rem;font-weight:700;letter-spacing:1.1px;text-transform:uppercase;color:var(--ink-3);padding:0.25rem 0.5rem;cursor:default;">Subtítulos</li>`;
+
+    subtitulos.forEach((sub, idx) => {
+      const subId = `sec_sub_${idx}`;
+      const subNombre = sub.subtitulo || `Subtítulo ${idx + 1}`;
+      const subTema = sub.tema_principal_subtitulo || '';
+      const subFrag = sub.fragmento_tema_principal_subtitulo || '';
+      const subSubtemas = Array.isArray(sub.subtemas) ? sub.subtemas : [];
+
+      navHTML += `<li class="nav-item subtitulo-nav scroll-nav" data-target="${subId}">
+        <span class="nav-dot"></span>${escH(subNombre)}
+      </li>`;
+
+      html += `<div class="subtitulo-block scroll-anchor" id="${subId}">
+        <div class="subtitulo-header" onclick="toggleSub(this)">
+          <span class="subtitulo-idx">§ ${idx + 1}</span>
+          <div class="subtitulo-header-text">
+            <div class="subtitulo-name">${escH(subNombre)}</div>
+            ${subTema ? `<div class="subtitulo-tema-preview">📌 ${escH(subTema)}</div>` : ''}
+          </div>
+          <div class="subtitulo-meta">
+            ${subSubtemas.length ? `<span class="subtemas-badge">${subSubtemas.length} subtema${subSubtemas.length !== 1 ? 's' : ''}</span>` : ''}
+            <span class="subtitulo-chevron">▼</span>
+          </div>
+        </div>
+        <div class="subtitulo-body">`;
+
+      // Tema principal del subtítulo
+      if (subTema || subFrag) {
+        html += `<div class="tema-sub-block">
+          <div class="tsb-eyebrow">🏷️ Tema principal</div>
+          ${subTema ? `<div class="tsb-tema">${escH(subTema)}</div>` : ''}
+          ${subFrag ? `<div class="tsb-frag-label">💬 Fragmento representativo</div><div class="tsb-frag">${escH(subFrag)}</div>` : ''}
+        </div>`;
+      }
+
+      // Subtemas del subtítulo
+      if (subSubtemas.length) {
+        html += `<div class="section-heading" style="margin-top:0.25rem;">Subtemas (${subSubtemas.length})</div>
+          <div class="subtemas-grid">`;
+        subSubtemas.forEach((s, i) => {
+          const id = `st_sub${idx}_${i}`;
+          html += buildSubtemaCard(s, i, id);
+        });
+        html += `</div>`;
+      } else {
+        html += `<div style="color:var(--ink-3);font-size:0.85rem;font-style:italic;padding:0.5rem 0;">Sin subtemas registrados.</div>`;
+      }
+
+      html += `</div></div>`; // end subtitulo-body + subtitulo-block
+    });
+  }
+
+  root.innerHTML = html;
+  navList.innerHTML = navHTML;
+  setupScrollSpy();
+}
+
+function buildSubtemaCard(s, i, id) {
+  const nombre = s.subtema || `(Subtema ${i + 1})`;
+  const frag = s.fragmento || '';
+  return `<div class="subtema-card" id="card_${id}">
+    <div class="subtema-card-header" onclick="toggleCard('card_${id}')">
+      <div class="subtema-num">${i + 1}</div>
+      <div class="subtema-title-text">${escH(nombre)}</div>
+      <span class="subtema-chevron">▼</span>
+    </div>
+    ${frag ? `<div class="subtema-card-body">
+      <div class="subtema-frag">
+        <div class="sf-label">💬 Fragmento</div>
+        <div class="sf-text">${escH(frag)}</div>
+      </div>
+    </div>` : ''}
+  </div>`;
+}
+
+// ── Interactions ─────────────────────────────────────────────────
+function toggleCard(id) {
+  document.getElementById(id)?.classList.toggle('open');
+}
+
+function toggleSub(header) {
+  header.closest('.subtitulo-block')?.classList.toggle('open');
+}
+
+// ── Scroll spy ───────────────────────────────────────────────────
+function setupScrollSpy() {
+  const navItems = document.querySelectorAll('.scroll-nav');
+  const sections = [...navItems].map(n => document.getElementById(n.dataset.target)).filter(Boolean);
+
+  navItems.forEach(item => {
+    item.addEventListener('click', () => {
+      const target = document.getElementById(item.dataset.target);
+      if (target) target.scrollIntoView({ behavior: 'smooth' });
+      // auto-open subtitulo
+      const block = target?.querySelector('.subtitulo-block');
+      if (block && !block.classList.contains('open')) block.classList.add('open');
+    });
+  });
+
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        const id = e.target.id;
+        navItems.forEach(n => {
+          n.classList.toggle('active', n.dataset.target === id);
+        });
+      }
+    });
+  }, { rootMargin: '-10% 0px -60% 0px', threshold: 0 });
+
+  sections.forEach(s => io.observe(s));
+}
+
+function escH(s) {
+  return String(s)
+    .replace(/&/g,'&amp;')
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;');
+}
+</script>
+</body>
+</html>

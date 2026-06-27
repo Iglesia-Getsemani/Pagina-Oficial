@@ -1,0 +1,1150 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Prueba Mix</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+  :root {
+    --ink:       #0f0f1a;
+    --bg:        #f5f4f0;
+    --white:     #ffffff;
+    --violet:    #4f46e5;
+    --violet-lt: #e0e7ff;
+    --amber:     #d97706;
+    --emerald:   #059669;
+    --rose:      #e11d48;
+    --rule:      #e5e3dc;
+    --teal:      #0891b2;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Inter', system-ui, sans-serif;
+    background: var(--bg); min-height: 100vh;
+    color: var(--ink); font-size: 14px; line-height: 1.6;
+  }
+
+  /* ── Header ── */
+  header {
+    background: var(--ink); color: #fff;
+    padding: 0.75rem 1rem;
+    display: flex; align-items: center; gap: 0.5rem;
+    position: sticky; top: 0; z-index: 50;
+    box-shadow: 0 2px 12px rgba(0,0,0,.25);
+  }
+  .header-back {
+    background: transparent; border: none; color: #fff;
+    font-size: 0.95rem; cursor: pointer;
+    padding: 0.25rem 0.4rem; border-radius: 6px;
+    transition: background .15s; font-family: inherit; flex-shrink: 0;
+  }
+  .header-back:hover { background: rgba(255,255,255,.12); }
+  .header-info { flex: 1; min-width: 0; }
+  .header-info h1 {
+    font-size: 0.65rem; opacity: 0.55; font-weight: 400;
+    letter-spacing: .4px; text-transform: uppercase;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .header-info h2 {
+    font-size: 0.9rem; font-weight: 600;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+
+  /* ── Main page ── */
+  .page { max-width: 680px; margin: 0 auto; padding: 2rem 1.25rem 4rem; }
+
+  /* ── Loading / Error ── */
+  .state-card {
+    background: var(--white); border-radius: 16px; padding: 2.5rem 1.5rem;
+    text-align: center; border: 1px solid var(--rule);
+    box-shadow: 0 2px 12px rgba(0,0,0,.06);
+  }
+  .state-icon { font-size: 2.5rem; margin-bottom: 0.75rem; }
+  .state-title { font-size: 1.1rem; font-weight: 700; margin-bottom: 0.5rem; }
+  .state-sub { font-size: 0.88rem; color: #6b7280; line-height: 1.6; }
+  .state-btn {
+    margin-top: 1.5rem; display: inline-block;
+    padding: 0.6rem 1.4rem; background: var(--violet); color: #fff;
+    border-radius: 10px; font-size: 0.88rem; font-weight: 600;
+    cursor: pointer; border: none; font-family: inherit; transition: background .15s;
+  }
+  .state-btn:hover { background: #4338ca; }
+
+  /* ── Content chips / source list ── */
+  .mix-header-card {
+    background: var(--white); border-radius: 16px; padding: 1.25rem 1.4rem;
+    border: 1px solid var(--rule); margin-bottom: 1.5rem;
+    box-shadow: 0 2px 12px rgba(0,0,0,.06);
+  }
+  .mix-header-card h2 { font-size: 1rem; font-weight: 700; margin-bottom: 0.85rem; display: flex; align-items: center; gap: 0.5rem; }
+  .mix-chips { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 1.1rem; }
+  .mix-chip {
+    font-size: 0.72rem; padding: 0.2rem 0.65rem;
+    border-radius: 99px; font-weight: 600;
+  }
+  .mc-leccion    { background: #d1fae5; color: #065f46; }
+  .mc-matutina   { background: #fef3c7; color: #92400e; }
+  .mc-ensenanzas { background: #f3e8ff; color: #6b21a8; }
+  .mc-academico  { background: var(--violet-lt); color: #3730a3; }
+  .mc-narrativa  { background: #fef3c7; color: #92400e; }
+  .mc-procedimental { background: #e0f2fe; color: #0e7490; }
+  .mc-prescriptivo  { background: #ffe4e6; color: #9f1239; }
+
+  .mix-stats {
+    display: flex; gap: 1.25rem; flex-wrap: wrap;
+    font-size: 0.82rem; color: #6b7280;
+  }
+  .mix-stats strong { color: var(--ink); font-weight: 700; }
+
+  .start-btn {
+    width: 100%; padding: 0.75rem; margin-top: 1.1rem;
+    background: #ff8906; color: #0f0e17; border: none;
+    border-radius: 12px; font-size: 0.95rem; font-weight: 800;
+    cursor: pointer; font-family: inherit; transition: background .15s;
+    display: flex; align-items: center; justify-content: center; gap: 0.5rem;
+  }
+  .start-btn:hover { background: #e07a00; }
+
+  /* ════════════════════════════════════════════════
+     QUIZ OVERLAY — idéntico al de Contenido.html
+     ════════════════════════════════════════════ */
+  .quiz-overlay {
+    display: none; position: fixed; inset: 0; z-index: 500;
+    background: rgba(10,10,20,0.82); backdrop-filter: blur(4px);
+    align-items: flex-end; justify-content: center; padding: 0;
+  }
+  .quiz-overlay.open { display: flex; }
+  @media(min-width:600px){ .quiz-overlay { align-items: center; padding: 1rem; } }
+  .quiz-modal {
+    background: #0f0e17; border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 20px 20px 0 0; width: 100%; max-width: 560px;
+    max-height: 92vh; overflow-y: auto; overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    box-shadow: 0 24px 64px rgba(0,0,0,0.6);
+    animation: quizSlide 0.22s ease; box-sizing: border-box;
+  }
+  @media(min-width:600px){ .quiz-modal { border-radius: 20px; max-height: 90vh; } }
+  @keyframes quizSlide { from { opacity:0; transform:translateY(24px); } to { opacity:1; transform:translateY(0); } }
+
+  /* ── source badge inside question ── */
+  .qm-source-badge {
+    display: inline-flex; align-items: center; gap: 0.3rem;
+    font-size: 0.62rem; font-weight: 700; letter-spacing: 0.6px;
+    text-transform: uppercase; padding: 0.15rem 0.5rem;
+    border-radius: 99px; background: rgba(255,137,6,0.15);
+    color: #ff8906; margin-bottom: 0.6rem;
+  }
+
+  .qm-header {
+    padding: 1.25rem 1.4rem 0.85rem;
+    border-bottom: 1px solid rgba(255,255,255,0.07);
+    display: flex; align-items: center; gap: 0.75rem;
+  }
+  .qm-header-icon { font-size: 1.4rem; }
+  .qm-header-info { flex: 1; }
+  .qm-title { font-size: 1rem; font-weight: 700; color: #fffffe; }
+  .qm-sub   { font-size: 0.72rem; color: rgba(255,255,255,0.4); margin-top: 0.1rem; }
+  .qm-close {
+    background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 8px; color: rgba(255,255,255,0.5); font-size: 1rem;
+    width: 32px; height: 32px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.15s; flex-shrink: 0;
+  }
+  .qm-close:hover { background: rgba(255,255,255,0.12); color: #fff; }
+  .qm-body { padding: 1rem; }
+  @media(min-width:400px){ .qm-body { padding: 1.25rem 1.4rem 1.4rem; } }
+
+  .qm-loading {
+    display: flex; flex-direction: column; align-items: center;
+    gap: 0.75rem; padding: 2rem 0; color: rgba(255,255,255,0.4); font-size: 0.85rem;
+  }
+  .qm-spinner {
+    width: 36px; height: 36px; border: 3px solid rgba(255,137,6,0.2);
+    border-top-color: #ff8906; border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .qm-question-num {
+    font-size: 0.68rem; font-weight: 700; letter-spacing: 0.8px;
+    text-transform: uppercase; color: #ff8906; margin-bottom: 0.5rem;
+  }
+  .qm-question-text {
+    font-size: 1rem; font-weight: 600; line-height: 1.55;
+    color: #fffffe; margin-bottom: 1.25rem;
+  }
+  .qm-options { display: grid; gap: 0.5rem; margin-bottom: 1.1rem; }
+  .qm-opt {
+    display: flex; align-items: flex-start; gap: 0.75rem;
+    padding: 0.7rem 1rem; border: 1.5px solid rgba(255,255,255,0.1);
+    border-radius: 10px; cursor: pointer; transition: all 0.15s;
+    font-size: 0.9rem; color: rgba(255,255,255,0.8);
+    background: rgba(255,255,255,0.03); line-height: 1.45;
+    text-align: left; font-family: inherit; width: 100%;
+  }
+  .qm-opt:hover:not(:disabled) { border-color: #ff8906; background: rgba(255,137,6,0.08); color: #fffffe; }
+  .qm-opt.selected  { border-color: #ff8906; background: rgba(255,137,6,0.1); color: #fffffe; }
+  .qm-opt.correct   { border-color: #22c55e; background: rgba(34,197,94,0.1); color: #fffffe; }
+  .qm-opt.incorrect { border-color: #ef4444; background: rgba(239,68,68,0.1); color: #fffffe; }
+  .qm-opt.correct-missed { border-color: #22c55e; background: rgba(34,197,94,0.06); opacity: 0.65; }
+  .qm-opt:disabled  { cursor: default; }
+  .qm-opt-key {
+    width: 22px; height: 22px; border-radius: 6px; flex-shrink: 0;
+    background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15);
+    font-size: 0.72rem; font-weight: 700; display: flex; align-items: center; justify-content: center;
+    color: rgba(255,255,255,0.5); margin-top: 1px;
+  }
+  .qm-sort-list { display: grid; gap: 0.5rem; margin-bottom: 1.1rem; }
+  .qm-sort-item {
+    display: flex; align-items: center; gap: 0.75rem;
+    padding: 0.75rem 0.9rem; background: rgba(255,255,255,0.04);
+    border: 1.5px solid rgba(255,255,255,0.12); border-radius: 10px;
+    font-size: 0.9rem; color: rgba(255,255,255,0.85); cursor: grab; user-select: none;
+    transition: all 0.15s; min-height: 52px;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .qm-sort-item:active { cursor: grabbing; background: rgba(255,137,6,0.08); }
+  .qm-sort-item.drag-over  { border-color: #ff8906; background: rgba(255,137,6,0.1); transform: scale(1.01); }
+  .qm-sort-item.dragging   { opacity: 0.45; border-style: dashed; }
+  .qm-sort-handle { color: rgba(255,255,255,0.35); font-size: 1rem; flex-shrink: 0; }
+  .qm-sort-item.correct-pos { border-color: #22c55e; background: rgba(34,197,94,0.08); }
+  .qm-sort-item.wrong-pos   { border-color: #ef4444; background: rgba(239,68,68,0.08); }
+
+  .qm-gcard {
+    background: rgba(255,255,255,0.04); border: 1.5px solid rgba(255,255,255,0.1);
+    border-radius: 14px; padding: 1.25rem 1.1rem; margin-bottom: 1rem;
+    animation: fadeIn 0.18s ease;
+  }
+  .qm-gcard-progress {
+    font-size: 0.68rem; font-weight: 700; letter-spacing: 0.8px;
+    text-transform: uppercase; color: #ff8906; margin-bottom: 0.75rem;
+  }
+  .qm-gcard-item {
+    font-size: 1rem; font-weight: 600; color: #fffffe; line-height: 1.5;
+    margin-bottom: 0.9rem; padding: 0.85rem 1rem;
+    background: rgba(255,255,255,0.05); border-radius: 10px; border: 1px solid rgba(255,255,255,0.08);
+  }
+  .qm-gcard-hint  { font-size: 0.78rem; color: rgba(255,255,255,0.4); margin-bottom: 0.75rem; }
+  .qm-gcard-btns  { display: grid; gap: 0.45rem; }
+  .qm-gcard-btn {
+    padding: 0.55rem 0.85rem; border-radius: 9px; cursor: pointer;
+    font-size: 0.88rem; font-weight: 600; font-family: inherit;
+    border: 1.5px solid rgba(255,255,255,0.14); background: rgba(255,255,255,0.06);
+    color: rgba(255,255,255,0.8); text-align: left; transition: all 0.15s;
+  }
+  .qm-gcard-btn:hover:not(:disabled) { border-color: #ff8906; background: rgba(255,137,6,0.1); color: #fffffe; }
+  .qm-gcard-btn:disabled { cursor: default; }
+  .qm-gcard-btn.gcard-correct { border-color: #22c55e; background: rgba(34,197,94,0.12); color: #86efac; }
+  .qm-gcard-btn.gcard-wrong   { border-color: #ef4444; background: rgba(239,68,68,0.12); color: #fca5a5; }
+  .qm-gcard-feedback { display: none; font-size: 0.8rem; font-weight: 600; margin-top: 0.65rem; }
+  .qm-gcard-feedback.fb-ok  { display: block; color: #86efac; }
+  .qm-gcard-feedback.fb-no  { display: block; color: #fca5a5; }
+  .qm-gcard-result  { text-align: center; padding: 1rem 0; }
+  .qm-gcard-timeout { font-size: 0.85rem; color: #fca5a5; margin-bottom: 0.5rem; }
+  .qm-gcard-score   { font-size: 1.4rem; font-weight: 800; color: #ff8906; }
+
+  .qm-feedback {
+    padding: 0.85rem 1rem; border-radius: 10px; font-size: 0.85rem;
+    line-height: 1.6; margin-bottom: 1rem; display: none; border-left: 3px solid;
+    animation: fadeIn 0.2s ease;
+  }
+  .qm-feedback.show { display: block; }
+  .qm-feedback.correct   { background: rgba(34,197,94,0.08); border-color: #22c55e; color: #86efac; }
+  .qm-feedback.incorrect { background: rgba(239,68,68,0.08); border-color: #ef4444; color: #fca5a5; }
+  .qm-fb-label { font-weight: 700; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.35rem; opacity: 0.75; }
+
+  .qm-timer { height: 3px; background: rgba(255,255,255,0.07); border-radius: 99px; overflow: hidden; margin-bottom: 1.25rem; }
+  .qm-timer-bar { height: 100%; background: #ff8906; border-radius: 99px; transition: width 0.5s linear, background 0.3s; }
+  .qm-timer-bar.warn { background: #ef4444; }
+
+  .qm-progress { display: flex; gap: 0.3rem; flex-wrap: wrap; margin-bottom: 1rem; }
+  .qm-pdot { width: 7px; height: 7px; border-radius: 50%; background: rgba(255,255,255,0.12); transition: all 0.2s; }
+  .qm-pdot.cur  { background: #ff8906; transform: scale(1.4); }
+  .qm-pdot.ok   { background: #22c55e; }
+  .qm-pdot.fail { background: #ef4444; }
+
+  .qm-actions { display: flex; gap: 0.6rem; flex-wrap: wrap; }
+  .qm-btn { padding: 0.6rem 1.25rem; border-radius: 10px; font-size: 0.88rem; font-weight: 700; cursor: pointer; border: none; transition: all 0.15s; font-family: inherit; }
+  .qm-btn-primary { background: #ff8906; color: #0f0e17; }
+  .qm-btn-primary:hover { background: #e07a00; }
+  .qm-btn-ghost { background: rgba(255,255,255,0.07); color: rgba(255,255,255,0.7); border: 1px solid rgba(255,255,255,0.12); }
+  .qm-btn-ghost:hover { background: rgba(255,255,255,0.12); color: #fff; }
+
+  .qm-result { text-align: center; padding: 1rem 0; }
+  .qm-result-emoji { font-size: 2.5rem; margin-bottom: 0.5rem; }
+  .qm-result-score { font-size: 2.5rem; font-weight: 800; margin-bottom: 0.2rem; }
+  .qm-result-score.great { color: #22c55e; }
+  .qm-result-score.ok    { color: #ff8906; }
+  .qm-result-score.low   { color: #ef4444; }
+  .qm-result-msg   { font-size: 0.85rem; color: rgba(255,255,255,0.5); margin-bottom: 1.5rem; }
+  .qm-result-stats { display: flex; justify-content: center; gap: 2rem; margin-bottom: 1.5rem; }
+  .qm-rs { text-align: center; }
+  .qm-rs .num { font-size: 1.3rem; font-weight: 700; }
+  .qm-rs .lbl { font-size: 0.7rem; color: rgba(255,255,255,0.4); margin-top: 0.1rem; }
+
+  /* ── Breakdown por contenido en el resultado ── */
+  .qm-breakdown { margin-top: 1.25rem; text-align: left; }
+  .qm-breakdown-title { font-size: 0.7rem; font-weight: 700; letter-spacing: 0.7px; text-transform: uppercase; color: rgba(255,255,255,0.35); margin-bottom: 0.65rem; }
+  .qm-bk-row { display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.4rem; }
+  .qm-bk-name { font-size: 0.78rem; flex: 1; color: rgba(255,255,255,0.7); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .qm-bk-bar-wrap { width: 80px; height: 5px; border-radius: 99px; background: rgba(255,255,255,0.1); overflow: hidden; }
+  .qm-bk-bar { height: 100%; border-radius: 99px; background: #ff8906; }
+  .qm-bk-pct { font-size: 0.72rem; font-weight: 700; color: rgba(255,255,255,0.5); min-width: 32px; text-align: right; }
+
+  @keyframes fadeIn { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
+</style>
+</head>
+<body>
+
+<header>
+  <button class="header-back" onclick="history.back()">← Volver</button>
+  <div class="header-info">
+    <h1 id="headerSub">Asignatura</h1>
+    <h2 id="headerClass">Prueba Mix</h2>
+  </div>
+</header>
+
+<!-- Quiz Overlay -->
+<div class="quiz-overlay" id="quizOverlay" onclick="handleOverlayClick(event)">
+  <div class="quiz-modal" id="quizModal">
+    <div class="qm-header">
+      <span class="qm-header-icon" id="qmIcon">🎯</span>
+      <div class="qm-header-info">
+        <div class="qm-title" id="qmTitle">Prueba Mix</div>
+        <div class="qm-sub"  id="qmSub">Cargando preguntas…</div>
+      </div>
+      <button class="qm-close" onclick="closeQuiz()">✕</button>
+    </div>
+    <div class="qm-body" id="qmBody">
+      <div class="qm-loading">
+        <div class="qm-spinner"></div>
+        <span>Mezclando preguntas de todos los contenidos…</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="page" id="root">
+  <!-- contenido dinámico -->
+</div>
+
+<script>
+/* ══════════════════════════════════════════════════════════════════
+   PARÁMETROS Y CONTEXTO
+   ═══════════════════════════════════════════════════════════════ */
+const params     = new URLSearchParams(location.search);
+const subjectId  = params.get('s');
+const classId    = params.get('c');
+const idsParam   = params.get('ids'); // lista separada por comas, opcional
+const KEY_PREFIX = `study_${subjectId}_${classId}`;
+
+const subjects = JSON.parse(localStorage.getItem('study_subjects') || '[]');
+const subj     = subjects.find(s => s.id === subjectId);
+const clsObj   = subj?.classes?.find(c => c.id === classId);
+document.getElementById('headerSub').textContent   = subj   ? `${subj.icon} ${subj.name}` : 'Asignatura';
+document.getElementById('headerClass').textContent = clsObj ? clsObj.name + ' — Mix' : 'Prueba Mix';
+
+/* ══════════════════════════════════════════════════════════════════
+   HELPERS (espejo de Contenido.html)
+   ═══════════════════════════════════════════════════════════════ */
+function hasVal(v) {
+  if (v === undefined || v === null || v === '') return false;
+  if (Array.isArray(v)) return v.length > 0;
+  if (typeof v === 'object') return Object.keys(v).length > 0;
+  return true;
+}
+function shuffleWith(correct, wrongs) {
+  const pool = wrongs.filter(w => w !== correct).sort(() => Math.random() - 0.5).slice(0, 3);
+  return [correct, ...pool].sort(() => Math.random() - 0.5);
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   DETECCIÓN DE TIPO
+   ═══════════════════════════════════════════════════════════════ */
+const TYPE_MAP = {
+  narrativa_historica: { label: 'Narrativa histórica', icon: '📜', cls: 'mc-narrativa' },
+  ensenanzas:          { label: 'Enseñanzas',           icon: '🕊️', cls: 'mc-ensenanzas' },
+  procedimental:       { label: 'Procedimental',         icon: '⚙️', cls: 'mc-procedimental' },
+  prescriptivo:        { label: 'Prescriptivo',          icon: '⚖️', cls: 'mc-prescriptivo' },
+  leccion:             { label: 'Lección',               icon: '🧩', cls: 'mc-leccion' },
+  matutina:            { label: 'Matutina',              icon: '🌅', cls: 'mc-matutina' },
+  academico:           { label: 'Académico',             icon: '🎓', cls: 'mc-academico' },
+};
+function detectType(data) {
+  const k = Object.keys(data);
+  if (k.includes('formato_rompecabezas_leccion')) return 'leccion';
+  if (k.includes('arcos'))                        return 'narrativa_historica';
+  if (k.includes('ensenanzas'))                   return 'ensenanzas';
+  if (k.includes('estructura_procedimental'))     return 'procedimental';
+  if (k.includes('fundamento_normativo') || k.includes('estructura_normativa')) return 'prescriptivo';
+  if (k.includes('versiculo') || k.includes('oracion')) return 'matutina';
+  return 'academico';
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   GENERADORES DE PREGUNTAS — copia exacta de Contenido_Practica.js
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ── LECCIÓN ── */
+function genQuestionsLeccion(d) {
+  const lec = d.formato_rompecabezas_leccion || {};
+  const piezas = lec.piezas_diarias || {};
+  const diasNums = Object.keys(piezas).filter(k => k.startsWith('dia_')).sort();
+  const dias = diasNums.map((dk, i) => ({ num: i + 1, key: dk, ...piezas[dk] }));
+  const qs = [];
+  if (dias.length >= 3) {
+    const items = dias.map(d2 => d2.pieza).filter(Boolean);
+    if (items.length >= 3) {
+      const shuffled = [...items].sort(() => Math.random() - 0.5);
+      qs.push({ type:'sort', question:'📅 Ordena las piezas diarias de la primera a la última', items:shuffled, correct:items, explanation:'El orden correcto refleja la progresión temática de la lección a lo largo de la semana.', timeSec:40 });
+    }
+    const conProf = dias.filter(d2 => d2.profundizacion && d2.pieza);
+    if (conProf.length >= 2) {
+      const usedProf = [...conProf].sort(() => Math.random() - 0.5).slice(0, Math.min(3, conProf.length));
+      usedProf.forEach(target => {
+        const wrongPool = conProf.filter(d2 => d2.num !== target.num).map(d2 => `Día ${d2.num}`).sort(() => Math.random() - 0.5).slice(0, 3);
+        const opts = [`Día ${target.num}`, ...wrongPool].sort(() => Math.random() - 0.5);
+        qs.push({ type:'choice', question:`🔍 ¿A qué día corresponde esta profundización?\n\n"${target.profundizacion}"`, options:opts, correct:`Día ${target.num}`, explanation:`Esta profundización pertenece al Día ${target.num}: "${target.pieza}".`, timeSec:22 });
+      });
+    }
+    const conRef = dias.filter(d2 => d2.referencia_biblica?.libro_capitulo_versiculo && d2.pieza);
+    if (conRef.length >= 2) {
+      const allRefs = conRef.map(d2 => d2.referencia_biblica.libro_capitulo_versiculo);
+      const usedRef = [...conRef].sort(() => Math.random() - 0.5).slice(0, Math.min(3, conRef.length));
+      usedRef.forEach(target => {
+        const wrongRefs = allRefs.filter(r => r !== target.referencia_biblica.libro_capitulo_versiculo).sort(() => Math.random() - 0.5).slice(0, 3);
+        const opts = [target.referencia_biblica.libro_capitulo_versiculo, ...wrongRefs].sort(() => Math.random() - 0.5);
+        qs.push({ type:'choice', question:`📖 ¿Cuál es la referencia bíblica del Día ${target.num}?\n"${target.pieza}"`, options:opts, correct:target.referencia_biblica.libro_capitulo_versiculo, explanation:`El Día ${target.num} — "${target.pieza}" — cita ${target.referencia_biblica.libro_capitulo_versiculo}.`, timeSec:22 });
+      });
+    }
+    if (dias.length >= 4) {
+      const target2 = dias[Math.floor(Math.random() * dias.length)];
+      const wrongOpts = dias.filter(d2 => d2.num !== target2.num && d2.pieza).map(d2 => d2.pieza).sort(() => Math.random() - 0.5).slice(0, 3);
+      const opts2 = [target2.pieza, ...wrongOpts].sort(() => Math.random() - 0.5);
+      qs.push({ type:'choice', question:`🧩 ¿Cuál es la pieza del Día ${target2.num}?`, options:opts2, correct:target2.pieza, explanation:`El Día ${target2.num} corresponde a: "${target2.pieza}".`, timeSec:20 });
+    }
+    const conjuntos = (lec.Analisis || {}).conjuntos || [];
+    if (conjuntos.length >= 2) {
+      const usedDias = {}; const buckets = [];
+      conjuntos.forEach(c => { if (c.dias?.length) { buckets.push({ label:c.nombre, dias:c.dias }); c.dias.forEach(d3 => { usedDias[d3] = c.nombre; }); } });
+      const allDias = Object.keys(usedDias);
+      if (allDias.length >= 4 && buckets.length >= 2) {
+        qs.push({ type:'group', question:'🗂️ Agrupa los días según el conjunto analítico al que pertenecen', chips:allDias.sort(() => Math.random() - 0.5), buckets:buckets.map(b => ({ label:b.label, chips:[], correct:b.dias })), correctMap:usedDias, explanation:'Los días se agrupan según los patrones y elementos comunes identificados en el análisis.', timeSec:45 });
+      }
+    }
+  }
+  const preg = lec.pregunta_inicial || {};
+  if (hasVal(preg.texto) && qs.length === 0) {
+    qs.push({ type:'choice', question:'¿Cuál es la pregunta central que guía esta lección?', options:shuffleWith(preg.texto,['No hay pregunta definida','Es una declaración, no pregunta','Es el cierre de la lección']), correct:preg.texto, explanation:'La pregunta inicial es el hilo conductor de toda la lección rompecabezas.', timeSec:20 });
+  }
+  return qs;
+}
+
+/* ── MATUTINA ── */
+function genQuestionsMatutina(d) {
+  const qs = [];
+  const v = d.versiculo || {};
+  if (hasVal(v.referencia) && hasVal(v.texto)) {
+    qs.push({ type:'choice', question:`📖 ¿A qué pasaje bíblico corresponde este texto?\n\n"${v.texto.length > 120 ? v.texto.slice(0,120)+'…' : v.texto}"`, options:shuffleWith(v.referencia,['Génesis 1:1','Salmos 23:1','Juan 3:16','Romanos 8:28']), correct:v.referencia, explanation:`Este texto pertenece a ${v.referencia}.`, timeSec:20 });
+  }
+  if (hasVal(d.problema_planteado)) {
+    qs.push({ type:'choice', question:'⚠️ ¿Cuál es el problema planteado en esta matutina?', options:shuffleWith(d.problema_planteado,['No se menciona ningún problema','Es una celebración, sin problema','El problema es implícito']), correct:d.problema_planteado, explanation:`El problema planteado es: "${d.problema_planteado}".`, timeSec:25 });
+  }
+  const inv = (d.invitaciones || []).filter(i => (typeof i === 'string' ? i : i.accion));
+  if (inv.length >= 3) {
+    const texts = inv.map(i => typeof i === 'string' ? i : i.accion).slice(0, 5);
+    const shuffled = [...texts].sort(() => Math.random() - 0.5);
+    qs.push({ type:'sort', question:'🙌 Ordena las invitaciones en el orden en que aparecen', items:shuffled, correct:texts, explanation:'El orden refleja la secuencia original de las invitaciones de la matutina.', timeSec:35 });
+  }
+  const virt = d.virtudes_promovidas || [];
+  const cond = d.conductas_a_evitar || [];
+  if (virt.length >= 2 && cond.length >= 2) {
+    const allItems = [...virt.slice(0,3).map(x=>({label:x,bucket:'Virtudes promovidas'})),...cond.slice(0,3).map(x=>({label:x,bucket:'Conductas a evitar'}))];
+    const correctMap = {}; allItems.forEach(it => { correctMap[it.label] = it.bucket; });
+    qs.push({ type:'group', question:'⚖️ Clasifica cada elemento: ¿es una virtud promovida o una conducta a evitar?', chips:allItems.map(i=>i.label).sort(()=>Math.random()-0.5), buckets:[{label:'Virtudes promovidas',chips:[],correct:virt.slice(0,3)},{label:'Conductas a evitar',chips:[],correct:cond.slice(0,3)}], correctMap, explanation:`Virtudes: ${virt.slice(0,3).join(', ')}. Conductas a evitar: ${cond.slice(0,3).join(', ')}.`, timeSec:40 });
+  }
+  if (hasVal(d.leccion_central)) {
+    qs.push({ type:'choice', question:'✦ ¿Cuál es la lección central de esta matutina?', options:shuffleWith(d.leccion_central,['No hay lección central definida','Es solo una reflexión devocional','La lección es el versículo']), correct:d.leccion_central, explanation:`La lección central es: "${d.leccion_central}".`, timeSec:25 });
+  }
+  return qs;
+}
+
+/* ── ENSEÑANZAS ── */
+function genQuestionsEnsenanzas(d) {
+  const qs = [];
+  const ensenanzas = d.ensenanzas || [];
+  const tipos = [...new Set(ensenanzas.map(e => e.tipo).filter(Boolean))];
+  if (tipos.length >= 2 && ensenanzas.length >= 4) {
+    const sample = ensenanzas.filter(e => e.tipo && e.enunciado).slice(0, 8);
+    const buckets = tipos.slice(0, 4).map(t => ({ label: t.charAt(0).toUpperCase()+t.slice(1), chips:[], correct: sample.filter(e=>e.tipo===t).map(e=>e.enunciado) }));
+    const correctMap = {};
+    sample.forEach(e => { const b = buckets.find(b => b.correct.includes(e.enunciado)); if (b) correctMap[e.enunciado] = b.label; });
+    qs.push({ type:'group', question:'🕊️ Clasifica cada enseñanza según su tipo', chips:sample.map(e=>e.enunciado).sort(()=>Math.random()-0.5), buckets, correctMap, explanation:'Cada enseñanza corresponde a una categoría específica según su naturaleza.', timeSec:45 });
+  }
+  const conCita = ensenanzas.filter(e => e.cita_textual && e.enunciado);
+  if (conCita.length >= 2) {
+    const t = conCita[Math.floor(Math.random()*conCita.length)];
+    const wrong = conCita.filter(e=>e.enunciado!==t.enunciado).map(e=>e.enunciado);
+    const opts = [t.enunciado,...wrong.slice(0,3)].sort(()=>Math.random()-0.5);
+    qs.push({ type:'choice', question:`📖 Esta cita pertenece a una enseñanza. ¿Cuál es su enunciado principal?\n\n"${t.cita_textual.slice(0,140)}…"`, options:opts, correct:t.enunciado, explanation:`La enseñanza correspondiente es: "${t.enunciado}".`, timeSec:25 });
+  }
+  const conCond = ensenanzas.filter(e => e.condicion?.tiene_condicion && e.enunciado).slice(0,4);
+  if (conCond.length >= 3) {
+    const shuffled = conCond.map(e=>e.enunciado).sort(()=>Math.random()-0.5);
+    qs.push({ type:'sort', question:'🔄 Ordena estas enseñanzas condicionales en el orden en que aparecen', items:shuffled, correct:conCond.map(e=>e.enunciado), explanation:'El orden refleja la secuencia en que aparecen las enseñanzas en el texto original.', timeSec:35 });
+  }
+  return qs;
+}
+
+/* ── ACADÉMICO ── */
+function genQuestionsAcademico(d) {
+  const qs = [];
+  const m = d.metadatos || {};
+  if (hasVal(m.titulo)) qs.push({ type:'choice', question:'📋 ¿Cuál es el título de este documento?', options:shuffleWith(m.titulo,['Sin título definido','Es un documento anónimo','El título no está disponible']), correct:m.titulo, explanation:`El título del documento es "${m.titulo}".`, timeSec:20 });
+  const prob = d.definicion_del_problema || {};
+  if (hasVal(prob.pregunta_central)) qs.push({ type:'choice', question:'❓ ¿Cuál es la pregunta central que aborda este documento?', options:shuffleWith(prob.pregunta_central,['No define pregunta central','La pregunta es implícita','No es un documento académico']), correct:prob.pregunta_central, explanation:`La pregunta central es: "${prob.pregunta_central}".`, timeSec:25 });
+  const et = d.estructura_tesis || {};
+  const tesis = (et.tesis || {}).afirmaciones || [];
+  const anti  = (et.antitesis || {}).posiciones_opuestas || [];
+  if (tesis.length && anti.length) {
+    const allItems = [...tesis.slice(0,3).map(x=>({label:x,bucket:'Tesis'})),...anti.slice(0,3).map(x=>({label:x,bucket:'Antítesis'}))];
+    const correctMap = {}; allItems.forEach(it=>{ correctMap[it.label]=it.bucket; });
+    qs.push({ type:'group', question:'⚖️ Clasifica cada afirmación: ¿pertenece a la Tesis o a la Antítesis?', chips:allItems.map(i=>i.label).sort(()=>Math.random()-0.5), buckets:[{label:'Tesis',chips:[],correct:tesis.slice(0,3)},{label:'Antítesis',chips:[],correct:anti.slice(0,3)}], correctMap, explanation:'La tesis defiende la posición principal; la antítesis recoge las posiciones opuestas.', timeSec:40 });
+  }
+  return qs;
+}
+
+/* ── NARRATIVA HISTÓRICA ── */
+function genQuestionsNarrativa(d) {
+  const qs = [];
+  const arcos = d.arcos || [];
+  const eventos = [];
+  arcos.forEach(arc => { (arc.secuencias||[]).forEach(seq => { (seq.eventos||[]).forEach(evt => { eventos.push({...evt,_arcoTitulo:arc.titulo,_seqTitulo:seq.titulo}); }); }); });
+  const conLugar = eventos.filter(e => hasVal(e.lugar?.nombre) && hasVal(e.titulo));
+  if (conLugar.length >= 2) {
+    const allLugares = [...new Set(conLugar.map(e=>e.lugar.nombre))];
+    conLugar.sort(()=>Math.random()-0.5).slice(0,Math.min(4,conLugar.length)).forEach(target => {
+      const wrongPool = allLugares.filter(l=>l!==target.lugar.nombre).sort(()=>Math.random()-0.5).slice(0,3);
+      if (!wrongPool.length) return;
+      const opts = [target.lugar.nombre,...wrongPool].sort(()=>Math.random()-0.5);
+      const desc = target.descripcion ? (target.descripcion.length>110?target.descripcion.slice(0,110)+'…':target.descripcion) : '';
+      qs.push({ type:'choice', question:`📍 ¿Dónde sucedió esta escena?\n\n"${target.titulo}"${desc?' — '+desc:''}`, options:opts, correct:target.lugar.nombre, explanation:`La escena "${target.titulo}" ocurrió en ${target.lugar.nombre}.`, timeSec:22 });
+    });
+  }
+  const arcTitles = [...new Set(arcos.map(a=>a.titulo).filter(Boolean))];
+  const conArco = eventos.filter(e => hasVal(e.titulo) && hasVal(e._arcoTitulo));
+  if (arcTitles.length >= 2 && conArco.length >= 2) {
+    const target = conArco[Math.floor(Math.random()*conArco.length)];
+    const wrongArcos = arcTitles.filter(t=>t!==target._arcoTitulo).sort(()=>Math.random()-0.5).slice(0,3);
+    if (wrongArcos.length) {
+      const opts = [target._arcoTitulo,...wrongArcos].sort(()=>Math.random()-0.5);
+      qs.push({ type:'choice', question:`📖 ¿A qué arco narrativo pertenece este evento?\n\n"${target.titulo}"`, options:opts, correct:target._arcoTitulo, explanation:`El evento "${target.titulo}" pertenece al arco "${target._arcoTitulo}".`, timeSec:20 });
+    }
+  }
+  const secsConEvs = [];
+  arcos.forEach(arc => { (arc.secuencias||[]).forEach(seq => { const evs=(seq.eventos||[]).filter(e=>hasVal(e.titulo)); if(evs.length>=3) secsConEvs.push({titulo:seq.titulo||arc.titulo,evs}); }); });
+  if (secsConEvs.length) {
+    const target = secsConEvs[Math.floor(Math.random()*secsConEvs.length)];
+    const items = target.evs.map(e=>e.titulo);
+    qs.push({ type:'sort', question:`📜 Ordena los eventos de "${target.titulo}" según ocurrieron`, items:[...items].sort(()=>Math.random()-0.5), correct:items, explanation:'El orden refleja la secuencia narrativa original de los eventos.', timeSec:40 });
+  }
+  const tipos = [...new Set(eventos.map(e=>e.tipo).filter(Boolean))];
+  if (tipos.length >= 2 && eventos.length >= 4) {
+    const sample = eventos.filter(e=>e.tipo&&e.titulo).slice(0,8);
+    const buckets = tipos.slice(0,4).map(t => ({ label:t.charAt(0).toUpperCase()+t.slice(1), chips:[], correct:sample.filter(e=>e.tipo===t).map(e=>e.titulo) }));
+    const correctMap = {}; sample.forEach(e => { const b=buckets.find(b=>b.correct.includes(e.titulo)); if(b) correctMap[e.titulo]=b.label; });
+    qs.push({ type:'group', question:'🗂️ Clasifica cada evento según su tipo', chips:sample.map(e=>e.titulo).sort(()=>Math.random()-0.5), buckets, correctMap, explanation:'Cada evento corresponde a un tipo narrativo específico dentro del arco.', timeSec:45 });
+  }
+  return qs;
+}
+
+/* ── PROCEDIMENTAL ── */
+function genQuestionsProcedimental(d) {
+  const qs = [];
+  const pasos = (d.estructura_procedimental || []).filter(p => hasVal(p.nombre_del_paso));
+  if (pasos.length >= 3) {
+    const items = pasos.map(p=>p.nombre_del_paso);
+    qs.push({ type:'sort', question:'⚙️ Ordena los pasos del procedimiento en su secuencia correcta', items:[...items].sort(()=>Math.random()-0.5), correct:items, explanation:'El orden de los pasos refleja la secuencia operativa correcta del procedimiento.', timeSec:40 });
+  }
+  const conResp = pasos.filter(p=>hasVal(p.responsable));
+  if (conResp.length >= 2) {
+    const allResp = [...new Set(conResp.map(p=>p.responsable))];
+    [...conResp].sort(()=>Math.random()-0.5).slice(0,3).forEach(target => {
+      const wrongPool = allResp.filter(r=>r!==target.responsable).sort(()=>Math.random()-0.5).slice(0,3);
+      if (!wrongPool.length) return;
+      qs.push({ type:'choice', question:`👤 ¿Quién es responsable de este paso?\n\n"${target.nombre_del_paso}"`, options:[target.responsable,...wrongPool].sort(()=>Math.random()-0.5), correct:target.responsable, explanation:`El paso "${target.nombre_del_paso}" está a cargo de: ${target.responsable}.`, timeSec:20 });
+    });
+  }
+  const conds = (d.condiciones_y_decisiones || []).filter(c => hasVal(c.condicion) && (hasVal(c.si_se_cumple)||hasVal(c.si_no_se_cumple)));
+  if (conds.length >= 2) {
+    const target = conds[Math.floor(Math.random()*conds.length)];
+    const useCumple = hasVal(target.si_se_cumple);
+    const correct = useCumple ? target.si_se_cumple : target.si_no_se_cumple;
+    const wrongPool = conds.filter(c=>c.condicion!==target.condicion).flatMap(c=>[c.si_se_cumple,c.si_no_se_cumple]).filter(hasVal).filter(v=>v!==correct).sort(()=>Math.random()-0.5).slice(0,3);
+    if (wrongPool.length) qs.push({ type:'choice', question:`🔀 Si ${useCumple?'se cumple':'NO se cumple'} la condición "${target.condicion}", ¿qué sucede?`, options:[correct,...wrongPool].sort(()=>Math.random()-0.5), correct, explanation:`Si ${useCumple?'se cumple':'no se cumple'} "${target.condicion}": ${correct}.`, timeSec:25 });
+  }
+  const indic = (d.criterios_de_validacion||{}).indicadores_de_exito||[];
+  const errs  = (d.criterios_de_validacion||{}).errores_comunes||[];
+  if (indic.length >= 2 && errs.length >= 2) {
+    const allItems = [...indic.slice(0,3).map(x=>({label:x,bucket:'Indicador de éxito'})),...errs.slice(0,3).map(x=>({label:x,bucket:'Error común'}))];
+    const correctMap = {}; allItems.forEach(it=>{ correctMap[it.label]=it.bucket; });
+    qs.push({ type:'group', question:'✅ Clasifica cada elemento: ¿es un indicador de éxito o un error común?', chips:allItems.map(i=>i.label).sort(()=>Math.random()-0.5), buckets:[{label:'Indicador de éxito',chips:[],correct:indic.slice(0,3)},{label:'Error común',chips:[],correct:errs.slice(0,3)}], correctMap, explanation:`Indicadores de éxito: ${indic.slice(0,3).join(', ')}. Errores comunes: ${errs.slice(0,3).join(', ')}.`, timeSec:40 });
+  }
+  return qs;
+}
+
+/* ── PRESCRIPTIVO ── */
+function genQuestionsPrescriptivo(d) {
+  const qs = [];
+  const est = d.estructura_normativa || {};
+  const mandatos = est.mandatos || [];
+  const prohibs  = est.prohibiciones || [];
+  const perms    = est.permisos || [];
+  const conResp = mandatos.filter(m=>hasVal(m.responsable)&&hasVal(m.descripcion));
+  if (conResp.length >= 2) {
+    const allResp = [...new Set(conResp.map(m=>m.responsable))];
+    [...conResp].sort(()=>Math.random()-0.5).slice(0,3).forEach(target => {
+      const wrongPool = allResp.filter(r=>r!==target.responsable).sort(()=>Math.random()-0.5).slice(0,3);
+      if (!wrongPool.length) return;
+      qs.push({ type:'choice', question:`👤 ¿Quién es responsable de cumplir este mandato?\n\n"${target.descripcion}"`, options:[target.responsable,...wrongPool].sort(()=>Math.random()-0.5), correct:target.responsable, explanation:`El mandato "${target.descripcion}" es responsabilidad de: ${target.responsable}.`, timeSec:22 });
+    });
+  }
+  const sample = [...mandatos.filter(m=>hasVal(m.descripcion)).slice(0,3).map(m=>({label:m.descripcion,bucket:'Mandato'})),...prohibs.filter(p=>hasVal(p.descripcion)).slice(0,3).map(p=>({label:p.descripcion,bucket:'Prohibición'})),...perms.filter(p=>hasVal(p.descripcion)).slice(0,3).map(p=>({label:p.descripcion,bucket:'Permiso'}))];
+  const bucketLabels = [...new Set(sample.map(s=>s.bucket))];
+  if (bucketLabels.length >= 2 && sample.length >= 4) {
+    const correctMap = {}; sample.forEach(it=>{ correctMap[it.label]=it.bucket; });
+    qs.push({ type:'group', question:'⚖️ Clasifica cada disposición: ¿es un mandato, una prohibición o un permiso?', chips:sample.map(s=>s.label).sort(()=>Math.random()-0.5), buckets:bucketLabels.map(b=>({label:b,chips:[],correct:sample.filter(s=>s.bucket===b).map(s=>s.label)})), correctMap, explanation:'Cada disposición normativa se clasifica según si obliga, prohíbe o autoriza una conducta.', timeSec:45 });
+  }
+  const infracs = (d.regimen_sancionatorio||{}).infracciones||[];
+  const conGrav = infracs.filter(i=>hasVal(i.gravedad)&&hasVal(i.descripcion));
+  if (conGrav.length >= 2) {
+    const gravedades = [...new Set(conGrav.map(i=>i.gravedad))];
+    if (gravedades.length >= 2) {
+      const target = conGrav[Math.floor(Math.random()*conGrav.length)];
+      qs.push({ type:'choice', question:`⚠️ ¿Cuál es la gravedad de esta infracción?\n\n"${target.descripcion}"`, options:[...gravedades].sort(()=>Math.random()-0.5), correct:target.gravedad, explanation:`La infracción "${target.descripcion}" está clasificada como ${target.gravedad}.`, timeSec:20 });
+    }
+  }
+  const conSujeto = prohibs.filter(p=>hasVal(p.sujeto_afectado)&&hasVal(p.descripcion));
+  if (conSujeto.length >= 2) {
+    const allSujetos = [...new Set(conSujeto.map(p=>p.sujeto_afectado))];
+    const target = conSujeto[Math.floor(Math.random()*conSujeto.length)];
+    const wrongPool = allSujetos.filter(s=>s!==target.sujeto_afectado).sort(()=>Math.random()-0.5).slice(0,3);
+    if (wrongPool.length) qs.push({ type:'choice', question:`🚫 ¿A quién afecta esta prohibición?\n\n"${target.descripcion}"`, options:[target.sujeto_afectado,...wrongPool].sort(()=>Math.random()-0.5), correct:target.sujeto_afectado, explanation:`Esta prohibición afecta a: ${target.sujeto_afectado}.`, timeSec:20 });
+  }
+  return qs;
+}
+
+/* ── DISPATCHER ── */
+function genQuestions(data, tipo) {
+  const generators = { leccion:genQuestionsLeccion, matutina:genQuestionsMatutina, ensenanzas:genQuestionsEnsenanzas, academico:genQuestionsAcademico, narrativa_historica:genQuestionsNarrativa, procedimental:genQuestionsProcedimental, prescriptivo:genQuestionsPrescriptivo };
+  return (generators[tipo] || genQuestionsAcademico)(data).filter(Boolean);
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   CARGA DE CONTENIDOS Y MEZCLA
+   ═══════════════════════════════════════════════════════════════ */
+let _allSources = [];   // [{ id, name, tipo, data, cfg }]
+let _mixQuestions = []; // [{ ...q, _sourceIdx }]
+
+function loadAllContents() {
+  try {
+    const idx = JSON.parse(localStorage.getItem(`${KEY_PREFIX}_contenidos_index`) || '[]');
+    // Si viene lista de ids por URL, filtrar; si no, usar todos
+    const filterIds = idsParam ? idsParam.split(',').map(s=>s.trim()).filter(Boolean) : null;
+    const items = filterIds ? idx.filter(item => filterIds.includes(item.id)) : idx;
+    items.forEach(item => {
+      const raw = localStorage.getItem(`${KEY_PREFIX}_contenido_${item.id}`);
+      if (!raw) return;
+      try {
+        const data = JSON.parse(raw);
+        const tipo = detectType(data);
+        const cfg  = TYPE_MAP[tipo] || TYPE_MAP.academico;
+        _allSources.push({ id: item.id, name: item.name || 'Contenido', tipo, data, cfg });
+      } catch {}
+    });
+  } catch {}
+  // fallback: legacy single
+  if (_allSources.length === 0) {
+    const raw = localStorage.getItem(`${KEY_PREFIX}_contenido`);
+    if (raw) {
+      try {
+        const data = JSON.parse(raw);
+        const tipo = detectType(data);
+        _allSources.push({ id:'legacy', name:'Contenido', tipo, data, cfg: TYPE_MAP[tipo]||TYPE_MAP.academico });
+      } catch {}
+    }
+  }
+}
+
+function buildMixQuestions() {
+  const allQs = [];
+  _allSources.forEach((src, si) => {
+    const qs = genQuestions(src.data, src.tipo);
+    qs.forEach(q => allQs.push({ ...q, _sourceIdx: si, _sourceName: src.name, _sourceTipo: src.tipo, _sourceCfg: src.cfg }));
+  });
+  // Shuffle global
+  for (let i = allQs.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [allQs[i], allQs[j]] = [allQs[j], allQs[i]];
+  }
+  return allQs;
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   RENDER DE PANTALLA INICIAL
+   ═══════════════════════════════════════════════════════════════ */
+function renderLanding() {
+  const root = document.getElementById('root');
+  if (_allSources.length === 0) {
+    root.innerHTML = `<div class="state-card">
+      <div class="state-icon">📭</div>
+      <div class="state-title">No hay contenidos cargados</div>
+      <div class="state-sub">Vuelve a la clase y carga al menos dos contenidos para poder hacer la Prueba Mix.</div>
+      <button class="state-btn" onclick="history.back()">← Volver</button>
+    </div>`;
+    return;
+  }
+  if (_allSources.length === 1) {
+    root.innerHTML = `<div class="state-card">
+      <div class="state-icon">📄</div>
+      <div class="state-title">Solo hay un contenido</div>
+      <div class="state-sub">La Prueba Mix necesita al menos 2 contenidos. Carga más contenidos desde la sección de la clase.</div>
+      <button class="state-btn" onclick="history.back()">← Volver</button>
+    </div>`;
+    return;
+  }
+
+  // Contar preguntas disponibles (y guardarlas para no regenerar al abrir)
+  _mixQuestions = buildMixQuestions();
+  const totalQs = _mixQuestions.length;
+
+  const chipsHtml = _allSources.map(src =>
+    `<span class="mix-chip ${src.cfg.cls}">${src.cfg.icon} ${src.name}</span>`
+  ).join('');
+
+  root.innerHTML = `<div class="mix-header-card">
+    <h2>🎯 Prueba Mix</h2>
+    <div class="mix-chips">${chipsHtml}</div>
+    <div class="mix-stats">
+      <span>📦 <strong>${_allSources.length}</strong> contenidos</span>
+      <span>❓ <strong>${totalQs}</strong> preguntas en total</span>
+    </div>
+    <button class="start-btn" onclick="openMixQuiz()">
+      ▶ Iniciar Prueba Mix
+    </button>
+  </div>`;
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   ESTADO DEL QUIZ
+   ═══════════════════════════════════════════════════════════════ */
+let _quizQuestions = [];
+let _quizIdx      = 0;
+let _quizAnswered  = {};
+let _quizTimer     = null;
+let _quizTimeLeft  = 0;
+let _quizTotalSec  = 20;
+let _dragSrc       = null;
+let _selectedChip  = null;
+let _currentSortItems  = [];
+// Group card state
+let _groupCurrentIdx = 0;
+let _groupScore = { correct:0, total:0 };
+// Touch sort
+let _touchSortSrc  = null;
+let _touchSortOver = null;
+
+/* ══════════════════════════════════════════════════════════════════
+   APERTURA / CIERRE DEL QUIZ
+   ═══════════════════════════════════════════════════════════════ */
+function openMixQuiz(forceRebuild) {
+  if (forceRebuild || _mixQuestions.length === 0) {
+    _mixQuestions = buildMixQuestions();
+  }
+  if (_mixQuestions.length === 0) {
+    alert('No se pudieron generar preguntas. Asegúrate de que los JSONs tengan contenido suficiente.');
+    return;
+  }
+  _quizQuestions = _mixQuestions;
+  _quizIdx       = 0;
+  _quizAnswered  = {};
+  document.getElementById('quizOverlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+  renderQuizQuestion();
+}
+function closeQuiz() {
+  document.getElementById('quizOverlay').classList.remove('open');
+  document.body.style.overflow = '';
+  clearInterval(_quizTimer);
+}
+function handleOverlayClick(e) {
+  if (e.target === document.getElementById('quizOverlay')) closeQuiz();
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   RENDERIZADO DE PREGUNTA
+   ═══════════════════════════════════════════════════════════════ */
+function renderQuizQuestion() {
+  clearInterval(_quizTimer);
+  const q = _quizQuestions[_quizIdx];
+  const total = _quizQuestions.length;
+
+  // Icono del tipo de contenido de esta pregunta
+  const srcIcon = q._sourceCfg ? q._sourceCfg.icon : '🧠';
+  document.getElementById('qmIcon').textContent  = srcIcon;
+  document.getElementById('qmTitle').textContent = 'Prueba Mix';
+  document.getElementById('qmSub').textContent   = `${_quizIdx + 1} de ${total} preguntas`;
+
+  // Dots
+  let dots = '<div class="qm-progress">';
+  for (let i = 0; i < total; i++) {
+    let cls = 'qm-pdot';
+    if (i === _quizIdx)                           cls += ' cur';
+    else if (_quizAnswered[i]?.correct === true)  cls += ' ok';
+    else if (_quizAnswered[i]?.correct === false) cls += ' fail';
+    dots += `<div class="${cls}"></div>`;
+  }
+  dots += '</div>';
+
+  // Source badge
+  const srcCls = q._sourceCfg?.cls || 'mc-academico';
+  const srcBadge = `<div class="qm-source-badge">${srcIcon} ${q._sourceName}</div>`;
+
+  // Timer
+  _quizTotalSec = q.timeSec || 25;
+  _quizTimeLeft = _quizTotalSec;
+  const timerHTML = `<div class="qm-timer"><div class="qm-timer-bar" id="qmTimerBar" style="width:100%"></div></div>`;
+
+  const qText = q.question.replace(/\n/g, '<br>');
+  let interactionHTML = '';
+
+  if (q.type === 'choice') {
+    const letters = ['A','B','C','D'];
+    interactionHTML = '<div class="qm-options" id="qmOpts">';
+    q.options.forEach((opt, i) => {
+      interactionHTML += `<button class="qm-opt" onclick="answerChoice(${i})" id="qmOpt${i}">
+        <span class="qm-opt-key">${letters[i]}</span>${escQ(opt)}
+      </button>`;
+    });
+    interactionHTML += '</div>';
+
+  } else if (q.type === 'sort') {
+    _currentSortItems = [...q.items];
+    interactionHTML = `<div class="qm-sort-list" id="qmSortList">`;
+    q.items.forEach((item, i) => {
+      interactionHTML += `<div class="qm-sort-item" draggable="true" data-idx="${i}" id="qmSort${i}"
+        ondragstart="sortDragStart(event,${i})"
+        ondragover="sortDragOver(event,${i})"
+        ondrop="sortDrop(event,${i})"
+        ondragend="sortDragEnd()"
+        ontouchstart="sortTouchStart(event,${i})">
+        <span class="qm-sort-handle">☰</span>
+        <span class="qm-sort-text">${escQ(item)}</span>
+      </div>`;
+    });
+    interactionHTML += '</div>';
+
+  } else if (q.type === 'group') {
+    _groupCurrentIdx = 0;
+    _groupScore = { correct:0, total:0 };
+    interactionHTML = `<div id="qmGcardWrapper">${buildGroupCard(q)}</div>`;
+  }
+
+  document.getElementById('qmBody').innerHTML = `
+    ${dots}
+    ${srcBadge}
+    ${timerHTML}
+    <div class="qm-question-num">Pregunta ${_quizIdx + 1}</div>
+    <div class="qm-question-text">${qText}</div>
+    ${interactionHTML}
+    <div class="qm-feedback" id="qmFeedback"></div>
+    <div class="qm-actions" id="qmActions"></div>`;
+
+  showNextActions();
+  startTimer();
+}
+
+function escQ(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+/* ══════════════════════════════════════════════════════════════════
+   TIMER
+   ═══════════════════════════════════════════════════════════════ */
+function startTimer() {
+  const q = _quizQuestions[_quizIdx];
+  _quizTimeLeft = _quizTotalSec;
+  _quizTimer = setInterval(() => {
+    _quizTimeLeft--;
+    const bar = document.getElementById('qmTimerBar');
+    if (bar) {
+      const pct = (_quizTimeLeft / _quizTotalSec) * 100;
+      bar.style.width = pct + '%';
+      if (pct < 30) bar.classList.add('warn');
+    }
+    if (_quizTimeLeft <= 0) {
+      clearInterval(_quizTimer);
+      if (_quizAnswered[_quizIdx] === undefined) {
+        if (q.type === 'choice') answerChoice(-1, true);
+        else if (q.type === 'sort')  evalSort(true);
+        else if (q.type === 'group') evalGroup(true);
+      }
+    }
+  }, 1000);
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   INTERACCIÓN — CHOICE
+   ═══════════════════════════════════════════════════════════════ */
+function answerChoice(idx, timeout) {
+  if (_quizAnswered[_quizIdx] !== undefined && !timeout) return;
+  clearInterval(_quizTimer);
+  const q = _quizQuestions[_quizIdx];
+  const chosen  = timeout ? null : q.options[idx];
+  const correct = chosen === q.correct;
+  _quizAnswered[_quizIdx] = { correct: correct && !timeout };
+
+  q.options.forEach((opt, i) => {
+    const btn = document.getElementById('qmOpt'+i);
+    if (!btn) return;
+    btn.disabled = true;
+    if (opt === q.correct) btn.classList.add(correct ? 'correct' : 'correct-missed');
+    else if (i === idx && !correct) btn.classList.add('incorrect');
+  });
+
+  showFeedback(correct && !timeout, q.explanation, timeout ? '⏱ Tiempo agotado. ' : '');
+  showNextActions();
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   INTERACCIÓN — SORT (drag desktop)
+   ═══════════════════════════════════════════════════════════════ */
+function sortDragStart(e, idx) {
+  _dragSrc = idx;
+  e.currentTarget.classList.add('dragging');
+  e.dataTransfer.effectAllowed = 'move';
+}
+function sortDragOver(e, idx) {
+  e.preventDefault();
+  document.querySelectorAll('.qm-sort-item').forEach(el => el.classList.remove('drag-over'));
+  if (idx !== _dragSrc) e.currentTarget.classList.add('drag-over');
+}
+function sortDrop(e, idx) {
+  e.preventDefault();
+  if (_dragSrc === null || _dragSrc === idx) return;
+  const tmp = _currentSortItems[_dragSrc];
+  _currentSortItems[_dragSrc] = _currentSortItems[idx];
+  _currentSortItems[idx] = tmp;
+  _currentSortItems.forEach((item, i) => {
+    const el = document.getElementById('qmSort'+i);
+    if (el) el.querySelector('.qm-sort-text').textContent = item;
+  });
+  _dragSrc = null;
+  document.querySelectorAll('.qm-sort-item').forEach(el => el.classList.remove('drag-over','dragging'));
+}
+function sortDragEnd() {
+  _dragSrc = null;
+  document.querySelectorAll('.qm-sort-item').forEach(el => el.classList.remove('drag-over','dragging'));
+}
+
+/* ── Sort touch ── */
+function sortTouchStart(e, idx) {
+  _touchSortSrc  = idx;
+  _touchSortOver = null;
+  document.addEventListener('touchmove',  _sortGlobalMove, { passive:false });
+  document.addEventListener('touchend',   _sortGlobalEnd,  { passive:false });
+}
+function _sortGlobalMove(e) {
+  e.preventDefault();
+  const touch = e.touches[0];
+  const el = document.elementFromPoint(touch.clientX, touch.clientY);
+  const item = el?.closest('.qm-sort-item');
+  document.querySelectorAll('.qm-sort-item').forEach(x => x.classList.remove('drag-over'));
+  if (item) {
+    const idx = parseInt(item.dataset.idx);
+    if (!isNaN(idx) && idx !== _touchSortSrc) { _touchSortOver = idx; item.classList.add('drag-over'); }
+  }
+}
+function _sortGlobalEnd() {
+  document.removeEventListener('touchmove', _sortGlobalMove);
+  document.removeEventListener('touchend',  _sortGlobalEnd);
+  document.querySelectorAll('.qm-sort-item').forEach(el => el.classList.remove('drag-over','dragging'));
+  if (_touchSortOver !== null && _touchSortOver !== _touchSortSrc) {
+    const tmp = _currentSortItems[_touchSortSrc];
+    _currentSortItems[_touchSortSrc] = _currentSortItems[_touchSortOver];
+    _currentSortItems[_touchSortOver] = tmp;
+    _currentSortItems.forEach((item, i) => {
+      const el = document.getElementById('qmSort'+i);
+      if (el) el.querySelector('.qm-sort-text').textContent = item;
+    });
+  }
+  _touchSortSrc  = null;
+  _touchSortOver = null;
+}
+
+function evalSort(timeout) {
+  if (_quizAnswered[_quizIdx] !== undefined && !timeout) return;
+  clearInterval(_quizTimer);
+  const q = _quizQuestions[_quizIdx];
+  const correct = JSON.stringify(_currentSortItems) === JSON.stringify(q.correct);
+  _quizAnswered[_quizIdx] = { correct: correct && !timeout };
+  _currentSortItems.forEach((item, i) => {
+    const el = document.getElementById('qmSort'+i);
+    if (el) el.classList.add(item === q.correct[i] ? 'correct-pos' : 'wrong-pos');
+  });
+  showFeedback(correct && !timeout, q.explanation, timeout ? '⏱ Tiempo agotado. ' : '');
+  showNextActions();
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   INTERACCIÓN — GROUP
+   ═══════════════════════════════════════════════════════════════ */
+function buildGroupCard(q) {
+  const chip = q.chips[_groupCurrentIdx];
+  const progress = `${_groupCurrentIdx + 1} / ${q.chips.length}`;
+  const bucketBtns = q.buckets.map((b, bi) =>
+    `<button class="qm-gcard-btn" onclick="groupAnswer(${bi})">${escQ(b.label)}</button>`
+  ).join('');
+  return `<div class="qm-gcard" id="qmGcard">
+    <div class="qm-gcard-progress">${progress}</div>
+    <div class="qm-gcard-item">${escQ(chip)}</div>
+    <div class="qm-gcard-hint">¿A qué categoría pertenece?</div>
+    <div class="qm-gcard-btns">${bucketBtns}</div>
+    <div class="qm-gcard-feedback" id="qmGcardFb"></div>
+  </div>`;
+}
+function groupAnswer(bi) {
+  if (_quizAnswered[_quizIdx] !== undefined) return;
+  const q = _quizQuestions[_quizIdx];
+  const chip = q.chips[_groupCurrentIdx];
+  const chosen = q.buckets[bi].label;
+  const isCorrect = q.correctMap[chip] === chosen;
+  _groupScore.total++;
+  if (isCorrect) _groupScore.correct++;
+  const btns = document.querySelectorAll('.qm-gcard-btn');
+  btns.forEach((btn, i) => {
+    btn.disabled = true;
+    if (i === bi) btn.classList.add(isCorrect ? 'gcard-correct' : 'gcard-wrong');
+    if (!isCorrect && q.buckets[i].label === q.correctMap[chip]) btn.classList.add('gcard-correct');
+  });
+  const fb = document.getElementById('qmGcardFb');
+  if (fb) { fb.textContent = isCorrect ? '✓ Correcto' : `✗ Era: ${q.correctMap[chip]}`; fb.className = 'qm-gcard-feedback ' + (isCorrect?'fb-ok':'fb-no'); }
+  setTimeout(() => {
+    _groupCurrentIdx++;
+    if (_groupCurrentIdx < q.chips.length) {
+      const wrapper = document.getElementById('qmGcardWrapper');
+      if (wrapper) wrapper.innerHTML = buildGroupCard(q);
+    } else {
+      evalGroup(false);
+    }
+  }, 900);
+}
+function evalGroup(timeout) {
+  if (_quizAnswered[_quizIdx] !== undefined && !timeout) return;
+  clearInterval(_quizTimer);
+  const q = _quizQuestions[_quizIdx];
+  const allCorrect = !timeout && (_groupScore.correct === q.chips.length);
+  _quizAnswered[_quizIdx] = { correct: allCorrect };
+  const wrapper = document.getElementById('qmGcardWrapper');
+  if (wrapper) {
+    wrapper.innerHTML = `<div class="qm-gcard-result">
+      ${timeout ? '<div class="qm-gcard-timeout">⏱ Tiempo agotado</div>' : ''}
+      <div class="qm-gcard-score">${_groupScore.correct} / ${q.chips.length} correctas</div>
+    </div>`;
+  }
+  showFeedback(allCorrect, q.explanation, timeout ? '⏱ Tiempo agotado. ' : '');
+  showNextActions();
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   FEEDBACK & NAVEGACIÓN
+   ═══════════════════════════════════════════════════════════════ */
+function showFeedback(correct, explanation, prefix) {
+  const fb = document.getElementById('qmFeedback');
+  if (!fb) return;
+  fb.className = 'qm-feedback show ' + (correct ? 'correct' : 'incorrect');
+  fb.innerHTML = `<div class="qm-fb-label">${correct ? '✓ Correcto' : '✗ Incorrecto'}</div>${prefix || ''}${escQ(explanation)}`;
+}
+function showNextActions() {
+  const acts = document.getElementById('qmActions');
+  if (!acts) return;
+  const isLast   = _quizIdx >= _quizQuestions.length - 1;
+  const q        = _quizQuestions[_quizIdx];
+  const answered = _quizAnswered[_quizIdx] !== undefined;
+  let html = '';
+  if (!answered) {
+    if (q.type === 'sort') html = `<button class="qm-btn qm-btn-primary" onclick="evalSort(false)">✓ Verificar orden</button>`;
+    html += `<button class="qm-btn qm-btn-ghost" onclick="closeQuiz()">Salir</button>`;
+  } else {
+    if (!isLast) html = `<button class="qm-btn qm-btn-primary" onclick="nextQuestion()">Siguiente →</button>`;
+    else         html = `<button class="qm-btn qm-btn-primary" onclick="showQuizResult()">Ver resultado 🏆</button>`;
+    html += `<button class="qm-btn qm-btn-ghost" onclick="closeQuiz()">Cerrar</button>`;
+  }
+  acts.innerHTML = html;
+}
+function nextQuestion() {
+  _quizIdx++;
+  renderQuizQuestion();
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   RESULTADO FINAL con breakdown por contenido
+   ═══════════════════════════════════════════════════════════════ */
+function showQuizResult() {
+  clearInterval(_quizTimer);
+  const total   = _quizQuestions.length;
+  const correct = Object.values(_quizAnswered).filter(a => a.correct).length;
+  const pct     = Math.round((correct / total) * 100);
+  const emoji   = pct >= 80 ? '🏆' : pct >= 60 ? '👍' : '📚';
+  const msg     = pct >= 80 ? '¡Excelente dominio del mix!' : pct >= 60 ? 'Buen esfuerzo, sigue repasando.' : 'Sigue estudiando, ¡vas a lograrlo!';
+  const scoreClass = pct >= 80 ? 'great' : pct >= 60 ? 'ok' : 'low';
+
+  // Breakdown por fuente
+  const bySource = {};
+  _quizQuestions.forEach((q, i) => {
+    const key = q._sourceName;
+    if (!bySource[key]) bySource[key] = { correct:0, total:0, icon: q._sourceCfg?.icon || '📄' };
+    bySource[key].total++;
+    if (_quizAnswered[i]?.correct) bySource[key].correct++;
+  });
+  let breakdownHtml = '';
+  if (Object.keys(bySource).length > 1) {
+    breakdownHtml = `<div class="qm-breakdown">
+      <div class="qm-breakdown-title">Por contenido</div>`;
+    Object.entries(bySource).forEach(([name, s]) => {
+      const p = Math.round((s.correct / s.total) * 100);
+      breakdownHtml += `<div class="qm-bk-row">
+        <div class="qm-bk-name">${s.icon} ${name}</div>
+        <div class="qm-bk-bar-wrap"><div class="qm-bk-bar" style="width:${p}%"></div></div>
+        <div class="qm-bk-pct">${p}%</div>
+      </div>`;
+    });
+    breakdownHtml += '</div>';
+  }
+
+  document.getElementById('qmBody').innerHTML = `
+    <div class="qm-result">
+      <div class="qm-result-emoji">${emoji}</div>
+      <div class="qm-result-score ${scoreClass}">${pct}%</div>
+      <div class="qm-result-msg">${msg}</div>
+      <div class="qm-result-stats">
+        <div class="qm-rs"><div class="num" style="color:#22c55e">${correct}</div><div class="lbl">Correctas</div></div>
+        <div class="qm-rs"><div class="num" style="color:#ef4444">${total-correct}</div><div class="lbl">Incorrectas</div></div>
+        <div class="qm-rs"><div class="num">${total}</div><div class="lbl">Total</div></div>
+      </div>
+      ${breakdownHtml}
+      <div class="qm-actions" style="justify-content:center;margin-top:1rem;">
+        <button class="qm-btn qm-btn-primary" onclick="openMixQuiz(true)">🔄 Repetir Mix</button>
+        <button class="qm-btn qm-btn-ghost" onclick="closeQuiz()">Cerrar</button>
+      </div>
+    </div>`;
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   ARRANQUE
+   ═══════════════════════════════════════════════════════════════ */
+loadAllContents();
+renderLanding();
+</script>
+</body>
+</html>

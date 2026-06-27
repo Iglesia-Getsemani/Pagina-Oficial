@@ -1,0 +1,1625 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>Clase</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', system-ui, sans-serif; background: #f0f2f5; min-height: 100vh; color: #1a1a2e; }
+
+  header { background: #1a1a2e; color: #fff; padding: 1rem 2rem; display: flex; align-items: center; gap: 1rem; }
+  .header-back { background: transparent; border: none; color: #fff; font-size: 1.1rem; cursor: pointer; padding: 0.2rem 0.5rem; border-radius: 6px; transition: background 0.15s; }
+  .header-back:hover { background: rgba(255,255,255,0.1); }
+  .header-info { flex: 1; }
+  .header-info h1 { font-size: 1rem; font-weight: 400; opacity: 0.7; }
+  .header-info h2 { font-size: 1.2rem; font-weight: 600; }
+
+  .container { max-width: 900px; margin: 0 auto; padding: 2rem 1.5rem; }
+
+  .sections-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1.25rem; margin-bottom: 2rem; }
+
+  .section-card { background: #fff; border-radius: 14px; box-shadow: 0 1px 4px rgba(0,0,0,0.07); padding: 1.5rem; text-align: center; transition: box-shadow 0.15s, transform 0.15s; cursor: pointer; text-decoration: none; color: inherit; display: block; }
+  .section-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.1); transform: translateY(-2px); }
+  .section-card .icon { font-size: 2.2rem; margin-bottom: 0.75rem; }
+  .section-card h3 { font-size: 1rem; font-weight: 600; margin-bottom: 0.35rem; }
+  .section-card p { font-size: 0.82rem; color: #6b7280; line-height: 1.4; }
+  .section-card .status { margin-top: 0.75rem; font-size: 0.75rem; font-weight: 600; padding: 0.25rem 0.6rem; border-radius: 99px; display: inline-block; }
+  .status-loaded { background: #dcfce7; color: #166534; }
+  .status-empty  { background: #f3f4f6; color: #9ca3af; }
+  .status-multi  { background: #e0e7ff; color: #3730a3; }
+
+  /* Upload section */
+  .upload-section { background: #fff; border-radius: 14px; box-shadow: 0 1px 4px rgba(0,0,0,0.07); padding: 1.5rem; margin-bottom: 1.25rem; }
+  .upload-section h3 { font-size: 0.95rem; font-weight: 600; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem; }
+  .upload-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 1rem; }
+
+  .upload-box { border: 2px dashed #d1d5db; border-radius: 10px; padding: 1rem; text-align: center; transition: border 0.15s, background 0.15s; cursor: pointer; }
+  .upload-box:hover { border-color: #4f46e5; background: #f5f3ff; }
+  .upload-box .up-icon { font-size: 1.5rem; margin-bottom: 0.4rem; }
+  .upload-box .up-title { font-size: 0.85rem; font-weight: 600; color: #374151; }
+  .upload-box .up-sub { font-size: 0.75rem; color: #9ca3af; margin-top: 0.2rem; }
+  .upload-box.loaded { border-color: #22c55e; background: #f0fdf4; }
+  .upload-box.loaded .up-title { color: #166534; }
+  .upload-box.multi-loaded { border-color: #4f46e5; background: #f5f3ff; }
+  .upload-box.multi-loaded .up-title { color: #3730a3; }
+
+  /* Contenidos list */
+  .contenidos-list { margin-top: 0.75rem; display: flex; flex-direction: column; gap: 0.4rem; }
+  .contenido-item { display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 0.75rem; background: #fff; border: 1px solid #e5e7eb; border-radius: 8px; font-size: 0.82rem; }
+  .contenido-item .ci-icon { font-size: 0.85rem; }
+  .contenido-item .ci-name { flex: 1; font-weight: 500; color: #1a1a2e; }
+  .contenido-item .ci-type { font-size: 0.7rem; padding: 0.15rem 0.5rem; border-radius: 99px; font-weight: 600; background: #e0e7ff; color: #3730a3; }
+  .contenido-item .ci-open { font-size: 0.75rem; padding: 0.2rem 0.6rem; border-radius: 6px; background: #4f46e5; color: #fff; border: none; cursor: pointer; font-weight: 500; }
+  .contenido-item .ci-open:hover { background: #4338ca; }
+  .contenido-item .ci-study { font-size: 0.75rem; padding: 0.2rem 0.6rem; border-radius: 6px; background: #16a34a; color: #fff; border: none; cursor: pointer; font-weight: 500; }
+  .contenido-item .ci-study:hover { background: #15803d; }
+  .contenido-item .ci-del { font-size: 0.75rem; padding: 0.2rem 0.5rem; border-radius: 6px; background: transparent; color: #9ca3af; border: 1px solid #e5e7eb; cursor: pointer; }
+  .contenido-item .ci-del:hover { background: #fef2f2; color: #dc2626; border-color: #fca5a5; }
+
+  .add-contenido-btn { width: 100%; margin-top: 0.6rem; padding: 0.5rem; border: 1.5px dashed #a5b4fc; border-radius: 8px; background: #e0e7ff; color: #4f46e5; font-size: 0.82rem; font-weight: 600; cursor: pointer; transition: background 0.15s; }
+  .add-contenido-btn:hover { background: #c7d2fe; }
+  .mix-quiz-btn { width: 100%; margin-top: 0.5rem; padding: 0.55rem 0.75rem; border: none; border-radius: 9px; background: #4f46e5; color: #fff; font-size: 0.82rem; font-weight: 700; cursor: pointer; transition: background 0.15s; }
+  .mix-quiz-btn:hover { background: #4338ca; }
+
+  /* Buttons */
+  .btn { display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.5rem 1.1rem; border-radius: 8px; border: none; cursor: pointer; font-size: 0.875rem; font-weight: 500; transition: all 0.15s; text-decoration: none; }
+  .btn-primary { background: #4f46e5; color: #fff; }
+  .btn-primary:hover { background: #4338ca; }
+  .btn-ghost { background: transparent; border: 1.5px solid #d1d5db; color: #374151; }
+  .btn-ghost:hover { background: #f3f4f6; }
+  .btn-danger-ghost { background: transparent; border: 1.5px solid #fca5a5; color: #dc2626; }
+  .btn-danger-ghost:hover { background: #fef2f2; }
+  .btn-sm { padding: 0.35rem 0.75rem; font-size: 0.8rem; }
+
+  /* Modal */
+  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 100; align-items: flex-start; justify-content: center; padding: 1rem; overflow-y: auto; }
+  .modal-overlay.open { display: flex; }
+  .modal { background: #fff; border-radius: 16px; width: 100%; max-width: 520px; box-shadow: 0 12px 40px rgba(0,0,0,0.18); overflow: hidden; display: flex; flex-direction: column; max-height: calc(100vh - 2rem); }
+  .modal-header { padding: 1.25rem 1.5rem 0; flex-shrink: 0; }
+  .modal-header h3 { font-size: 1.05rem; font-weight: 600; }
+  .modal-header p { font-size: 0.82rem; color: #6b7280; margin-top: 0.2rem; }
+
+  .tab-bar { display: flex; gap: 0; margin: 1rem 1.5rem 0; border: 1.5px solid #e5e7eb; border-radius: 10px; overflow: hidden; flex-shrink: 0; }
+  .tab-btn { flex: 1; padding: 0.55rem; font-size: 0.85rem; font-weight: 500; border: none; background: transparent; cursor: pointer; color: #6b7280; transition: all 0.15s; display: flex; align-items: center; justify-content: center; gap: 0.4rem; }
+  .tab-btn.active { background: #4f46e5; color: #fff; }
+  .tab-btn:not(.active):hover { background: #f3f4f6; }
+
+  .tab-panel { display: none; padding: 1.25rem 1.5rem; }
+  .tab-panel.active { display: block; }
+
+  .drop-zone { border: 2px dashed #d1d5db; border-radius: 10px; padding: 2rem 1rem; text-align: center; transition: all 0.2s; cursor: pointer; }
+  .drop-zone:hover, .drop-zone.dragover { border-color: #4f46e5; background: #f5f3ff; }
+  .drop-zone .dz-icon { font-size: 2rem; margin-bottom: 0.5rem; }
+  .drop-zone .dz-text { font-size: 0.9rem; color: #374151; font-weight: 500; }
+  .drop-zone .dz-sub { font-size: 0.78rem; color: #9ca3af; margin-top: 0.3rem; }
+  .drop-zone input[type=file] { display: none; }
+  .drop-zone .dz-btn { margin-top: 0.75rem; display: inline-block; padding: 0.4rem 1rem; background: #4f46e5; color: #fff; border-radius: 7px; font-size: 0.82rem; font-weight: 500; cursor: pointer; }
+
+  .form-group { margin-bottom: 0.9rem; }
+  .form-group label { display: block; font-size: 0.82rem; color: #374151; font-weight: 500; margin-bottom: 0.35rem; }
+  .form-group input { width: 100%; padding: 0.5rem 0.75rem; border: 1.5px solid #d1d5db; border-radius: 8px; font-size: 0.88rem; outline: none; transition: border 0.15s; font-family: inherit; }
+  .form-group input:focus { border-color: #4f46e5; }
+
+  .paste-label { font-size: 0.82rem; color: #374151; font-weight: 500; margin-bottom: 0.4rem; }
+  .paste-area { width: 100%; height: 130px; min-height: 80px; max-height: 200px; padding: 0.75rem; border: 1.5px solid #d1d5db; border-radius: 8px; font-size: 0.82rem; font-family: 'Courier New', monospace; resize: vertical; outline: none; transition: border 0.15s; color: #1a1a2e; line-height: 1.5; }
+  .paste-area:focus { border-color: #4f46e5; }
+  .paste-area.error { border-color: #ef4444; background: #fef2f2; }
+  .paste-area.ok { border-color: #22c55e; background: #f0fdf4; }
+  .paste-feedback { font-size: 0.78rem; margin-top: 0.4rem; min-height: 1rem; }
+  .paste-feedback.error { color: #dc2626; }
+  .paste-feedback.ok { color: #166534; }
+
+
+  .modal-body { overflow-y: auto; flex: 1; -webkit-overflow-scrolling: touch; }
+  .modal-footer { padding: 0.75rem 1.5rem 1.25rem; display: flex; justify-content: flex-end; gap: 0.6rem; border-top: 1px solid #f3f4f6; flex-shrink: 0; }
+
+  /* Selector de contenidos modal */
+  .contents-selector { display: flex; flex-direction: column; gap: 0.5rem; padding: 1.25rem 1.5rem; max-height: 340px; overflow-y: auto; }
+  .cs-item { display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; border: 1.5px solid #e5e7eb; border-radius: 10px; cursor: pointer; transition: all 0.15s; }
+  .cs-item:hover { border-color: #4f46e5; background: #f5f3ff; }
+  .cs-item .cs-icon { font-size: 1.4rem; }
+  .cs-item .cs-info { flex: 1; }
+  .cs-item .cs-name { font-size: 0.9rem; font-weight: 600; color: #1a1a2e; }
+  .cs-item .cs-type { font-size: 0.72rem; color: #6b7280; margin-top: 2px; }
+  .cs-item .cs-arrow { color: #9ca3af; font-size: 0.9rem; }
+
+  .toast { position: fixed; bottom: 1.5rem; right: 1.5rem; background: #1a1a2e; color: #fff; padding: 0.75rem 1.25rem; border-radius: 10px; font-size: 0.875rem; opacity: 0; transform: translateY(10px); transition: all 0.25s; pointer-events: none; z-index: 200; }
+  .toast.show { opacity: 1; transform: translateY(0); }
+
+  /* Plantilla JSON */
+  .template-box { background: #f5f3ff; border: 1.5px solid #ddd6fe; border-radius: 10px; padding: 0.9rem 1rem; margin: 0 1.5rem 0; }
+  .template-box .tb-title { font-size: 0.82rem; font-weight: 600; color: #4f46e5; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.4rem; }
+  .template-box select { width: 100%; padding: 0.5rem 0.75rem; border: 1.5px solid #d1d5db; border-radius: 8px; font-size: 0.85rem; outline: none; margin-bottom: 0.6rem; font-family: inherit; background: #fff; }
+  .template-box select:focus { border-color: #4f46e5; }
+  .btn-template { width: 100%; background: #4f46e5; color: #fff; border: none; border-radius: 8px; padding: 0.55rem; font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: background 0.15s; }
+  .btn-template:hover { background: #4338ca; }
+
+  /* ── Sistema de clave ── */
+  .premium-badge { display:inline-flex; align-items:center; gap:0.35rem; background:#fef3c7; border:1.5px solid #fcd34d; color:#92400e; border-radius:8px; padding:0.3rem 0.7rem; font-size:0.75rem; font-weight:600; margin-bottom:0.6rem; }
+  .unlock-bar { background:#fff; border:1.5px solid #e5e7eb; border-radius:12px; padding:1rem 1.25rem; margin:0 1.5rem 0.5rem; }
+  .unlock-bar.unlocked { background:#f0fdf4; border-color:#86efac; }
+  .unlock-bar-title { font-size:0.8rem; font-weight:600; color:#374151; margin-bottom:0.6rem; display:flex; align-items:center; gap:0.4rem; }
+  .unlock-bar.unlocked .unlock-bar-title { color:#166534; }
+  .unlock-row { display:flex; gap:0.5rem; align-items:center; }
+  .unlock-input { flex:1; padding:0.45rem 0.65rem; border:1.5px solid #d1d5db; border-radius:8px; font-size:0.82rem; font-family:'Courier New',monospace; outline:none; transition:border 0.15s; letter-spacing:0.08em; text-transform:uppercase; }
+  .unlock-input:focus { border-color:#4f46e5; }
+  .unlock-input.ok  { border-color:#22c55e; background:#f0fdf4; }
+  .unlock-input.err { border-color:#ef4444; background:#fef2f2; }
+  .unlock-btn { padding:0.45rem 0.9rem; border-radius:8px; border:none; background:#4f46e5; color:#fff; font-size:0.8rem; font-weight:600; cursor:pointer; white-space:nowrap; }
+  .unlock-btn:hover { background:#4338ca; }
+  .unlock-fb { font-size:0.72rem; margin-top:0.3rem; min-height:1rem; }
+  .unlock-fb.ok  { color:#166534; }
+  .unlock-fb.err { color:#dc2626; }
+  /* info ventana de tiempo */
+  .time-hint { font-size:0.72rem; color:#6b7280; margin-bottom:0.5rem; line-height:1.4; }
+  .time-hint span { font-weight:600; color:#4f46e5; }
+  /* Bloqueado */
+  .blocked-msg { text-align:center; padding:1.5rem 1rem; color:#9ca3af; font-size:0.82rem; }
+  .blocked-msg .bm-icon { font-size:1.5rem; margin-bottom:0.4rem; }
+  /* Devcode (solo app) */
+  .devcode-row { display:flex; gap:0.5rem; align-items:center; margin-bottom:0.6rem; }
+  .devcode-box { flex:1; background:#f1f5f9; border:1.5px solid #cbd5e1; border-radius:8px; padding:0.4rem 0.65rem; font-family:'Courier New',monospace; font-size:0.63rem; color:#1e293b; word-break:break-all; line-height:1.5; }
+  .copy-devcode-btn { font-size:0.72rem; padding:0.25rem 0.6rem; border-radius:6px; border:1px solid #cbd5e1; background:#fff; color:#475569; cursor:pointer; white-space:nowrap; }
+  .copy-devcode-btn:hover { background:#f1f5f9; }
+</style>
+  <script src="_nav.js"></script>
+  <script src="cordova.js" onerror="void 0"></script>
+  <script src="_share.js" onerror="void 0"></script>
+</head>
+<body>
+
+<header>
+  <button class="header-back" onclick="navBack()">← Volver</button>
+  <div class="header-info">
+    <h1 id="headerSubject">Asignatura</h1>
+    <h2 id="headerClass">Clase</h2>
+  </div>
+  <button onclick="exportClass()" style="background:transparent;border:1.5px solid rgba(255,255,255,0.4);color:#fff;border-radius:8px;padding:0.35rem 0.8rem;font-size:0.82rem;font-weight:500;cursor:pointer;">📤 Exportar</button>
+</header>
+
+<div class="container">
+
+  <!-- Secciones navegables -->
+  <div class="sections-grid">
+    <a class="section-card" href="#" onclick="openMultiSelector('contenido'); return false;">
+      <div class="icon">📄</div>
+      <h3>Contenido / Esquemas</h3>
+      <p>Estructura conceptual, lecciones, normas y más</p>
+      <span class="status status-empty" id="statusContenido">Sin cargar</span>
+    </a>
+    <a class="section-card" href="#" onclick="openMultiSelector('glosario'); return false;">
+      <div class="icon">📖</div>
+      <h3>Glosario</h3>
+      <p>Términos clave y definiciones del tema</p>
+      <span class="status status-empty" id="statusGlosario">Sin cargar</span>
+    </a>
+    <a class="section-card" href="#" onclick="openMultiSelector('cuestionario'); return false;">
+      <div class="icon">✏️</div>
+      <h3>Cuestionario</h3>
+      <p>Preguntas de evaluación y autoevaluación</p>
+      <span class="status status-empty" id="statusCuestionario">Sin cargar</span>
+    </a>
+    <a class="section-card" href="#" onclick="openSection('tematizacion'); return false;">
+      <div class="icon">🗂️</div>
+      <h3>Tematización</h3>
+      <p>Tema principal, subtemas y fragmentos representativos</p>
+      <span class="status status-empty" id="statusTematizacion">Sin cargar</span>
+    </a>
+    <a class="section-card" href="#" onclick="openSection('estudio'); return false;">
+      <div class="icon">🧠</div>
+      <h3>Estudiar Glosario</h3>
+      <p>Practica y memoriza los términos del glosario</p>
+      <span class="status status-empty" id="statusEstudio">Sin cargar</span>
+    </a>
+    <a class="section-card" href="#" onclick="openDominio(); return false;" style="border: 2px solid rgba(124,58,237,0.25); background: rgba(124,58,237,0.04);">
+      <div class="icon">📊</div>
+      <h3>Índice de Dominio</h3>
+      <p>Analiza tu esfuerzo y dominio del tema con base en los cuestionarios</p>
+      <span class="status" id="statusDominio" style="background:#ede9fe;color:#5b21b6;">Ver análisis →</span>
+    </a>
+  </div>
+
+  <!-- Carga de JSONs -->
+  <div class="upload-section">
+    <h3>📂 Cargar JSON para esta clase</h3>
+    <div class="upload-grid">
+
+      <!-- Contenido — multi-item -->
+      <div id="boxContenido">
+        <div class="upload-box multi-loaded" id="boxContenidoInner" onclick="openLoaderMulti('contenido')">
+          <div class="up-icon">📄</div>
+          <div class="up-title">Contenido / Esquemas</div>
+          <div class="up-sub" id="contenidoSub">Haz clic para agregar</div>
+        </div>
+        <div class="contenidos-list" id="contenidosList"></div>
+        <button class="add-contenido-btn" id="btnAddContenido" onclick="openLoaderMulti('contenido')" style="display:none;">+ Agregar otro contenido</button>
+      </div>
+
+      <!-- Glosario — multi-item -->
+      <div id="boxGlosario">
+        <div class="upload-box" id="boxGlosarioInner" onclick="openLoaderMulti('glosario')">
+          <div class="up-icon">📖</div>
+          <div class="up-title">Glosario</div>
+          <div class="up-sub" id="glosarioSub">Haz clic para agregar</div>
+        </div>
+        <div class="contenidos-list" id="glosariosList"></div>
+        <button class="add-contenido-btn" id="btnAddGlosario" onclick="openLoaderMulti('glosario')" style="display:none;">+ Agregar otro glosario</button>
+      </div>
+
+      <!-- Cuestionario — multi-item -->
+      <div id="boxCuestionario">
+        <div class="upload-box" id="boxCuestionarioInner" onclick="openLoaderMulti('cuestionario')">
+          <div class="up-icon">✏️</div>
+          <div class="up-title">Cuestionario</div>
+          <div class="up-sub" id="cuestionarioSub">Haz clic para agregar</div>
+        </div>
+        <div class="contenidos-list" id="cuestionariosList"></div>
+        <button class="add-contenido-btn" id="btnAddCuestionario" onclick="openLoaderMulti('cuestionario')" style="display:none;">+ Agregar otro cuestionario</button>
+      </div>
+      <div class="upload-box" id="boxTematizacion" onclick="openLoader('tematizacion')">
+        <div class="up-icon">🗂️</div>
+        <div class="up-title">Tematización</div>
+        <div class="up-sub">Haz clic para cargar</div>
+      </div>
+    </div>
+    <div style="margin-top:1rem; display:flex; gap:0.6rem; flex-wrap:wrap;">
+      <button class="btn btn-danger-ghost btn-sm" onclick="clearAll()">🗑️ Limpiar todos los datos</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal selector de items cargados (contenido / glosario / cuestionario) -->
+<div class="modal-overlay" id="modalContenidoSelector">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="selectorTitle">📄 Contenidos disponibles</h3>
+      <p id="selectorSub">Selecciona el contenido que quieres ver</p>
+    </div>
+    <div class="contents-selector" id="contentsSelectorList"></div>
+    <button class="mix-quiz-btn" id="selectorMixBtn" style="display:none; margin:0 1.5rem 1rem;" onclick="openMixQuiz(); closeModal('modalContenidoSelector');">🎯 Prueba Mix — combinar todos los contenidos</button>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modalContenidoSelector')">Cancelar</button>
+      <button class="btn btn-primary" onclick="openLoaderMulti(window.__selectorType); closeModal('modalContenidoSelector');">+ Agregar nuevo</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal cargador universal -->
+<div class="modal-overlay" id="modalLoader">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="loaderTitle">Cargar JSON</h3>
+      <p id="loaderSub">Elige cómo quieres ingresar el contenido</p>
+    </div>
+
+    <div class="modal-body">
+    <!-- Nombre para contenido -->
+    <div id="nameGroup" style="padding: 0.75rem 1.5rem 0; display:none;">
+      <div class="form-group">
+        <label id="nameLabel">Nombre de este contenido</label>
+        <input type="text" id="inputContenidoName" placeholder="Ej: Lección 5 — El Juicio">
+      </div>
+    </div>
+
+    <!-- Plantilla JSON de ejemplo -->
+    <div class="template-box" id="templateBox">
+      <div class="tb-title">📋 ¿No sabes qué estructura usar?</div>
+      <div id="templateTypeGroup" style="display:none;">
+        <select id="templateTypeSelect"></select>
+      </div>
+      <div id="templateBtnLocked">
+        <div class="premium-badge">🔒 Función de pago</div>
+        <button type="button" class="btn-template" style="background:#9ca3af;cursor:not-allowed;" disabled>Copiar JSON de ejemplo</button>
+      </div>
+      <div id="templateBtnUnlocked" style="display:none;">
+        <button type="button" class="btn-template" onclick="copyTemplate()">Copiar JSON de ejemplo</button>
+      </div>
+    </div>
+
+
+    <!-- Barra de desbloqueo -->
+    <div id="unlockBar" class="unlock-bar" style="display:none;">
+      <div class="unlock-bar-title" id="unlockBarTitle">🔒 Funciones de pago</div>
+      <!-- Modo app: huella de dispositivo -->
+      <div id="modeApp" style="display:none;">
+        <div class="time-hint">Copia tu código y envíalo al administrador para recibir tu clave.</div>
+        <div class="devcode-row">
+          <div class="devcode-box" id="devCodeDisplay">Calculando…</div>
+          <button class="copy-devcode-btn" onclick="copyDevCode()">📋 Copiar</button>
+        </div>
+      </div>
+      <!-- Modo navegador: clave temporal -->
+      <div id="modeBrowser" style="display:none;">
+        <div class="time-hint" id="timeHint">El administrador te indicará el momento exacto.<br>Tendrás <span>5 minutos</span> para ingresar la clave.</div>
+      </div>
+      <!-- Input compartido -->
+      <div id="unlockInputArea">
+        <div class="unlock-row">
+          <input class="unlock-input" id="unlockKeyInput" placeholder="XXXX-XXXX" oninput="onUnlockInput()">
+          <button class="unlock-btn" onclick="tryUnlock()">🔓 Activar</button>
+        </div>
+        <div class="unlock-fb" id="unlockFb"></div>
+      </div>
+      <!-- Activo -->
+      <div id="unlockActive" style="display:none; font-size:0.82rem; color:#166534; display:none; align-items:center; gap:0.4rem;">
+        ✅ Funciones activas <span id="unlockActiveDetail"></span>
+      </div>
+    </div>
+
+    <div class="tab-bar">
+      <button class="tab-btn active" id="tabFile" onclick="switchTab('file')">📁 Subir archivo</button>
+      <button class="tab-btn" id="tabPaste" onclick="switchTab('paste')">📋 Pegar JSON</button>
+    </div>
+
+    <div class="tab-panel active" id="panelFile">
+      <div class="drop-zone" id="dropZone" style="cursor:pointer;" onclick="document.getElementById('fileInput').click()">
+        <div class="dz-icon">📂</div>
+        <div class="dz-text">Selecciona un archivo JSON</div>
+        <div class="dz-sub">Toca el botón para buscar en tu dispositivo</div>
+        <label class="dz-btn">Seleccionar archivo
+          <input type="file" accept=".json" id="fileInput" onchange="onFileSelected(this)">
+        </label>
+      </div>
+      <div id="fileStatus" style="margin-top:0.6rem; font-size:0.8rem; color:#6b7280; min-height:1.2rem;"></div>
+    </div>
+
+    <div class="tab-panel" id="panelPaste">
+      <div id="pasteLockedMsg" class="blocked-msg">
+        <div class="bm-icon">🔒</div>
+        <div>Función de pago.<br>Ingresa tu clave arriba para habilitarla.</div>
+      </div>
+      <div id="pasteUnlockedContent" style="display:none;">
+        <div class="paste-label">Pega aquí el contenido JSON:</div>
+        <textarea class="paste-area" id="pasteArea" placeholder='{ "arcos": [ ... ] }' oninput="validatePaste()"></textarea>
+        <div class="paste-feedback" id="pasteFeedback"></div>
+      </div>
+    </div>
+
+    </div><!-- /.modal-body -->
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeLoader()">Cancelar</button>
+      <button class="btn btn-primary" id="btnSave" onclick="saveLoader()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal de clave — función de pago para Exportar -->
+<div class="modal-overlay" id="modalUnlockExport">
+  <div class="modal" style="max-width:420px;">
+    <div class="modal-header" style="padding:1.25rem 1.5rem 0;">
+      <h3>🔒 Función de pago</h3>
+      <p id="unlockReasonText">Exportar esta clase requiere una clave de activación</p>
+    </div>
+    <div class="modal-body" style="padding:0 1.5rem;">
+      <div class="unlock-bar" id="unlockBarExp" style="margin:1rem 0;">
+        <div class="unlock-bar-title" id="unlockBarTitleExp">🔒 Función de pago</div>
+        <div id="modeAppExp" style="display:none;">
+          <div class="time-hint">Copia tu código y envíalo al administrador para recibir tu clave.</div>
+          <div class="devcode-row">
+            <div class="devcode-box" id="devCodeDisplayExp">Calculando…</div>
+            <button class="copy-devcode-btn" onclick="copyDevCode()">📋 Copiar</button>
+          </div>
+        </div>
+        <div id="modeBrowserExp" style="display:none;">
+          <div class="time-hint" id="timeHintExp">El administrador te indicará el momento exacto.<br>Tendrás <span>5 minutos</span> para ingresar la clave.</div>
+        </div>
+        <div id="unlockInputAreaExp">
+          <div class="unlock-row">
+            <input class="unlock-input" id="unlockKeyInputExp" placeholder="XXXX-XXXX" oninput="onUnlockInputExp()">
+            <button class="unlock-btn" onclick="tryUnlockExp()">🔓 Activar</button>
+          </div>
+          <div class="unlock-fb" id="unlockFbExp"></div>
+        </div>
+        <div id="unlockActiveExp" style="display:none; align-items:center; gap:0.4rem; font-size:0.82rem; color:#166534;">
+          ✅ Funciones activas <span id="unlockActiveDetailExp"></span>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modalUnlockExport')">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const params    = new URLSearchParams(location.search);
+const subjectId = params.get('s');
+const classId   = params.get('c');
+const KEY_PREFIX = `study_${subjectId}_${classId}`;
+
+const subjects = JSON.parse(localStorage.getItem('study_subjects') || '[]');
+const subject  = subjects.find(s => s.id === subjectId);
+const cls      = subject?.classes?.find(c => c.id === classId);
+
+document.getElementById('headerSubject').textContent = subject ? `${subject.icon} ${subject.name}` : 'Asignatura';
+document.getElementById('headerClass').textContent   = cls ? cls.name : 'Clase';
+
+function getKey(type) { return `${KEY_PREFIX}_${type}`; }
+
+// ── Límite de la versión gratuita: máximo de ítems por sección ──────
+const MAX_ITEMS_PER_TYPE = 2; // contenido / glosario / cuestionario, por clase
+
+// ── Sistema multi-item (Contenido, Glosario, Cuestionario) ─────────
+// Cada tipo tiene un índice: KEY_PREFIX_{type}s_index → [{ id, name, detectedType? }]
+// y un item por id: KEY_PREFIX_{type}_{id}
+const MULTI_CFG = {
+  contenido:    { icon: '📄', label: 'Contenido',    page: 'Contenido.html',    param: 'cid', detect: true  },
+  glosario:     { icon: '📖', label: 'Glosario',     page: 'Glosario.html',     param: 'gid', detect: false },
+  cuestionario: { icon: '✏️', label: 'Cuestionario', page: 'cuestionario.html', param: 'qid', detect: false },
+};
+const MULTI_DOM = {
+  contenido:    { listEl: 'contenidosList',    boxInner: 'boxContenidoInner',    sub: 'contenidoSub',    addBtn: 'btnAddContenido',    status: 'statusContenido' },
+  glosario:     { listEl: 'glosariosList',     boxInner: 'boxGlosarioInner',     sub: 'glosarioSub',     addBtn: 'btnAddGlosario',     status: 'statusGlosario' },
+  cuestionario: { listEl: 'cuestionariosList', boxInner: 'boxCuestionarioInner', sub: 'cuestionarioSub', addBtn: 'btnAddCuestionario', status: 'statusCuestionario' },
+};
+
+function getIndexKey(type) { return `${KEY_PREFIX}_${type}s_index`; }
+function loadIndex(type) { try { return JSON.parse(localStorage.getItem(getIndexKey(type)) || '[]'); } catch { return []; } }
+function saveIndex(type, arr) { localStorage.setItem(getIndexKey(type), JSON.stringify(arr)); }
+
+// Migra datos antiguos (un solo glosario/cuestionario por clase) al nuevo formato de lista,
+// la primera vez que se abre la clase tras la actualización.
+function migrateLegacyToMulti(type) {
+  if (loadIndex(type).length) return; // ya tiene items, no migrar
+  const legacyKey = getKey(type);
+  const legacyRaw = localStorage.getItem(legacyKey);
+  if (!legacyRaw) return;
+  const id = Date.now().toString();
+  localStorage.setItem(`${KEY_PREFIX}_${type}_${id}`, legacyRaw);
+  saveIndex(type, [{ id, name: `${MULTI_CFG[type].label} 1` }]);
+  if (type === 'cuestionario') localStorage.removeItem(legacyKey);
+  // Para glosario se conserva la clave antigua: se mantiene sincronizada como
+  // "espejo" del primer glosario para que Estudiar Glosario siga funcionando.
+}
+
+function renderMultiList(type) {
+  const cfg = MULTI_CFG[type];
+  const dom = MULTI_DOM[type];
+  const list = loadIndex(type);
+  const listEl   = document.getElementById(dom.listEl);
+  const addBtn   = document.getElementById(dom.addBtn);
+  const subEl    = document.getElementById(dom.sub);
+  const statusEl = document.getElementById(dom.status);
+  const boxInner = document.getElementById(dom.boxInner);
+
+  if (!list.length) {
+    listEl.innerHTML = '';
+    addBtn.style.display = 'none';
+    boxInner.className = 'upload-box';
+    subEl.textContent = 'Haz clic para agregar';
+    statusEl.textContent = 'Sin cargar';
+    statusEl.className = 'status status-empty';
+    return;
+  }
+
+  boxInner.className = 'upload-box multi-loaded';
+  subEl.textContent = list.length === 1 ? '1 cargado' : `${list.length} cargados`;
+  addBtn.style.display = 'block';
+  statusEl.textContent = `${list.length} cargado${list.length > 1 ? 's' : ''}`;
+  statusEl.className = 'status status-multi';
+
+  listEl.innerHTML = list.map(item => {
+    let icon = cfg.icon, label = cfg.label;
+    if (cfg.detect) {
+      const tcfg = TYPE_MAP[item.detectedType] || TYPE_MAP.academico;
+      icon = tcfg.icon; label = tcfg.label;
+    }
+    return `<div class="contenido-item">
+      <span class="ci-icon">${icon}</span>
+      <span class="ci-name">${escHtml(item.name)}</span>
+      <span class="ci-type">${label}</span>
+      <button class="ci-open" onclick="openMultiItem('${type}','${item.id}')">📖 Abrir</button>
+      ${type === 'glosario' ? `<button class="ci-study" onclick="openEstudio('${item.id}')">🧠 Estudiar</button>` : ''}
+      <button class="ci-del" onclick="deleteMultiItem('${type}','${item.id}')">✕</button>
+    </div>`;
+  }).join('');
+
+  if (type === 'contenido' && list.length >= 2) {
+    const existing = document.getElementById('mixQuizBtn');
+    if (!existing) {
+      const mixBtn = document.createElement('button');
+      mixBtn.id = 'mixQuizBtn';
+      mixBtn.className = 'mix-quiz-btn';
+      mixBtn.innerHTML = '🎯 Prueba Mix — combinar todos los contenidos';
+      mixBtn.onclick = openMixQuiz;
+      listEl.appendChild(mixBtn);
+    }
+  } else {
+    const existing = document.getElementById('mixQuizBtn');
+    if (existing) existing.remove();
+  }
+}
+
+function openMultiItem(type, id) {
+  const cfg = MULTI_CFG[type];
+  navTo(`${cfg.page}?s=${subjectId}&c=${classId}&${cfg.param}=${id}`);
+}
+
+function openEstudio(gid) {
+  navTo(`estudio.html?s=${subjectId}&c=${classId}&gid=${gid}`);
+}
+
+function deleteMultiItem(type, id) {
+  if (!confirm(`¿Eliminar este ${MULTI_CFG[type].label.toLowerCase()}?`)) return;
+  const list = loadIndex(type).filter(i => i.id !== id);
+  localStorage.removeItem(`${KEY_PREFIX}_${type}_${id}`);
+  saveIndex(type, list);
+  renderMultiList(type);
+  if (type === 'glosario') syncGlosarioMirror();
+  showToast('🗑️ Eliminado');
+}
+
+function openMultiSelector(type) {
+  const cfg = MULTI_CFG[type];
+  const list = loadIndex(type);
+  window.__selectorType = type;
+  if (!list.length) { openLoaderMulti(type); return; }
+  const verbMap = {
+    contenido:    'el contenido que quieres ver',
+    glosario:     'el glosario que quieres ver',
+    cuestionario: 'el cuestionario que quieres responder',
+  };
+  document.getElementById('selectorTitle').textContent = `${cfg.icon} ${cfg.label}s disponibles`;
+  document.getElementById('selectorSub').textContent   = `Selecciona ${verbMap[type]}`;
+  const selEl = document.getElementById('contentsSelectorList');
+  selEl.innerHTML = list.map(item => {
+    let icon = cfg.icon, label = cfg.label;
+    if (cfg.detect) {
+      const tcfg = TYPE_MAP[item.detectedType] || TYPE_MAP.academico;
+      icon = tcfg.icon; label = tcfg.label;
+    }
+    return `<div class="cs-item" onclick="openMultiItem('${type}','${item.id}'); closeModal('modalContenidoSelector')">
+      <span class="cs-icon">${icon}</span>
+      <div class="cs-info">
+        <div class="cs-name">${escHtml(item.name)}</div>
+        <div class="cs-type">${label}</div>
+      </div>
+      <span class="cs-arrow">›</span>
+    </div>`;
+  }).join('');
+  const mixBtn = document.getElementById('selectorMixBtn');
+  if (mixBtn) mixBtn.style.display = (type === 'contenido' && list.length >= 2) ? 'block' : 'none';
+  openModal('modalContenidoSelector');
+}
+
+// Mantiene la clave antigua "study_{s}_{c}_glosario" sincronizada con el primer
+// glosario de la lista, para que "Estudiar Glosario" siga funcionando igual.
+function syncGlosarioMirror() {
+  const idx = loadIndex('glosario');
+  if (idx.length) {
+    const raw = localStorage.getItem(`${KEY_PREFIX}_glosario_${idx[0].id}`);
+    if (raw) localStorage.setItem(getKey('glosario'), raw);
+  } else {
+    localStorage.removeItem(getKey('glosario'));
+  }
+  updateStatus('estudio', idx.length > 0);
+}
+
+// ── Detectar tipo de JSON ──────────────────────────────────────────
+const TYPE_MAP = {
+  narrativa_historica: { label: 'Narrativa histórica', icon: '📜', keys: ['arcos'] },
+  ensenanzas:         { label: 'Enseñanzas',           icon: '🕊️', keys: ['ensenanzas'] },
+  procedimental:      { label: 'Procedimental',         icon: '⚙️', keys: ['estructura_procedimental'] },
+  prescriptivo:       { label: 'Prescriptivo/Normativo',icon: '⚖️', keys: ['fundamento_normativo','estructura_normativa'] },
+  leccion:            { label: 'Lección (rompecabezas)',icon: '🧩', keys: ['formato_rompecabezas_leccion'] },
+  matutina:           { label: 'Matutina',               icon: '🌅', keys: ['versiculo','oracion'] },
+  academico:          { label: 'Académico/Esquema',     icon: '🎓', keys: ['metadatos','estructura_tesis'] },
+};
+
+function detectType(data) {
+  const rootKeys = Object.keys(data);
+  for (const [typeId, cfg] of Object.entries(TYPE_MAP)) {
+    if (cfg.keys.every(k => rootKeys.includes(k))) return typeId;
+    if (cfg.keys.some(k => rootKeys.includes(k))) return typeId;
+  }
+  return 'academico'; // fallback
+}
+
+// ── Plantillas JSON de ejemplo ─────────────────────────────────────
+const JSON_TEMPLATES = {
+
+  glosario: {
+    glosario: [
+      { termino: "Término de ejemplo", definicion: "Definición clara y breve del término.", grupo: "Grupo o categoría (opcional)" }
+    ]
+  },
+
+  cuestionario: [
+    {
+      pregunta: "Texto de la pregunta de selección única",
+      tipo: "seleccion",
+      opciones: ["Opción A", "Opción B", "Opción C", "Opción D"],
+      respuesta_correcta: "Opción A",
+      justificacion: "Explicación de por qué esa es la respuesta correcta."
+    },
+    {
+      pregunta: "Texto de la pregunta de selección múltiple",
+      tipo: "multiple",
+      opciones: ["Opción A", "Opción B", "Opción C", "Opción D"],
+      respuestas_correctas: ["Opción A", "Opción C"],
+      justificacion: "Explicación de por qué esas son las respuestas correctas."
+    },
+    {
+      pregunta: "Texto de la pregunta para completar",
+      tipo: "texto",
+      respuesta_correcta: "Respuesta esperada",
+      justificacion: "Explicación de la respuesta correcta."
+    }
+  ],
+
+  tematizacion: {
+    titulo: "Título general de la clase",
+    tema_principal_titulo: "Tema principal asociado al título",
+    fragmento_tema_principal_titulo: "Fragmento representativo que ilustra el tema principal del título",
+    subtemas_del_titulo: [
+      { subtema: "Nombre del subtema 1", fragmento: "Fragmento representativo del subtema 1" },
+      { subtema: "Nombre del subtema 2", fragmento: "Fragmento representativo del subtema 2" }
+    ],
+    subtitulos: [
+      {
+        subtitulo: "Nombre del subtítulo 1",
+        tema_principal_subtitulo: "Tema principal de este subtítulo",
+        fragmento_tema_principal_subtitulo: "Fragmento representativo del tema principal del subtítulo",
+        subtemas: [
+          { subtema: "Nombre del subtema 1.1", fragmento: "Fragmento representativo del subtema 1.1" },
+          { subtema: "Nombre del subtema 1.2", fragmento: "Fragmento representativo del subtema 1.2" }
+        ]
+      }
+    ]
+  },
+
+  // ── Subtipos de "Contenido / Esquemas" ──────────────────────────
+
+  narrativa_historica: {
+    fuente: {
+      titulo: "Título de la fuente",
+      subtitulo: "Subtítulo de la fuente",
+      autor: "Autor de la fuente",
+      fecha_fuente: "Fecha o periodo de la fuente",
+      tipo_fuente: "Tipo de fuente (ej: crónica, relato, documento histórico)",
+      idioma: "Idioma original"
+    },
+    arcos: [
+      {
+        titulo: "Título del arco narrativo 1",
+        descripcion: "Descripción general del arco",
+        secuencias: [
+          {
+            titulo: "Título de la secuencia 1",
+            eventos: [
+              {
+                titulo: "Título del evento",
+                descripcion: "Descripción del evento",
+                tipo: "Tipo de evento (ej: conflicto, decisión, encuentro)",
+                fecha_aproximada: "Fecha o periodo aproximado",
+                lugar: { nombre: "Nombre del lugar" },
+                actores: ["Actor 1", "Actor 2"],
+                elementos_clave: ["Elemento clave 1", "Elemento clave 2"]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+
+  ensenanzas: {
+    fuente: {
+      titulo: "Título de la fuente",
+      capitulo: "Capítulo o sección",
+      autor: "Autor",
+      marco_ideologico: "Marco ideológico o doctrinal",
+      idioma: "Idioma original"
+    },
+    ensenanzas: [
+      {
+        tipo: "moral",
+        enunciado: "Enunciado principal de la enseñanza",
+        cita_textual: "Cita textual de respaldo (opcional)",
+        condicion: {
+          tiene_condicion: false,
+          si: "Condición (si aplica)",
+          entonces: "Consecuencia (si aplica)"
+        },
+        dirigida_a: "Audiencia a la que se dirige",
+        tono: "Tono de la enseñanza (ej: exhortativo, reflexivo)",
+        alcance_temporal: "Alcance temporal (ej: permanente, circunstancial)"
+      }
+    ]
+  },
+
+  procedimental: {
+    metadatos: {
+      titulo: "Título del procedimiento",
+      autor_o_entidad: "Autor o entidad responsable",
+      tipo_documento: "Tipo de documento",
+      version: "Versión del documento",
+      ambito_de_aplicacion: "Ámbito de aplicación",
+      fecha: "Fecha del documento"
+    },
+    proposito: {
+      objetivo_general: "Objetivo general del procedimiento",
+      resultado_esperado_final: "Resultado esperado al finalizar",
+      objetivos_especificos: ["Objetivo específico 1", "Objetivo específico 2"]
+    },
+    destinatarios: {
+      perfil_usuario: "Perfil del usuario destinatario",
+      nivel_de_conocimiento_requerido: "Nivel de conocimiento requerido",
+      roles_implicados: ["Rol 1", "Rol 2"]
+    },
+    requisitos_previos: {
+      conocimientos_previos: ["Conocimiento previo 1"],
+      materiales_o_recursos: ["Material o recurso 1"],
+      condiciones_iniciales: ["Condición inicial 1"]
+    },
+    estructura_procedimental: [
+      {
+        nombre_del_paso: "Nombre del paso 1",
+        descripcion_operativa: "Descripción operativa del paso",
+        responsable: "Responsable de ejecutar el paso",
+        tiempo_estimado: "Tiempo estimado",
+        resultado_parcial_esperado: "Resultado parcial esperado",
+        subpasos: ["Subpaso 1", "Subpaso 2"]
+      }
+    ],
+    condiciones_y_decisiones: [
+      { condicion: "Descripción de la condición", si_se_cumple: "Acción si se cumple", si_no_se_cumple: "Acción si no se cumple" }
+    ],
+    criterios_de_validacion: {
+      indicadores_de_exito: ["Indicador de éxito 1"],
+      errores_comunes: ["Error común 1"],
+      mecanismos_de_verificacion: ["Mecanismo de verificación 1"]
+    },
+    productos_generados: [
+      { nombre_producto: "Nombre del producto", formato: "Formato del producto", descripcion: "Descripción del producto" }
+    ]
+  },
+
+  prescriptivo: {
+    metadatos: {
+      titulo: "Título del documento normativo",
+      autoridad_emisora: "Autoridad que emite el documento",
+      fecha_emision: "Fecha de emisión",
+      jurisdiccion: "Jurisdicción de aplicación",
+      tipo_documento: "Tipo de documento",
+      estado_vigencia: "Estado de vigencia (ej: vigente, derogado)"
+    },
+    fundamento_normativo: {
+      objetivo_general: "Objetivo general de la norma",
+      base_legal_superior: ["Norma superior 1"],
+      principios_rectores: ["Principio rector 1"]
+    },
+    ambito_de_aplicacion: {
+      sujetos_obligados: ["Sujeto obligado 1"],
+      sujetos_beneficiarios: ["Sujeto beneficiario 1"],
+      territorialidad: "Territorialidad de aplicación",
+      alcance_material: "Alcance material de la norma"
+    },
+    estructura_normativa: {
+      mandatos: [
+        { id_mandato: "M1", tipo: "Tipo de mandato", descripcion: "Descripción del mandato", responsable: "Responsable", plazos: "Plazos aplicables" }
+      ],
+      prohibiciones: [
+        { id_prohibicion: "P1", descripcion: "Descripción de la prohibición", sujeto_afectado: "Sujeto afectado" }
+      ],
+      permisos: [
+        { id_permiso: "PE1", descripcion: "Descripción del permiso" }
+      ]
+    },
+    regimen_sancionatorio: {
+      infracciones: [
+        { id_infraccion: "I1", gravedad: "leve | grave", descripcion: "Descripción de la infracción" }
+      ]
+    },
+    excepciones: [
+      { descripcion: "Descripción de la excepción", condiciones: "Condiciones bajo las que aplica" }
+    ]
+  },
+
+  leccion: {
+    formato_rompecabezas_leccion: {
+      pregunta_inicial: {
+        texto: "Pregunta inicial que guía toda la lección",
+        por_que_importa: "Explicación de por qué esta pregunta es importante"
+      },
+      piezas_diarias: {
+        dia_1: {
+          pieza: "Nombre/idea clave de la pieza del día 1",
+          profundizacion: "Texto de profundización del día 1",
+          justificacion: "Justificación o reflexión del día 1",
+          referencia_biblica: { libro_capitulo_versiculo: "Libro Capítulo:Versículo", parte_que_aporta: "Qué aporta este pasaje" },
+          cita_egw: { referencia: "Referencia de la cita", frase_o_idea_clave: "Frase o idea clave de la cita" }
+        },
+        dia_2: {
+          pieza: "Nombre/idea clave de la pieza del día 2",
+          profundizacion: "Texto de profundización del día 2",
+          justificacion: "Justificación o reflexión del día 2",
+          referencia_biblica: { libro_capitulo_versiculo: "Libro Capítulo:Versículo", parte_que_aporta: "Qué aporta este pasaje" },
+          cita_egw: { referencia: "Referencia de la cita", frase_o_idea_clave: "Frase o idea clave de la cita" }
+        }
+      },
+      cierre_dia_7: {
+        integracion: "Texto que integra todas las piezas de la semana",
+        respuesta_final_a_la_pregunta_inicial: "Respuesta final a la pregunta inicial",
+        accion_semanal_unica: "Acción práctica única para aplicar durante la semana"
+      },
+      Analisis: {
+        descripcion: "Descripción general del análisis comparativo",
+        conjuntos: [
+          {
+            nombre: "Nombre del conjunto de análisis",
+            dias: ["dia_1", "dia_2"],
+            elementos_comunes: [
+              {
+                elemento: "Nombre del elemento común",
+                descripcion_general: "Descripción general del elemento",
+                por_dia: { dia_1: "Cómo aparece en el día 1", dia_2: "Cómo aparece en el día 2" }
+              }
+            ],
+            elementos_distintivos: {
+              dia_1: ["Elemento distintivo del día 1"],
+              dia_2: ["Elemento distintivo del día 2"]
+            }
+          }
+        ]
+      }
+    }
+  },
+
+  matutina: {
+    titulo: "Título de la matutina",
+    fecha: "AAAA-MM-DD",
+    versiculo: {
+      texto: "Texto completo del versículo principal",
+      referencia: "Referencia bíblica (ej. 'Nehemías 5:9')"
+    },
+    tema_principal: "Tema general que desarrolla la matutina",
+    problema_planteado: "Problema, desafío, error o situación que la lección busca abordar",
+    leccion_central: "Enseñanza principal o conclusión de la matutina",
+    invitaciones: [
+      { accion: "Acción o comportamiento al que se invita 1", justificacion: "Razón que respalda esta invitación" },
+      { accion: "Acción o comportamiento al que se invita 2", justificacion: "Razón que respalda esta invitación" }
+    ],
+    argumentos: [
+      { tipo: "biblico", contenido: "Resumen del argumento bíblico" },
+      { tipo: "moral", contenido: "Resumen del argumento moral" }
+    ],
+    virtudes_promovidas: ["Virtud o valor promovido 1", "Virtud o valor promovido 2"],
+    conductas_a_evitar: ["Conducta o actitud que se desaconseja 1"],
+    cita_adicional: {
+      autor: "Autor de la cita",
+      obra: "Libro o fuente",
+      texto: "Fragmento citado"
+    },
+    aplicaciones_practicas: ["Acción concreta que puede realizar el lector en su vida diaria"],
+    oracion: {
+      peticiones: ["Solicitud hecha a Dios"],
+      reconocimientos: ["Falta, necesidad o situación reconocida ante Dios"],
+      objetivo: "Resultado espiritual que se desea alcanzar"
+    }
+  },
+
+  academico: {
+    metadatos: {
+      titulo: "Título del texto académico",
+      autor: "Autor",
+      fecha: "Fecha",
+      disciplina: "Disciplina",
+      tipo_documento: "Tipo de documento",
+      nivel_de_analisis: "Nivel de análisis",
+      palabras_clave: ["Palabra clave 1", "Palabra clave 2"]
+    },
+    contexto_y_campo: {
+      campo_academico: "Campo académico",
+      debate_especifico: "Debate específico al que se inscribe",
+      tradicion_teorica: "Tradición teórica de referencia",
+      contexto_historico_intelectual: "Contexto histórico-intelectual"
+    },
+    definicion_del_problema: {
+      pregunta_central: "Pregunta central que aborda el texto",
+      formulacion_del_problema: "Formulación detallada del problema",
+      alcance: "Alcance del análisis",
+      limitaciones: "Limitaciones reconocidas"
+    },
+    estructura_tesis: {
+      tesis: {
+        afirmaciones: ["Afirmación 1 de la tesis", "Afirmación 2 de la tesis"],
+        tipo: "Tipo de tesis",
+        estatus: "Estatus de la tesis (ej: defendida, refutada)"
+      },
+      antitesis: {
+        posiciones_opuestas: ["Posición opuesta 1"],
+        paradigma_dominante: "Paradigma dominante que se cuestiona",
+        supuestos_cuestionados: ["Supuesto cuestionado 1"]
+      },
+      sintesis: {
+        propuesta_integradora: "Propuesta integradora",
+        reformulacion_del_problema: "Reformulación del problema original",
+        aporte_novedoso: "Aporte novedoso de la síntesis"
+      }
+    },
+    marco_conceptual: {
+      supuestos_ontologicos: "Supuestos ontológicos",
+      supuestos_epistemologicos: "Supuestos epistemológicos",
+      supuestos_normativos: "Supuestos normativos"
+    },
+    argumentacion: {
+      estructura_logica: [
+        { afirmacion: "Afirmación argumentativa 1", tipo_de_argumento: "Tipo de argumento" }
+      ],
+      evidencias: [
+        { descripcion: "Descripción de la evidencia", tipo: "Tipo de evidencia" }
+      ]
+    },
+    diagnostico: {
+      problema_identificado: "Problema identificado",
+      fallas_estructurales: ["Falla estructural 1"],
+      consecuencias: ["Consecuencia 1"]
+    },
+    propuesta: {
+      solucion_propuesta: "Solución propuesta",
+      tipo_de_intervencion: "Tipo de intervención",
+      nivel_de_intervencion: "Nivel de intervención",
+      mecanismo_de_implementacion: "Mecanismo de implementación",
+      impacto_esperado: "Impacto esperado"
+    },
+    implicaciones: {
+      implicaciones_teoricas: "Implicaciones teóricas",
+      implicaciones_practicas: "Implicaciones prácticas",
+      implicaciones_politicas_o_normativas: "Implicaciones políticas o normativas"
+    },
+    limitaciones_y_futuras_investigaciones: {
+      limitaciones_reconocidas: ["Limitación reconocida 1"],
+      preguntas_no_resueltas: ["Pregunta no resuelta 1"],
+      lineas_futuras_de_investigacion: ["Línea futura de investigación 1"]
+    }
+  }
+};
+
+// ── UI de plantillas ────────────────────────────────────────────────
+function setupTemplateUI() {
+  const groupEl  = document.getElementById('templateTypeGroup');
+  const selectEl = document.getElementById('templateTypeSelect');
+
+  if (currentType === 'contenido') {
+    // Mostrar selector con los subtipos de Contenido
+    selectEl.innerHTML = Object.entries(TYPE_MAP).map(([typeId, cfg]) =>
+      `<option value="${typeId}">${cfg.icon} ${cfg.label}</option>`
+    ).join('');
+    groupEl.style.display = 'block';
+  } else {
+    groupEl.style.display = 'none';
+  }
+}
+
+function copyTemplate() {
+  let templateKey = currentType;
+  if (currentType === 'contenido') {
+    templateKey = document.getElementById('templateTypeSelect').value;
+  }
+  const template = JSON_TEMPLATES[templateKey];
+  if (!template) { showToast('⚠️ No hay plantilla disponible para este tipo'); return; }
+
+  const text = JSON.stringify(template, null, 2);
+
+  const fallbackCopy = () => {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.position = 'fixed';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.select();
+    try { document.execCommand('copy'); showToast('📋 Plantilla copiada al portapapeles'); }
+    catch { showToast('❌ No se pudo copiar la plantilla'); }
+    document.body.removeChild(ta);
+  };
+
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text)
+      .then(() => showToast('📋 Plantilla copiada al portapapeles'))
+      .catch(fallbackCopy);
+  } else {
+    fallbackCopy();
+  }
+}
+
+// ── Loader modal ──────────────────────────────────────────────────
+let currentType    = null; // 'contenido' | 'glosario' | 'cuestionario' | 'tematizacion'
+let currentTab     = 'file';
+let parsedFileData = null;
+let pasteValid     = false;
+let autoFilename   = '';
+
+const TITLES = {
+  glosario:     { title: 'Cargar Glosario',     sub: 'FormatoGlosario.json' },
+  cuestionario: { title: 'Cargar Cuestionario', sub: 'FormatoCuestionario.json' },
+  tematizacion: { title: 'Cargar Tematización', sub: 'FormatoTematizacion.json' },
+};
+
+async function openLoaderMulti(type) {
+  await initDevUnlock();
+  const list = loadIndex(type);
+  if (!_unlocked && list.length >= MAX_ITEMS_PER_TYPE) {
+    requireUnlock(() => openLoaderMulti(type),
+      `🔒 Límite gratuito: máximo ${MAX_ITEMS_PER_TYPE} ${MULTI_CFG[type].label.toLowerCase()}s por clase. Ingresa tu clave para agregar más.`);
+    return;
+  }
+  currentType    = type;
+  parsedFileData = null; pasteValid = false; autoFilename = '';
+  document.getElementById('pasteArea').value = '';
+  document.getElementById('pasteArea').className = 'paste-area';
+  document.getElementById('pasteFeedback').textContent = '';
+  document.getElementById('pasteFeedback').className = 'paste-feedback';
+  document.getElementById('fileStatus').textContent = '';
+  document.getElementById('inputContenidoName').value = '';
+  const cfg = MULTI_CFG[type];
+  document.getElementById('loaderTitle').textContent = `Agregar ${cfg.label}`;
+  document.getElementById('loaderSub').textContent = cfg.detect
+    ? 'El tipo se detectará automáticamente'
+    : `Formato esperado: ${TITLES[type].sub}`;
+  document.getElementById('nameLabel').textContent = `Nombre de este ${cfg.label.toLowerCase()}`;
+  document.getElementById('nameGroup').style.display = 'block';
+  switchTab('file');
+  setupTemplateUI();
+  openModal('modalLoader');
+}
+
+function openLoader(type) {
+  currentType = type;
+  parsedFileData = null; pasteValid = false;
+  initDevUnlock();
+  document.getElementById('pasteArea').value = '';
+  document.getElementById('pasteArea').className = 'paste-area';
+  document.getElementById('pasteFeedback').textContent = '';
+  document.getElementById('pasteFeedback').className = 'paste-feedback';
+  document.getElementById('fileStatus').textContent = '';
+  document.getElementById('loaderTitle').textContent  = TITLES[type].title;
+  document.getElementById('loaderSub').textContent    = `Formato esperado: ${TITLES[type].sub}`;
+  document.getElementById('nameGroup').style.display  = 'none';
+  switchTab('file');
+  setupTemplateUI();
+  openModal('modalLoader');
+}
+
+function closeLoader() { closeModal('modalLoader'); currentType = null; }
+
+
+// ════════════════════════════════════════════════════════════════
+// SISTEMA DE CLAVE — dual: app (huella) o navegador (tiempo)
+// ════════════════════════════════════════════════════════════════
+const _SALT = 'EST2025XZ'; // sal interna, no visible para el usuario
+
+// Detecta si corre como app Cordova/APK o como navegador normal
+function isApp() {
+  return !!(window.cordova || window.PhoneGap || window.phonegap ||
+            (typeof window.device !== 'undefined') ||
+            /^file:\/\//.test(location.protocol) === false && window.cordova);
+}
+// file:// sin cordova = navegador local; https:// = web
+function isBrowser() { return !isApp(); }
+
+// ── Modo APP: huella de dispositivo ──────────────────────────────
+let _deviceFp = null;
+let _devUnlocked = false;
+
+async function getDeviceFingerprint() {
+  const parts = [
+    navigator.userAgent, navigator.language,
+    screen.width + 'x' + screen.height, screen.colorDepth,
+    Intl.DateTimeFormat().resolvedOptions().timeZone,
+    (navigator.hardwareConcurrency || ''), (navigator.platform || '')
+  ];
+  const raw = parts.join('||');
+  // SHA-256 si disponible (https), fallback simple para file://
+  if (crypto.subtle) {
+    const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(raw));
+    const hex = Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+    return hex.substring(0,48).toUpperCase().match(/.{1,8}/g).join('-');
+  } else {
+    // fallback sin crypto.subtle
+    let h = 0;
+    for (let i = 0; i < raw.length; i++) { h = (Math.imul(31, h) + raw.charCodeAt(i)) | 0; }
+    const hex = (h >>> 0).toString(16).padStart(8,'0').toUpperCase();
+    return hex.match(/.{1,2}/g).join('').padEnd(48,'0').match(/.{1,8}/g).join('-');
+  }
+}
+
+async function computeDeviceKey(fp) {
+  const base = fp.replace(/-/g,'').substring(0,16) + _SALT;
+  if (crypto.subtle) {
+    const km = await crypto.subtle.importKey('raw', new TextEncoder().encode(_SALT),
+      {name:'HMAC',hash:'SHA-256'}, false, ['sign']);
+    const sig = await crypto.subtle.sign('HMAC', km, new TextEncoder().encode(fp.replace(/-/g,'').substring(0,16)));
+    const hex = Array.from(new Uint8Array(sig)).map(b=>b.toString(16).padStart(2,'0')).join('').toUpperCase();
+    return hex.substring(0,4)+'-'+hex.substring(4,8);
+  } else {
+    let h = 0;
+    for (let i=0; i<base.length; i++) { h = (Math.imul(31,h)+base.charCodeAt(i))|0; }
+    const hex = (h>>>0).toString(16).padStart(8,'0').toUpperCase();
+    return hex.substring(0,4)+'-'+hex.substring(4,8);
+  }
+}
+
+// ── Modo NAVEGADOR: clave por ventana de tiempo (5 min) ──────────
+// La ventana es el bloque de 5 min al que pertenece el momento actual.
+// Clave = hash( SALT + año + mes + dia + hora + bloque5min )
+// Así dos dispositivos en el mismo instante tienen la misma clave temporal.
+function currentTimeBlock() {
+  const n = new Date();
+  const Y = n.getFullYear();
+  const M = String(n.getMonth()+1).padStart(2,'0');
+  const D = String(n.getDate()).padStart(2,'0');
+  const H = String(n.getHours()).padStart(2,'0');
+  const B = String(Math.floor(n.getMinutes()/5)).padStart(2,'0'); // bloque 0-11
+  return `${Y}${M}${D}${H}${B}`;
+}
+
+function simpleHash(str) {
+  let h = 5381;
+  for (let i=0; i<str.length; i++) h = ((h<<5)+h) ^ str.charCodeAt(i);
+  return (h>>>0).toString(16).padStart(8,'0').toUpperCase();
+}
+
+function computeTimeKey(block) {
+  const raw = _SALT + block;
+  const hex = simpleHash(raw);
+  return hex.substring(0,4)+'-'+hex.substring(4,8);
+}
+
+// También acepta el bloque anterior (por si el admin dio la clave justo al cambiar)
+function validTimeKeys() {
+  const now = currentTimeBlock();
+  const prev = (() => {
+    const n = new Date(Date.now() - 5*60*1000);
+    const Y=n.getFullYear(), M=String(n.getMonth()+1).padStart(2,'0'),
+          D=String(n.getDate()).padStart(2,'0'), H=String(n.getHours()).padStart(2,'0'),
+          B=String(Math.floor(n.getMinutes()/5)).padStart(2,'0');
+    return `${Y}${M}${D}${H}${B}`;
+  })();
+  return [computeTimeKey(now), computeTimeKey(prev)];
+}
+
+// ── Estado de desbloqueo ─────────────────────────────────────────
+let _unlocked = false;
+let _unlockMode = 'browser'; // 'browser' | 'app'
+
+function applyUnlockState() {
+  const bar = document.getElementById('unlockBar');
+  if (!bar) return;
+  bar.style.display = 'block';
+
+  if (_unlocked) {
+    bar.classList.add('unlocked');
+    document.getElementById('unlockBarTitle').textContent = '✅ Funciones activas';
+    document.getElementById('unlockInputArea').style.display = 'none';
+    document.getElementById('modeApp').style.display = 'none';
+    document.getElementById('modeBrowser').style.display = 'none';
+    const act = document.getElementById('unlockActive');
+    act.style.display = 'flex';
+    document.getElementById('unlockActiveDetail').textContent =
+      _unlockMode === 'app' ? 'en este dispositivo' : 'para esta sesión';
+    // Pegar JSON
+    document.getElementById('pasteLockedMsg').style.display = 'none';
+    document.getElementById('pasteUnlockedContent').style.display = 'block';
+    // Copiar plantilla
+    document.getElementById('templateBtnLocked').style.display = 'none';
+    document.getElementById('templateBtnUnlocked').style.display = 'block';
+  } else {
+    bar.classList.remove('unlocked');
+    document.getElementById('unlockBarTitle').textContent = '🔒 Funciones de pago';
+    document.getElementById('unlockInputArea').style.display = 'block';
+    document.getElementById('unlockActive').style.display = 'none';
+    if (_unlockMode === 'app') {
+      document.getElementById('modeApp').style.display = 'block';
+      document.getElementById('modeBrowser').style.display = 'none';
+    } else {
+      document.getElementById('modeApp').style.display = 'none';
+      document.getElementById('modeBrowser').style.display = 'block';
+    }
+    // Pegar JSON
+    document.getElementById('pasteLockedMsg').style.display = 'block';
+    document.getElementById('pasteUnlockedContent').style.display = 'none';
+    // Copiar plantilla
+    document.getElementById('templateBtnLocked').style.display = 'block';
+    document.getElementById('templateBtnUnlocked').style.display = 'none';
+  }
+  applyExportUnlockState();
+}
+
+// ── Réplica del estado de clave para el modal de Exportar ────────
+let _pendingUnlockAction = null;
+
+function applyExportUnlockState() {
+  const bar = document.getElementById('unlockBarExp');
+  if (!bar) return;
+  if (_unlocked) {
+    bar.classList.add('unlocked');
+    document.getElementById('unlockBarTitleExp').textContent = '✅ Funciones activas';
+    document.getElementById('unlockInputAreaExp').style.display = 'none';
+    document.getElementById('modeAppExp').style.display = 'none';
+    document.getElementById('modeBrowserExp').style.display = 'none';
+    const act = document.getElementById('unlockActiveExp');
+    act.style.display = 'flex';
+    document.getElementById('unlockActiveDetailExp').textContent =
+      _unlockMode === 'app' ? 'en este dispositivo' : 'para esta sesión';
+  } else {
+    bar.classList.remove('unlocked');
+    document.getElementById('unlockBarTitleExp').textContent = '🔒 Función de pago';
+    document.getElementById('unlockInputAreaExp').style.display = 'block';
+    document.getElementById('unlockActiveExp').style.display = 'none';
+    if (_unlockMode === 'app') {
+      document.getElementById('modeAppExp').style.display = 'block';
+      document.getElementById('modeBrowserExp').style.display = 'none';
+    } else {
+      document.getElementById('modeAppExp').style.display = 'none';
+      document.getElementById('modeBrowserExp').style.display = 'block';
+    }
+  }
+}
+
+function onUnlockInputExp() {
+  const inp = document.getElementById('unlockKeyInputExp');
+  const fb  = document.getElementById('unlockFbExp');
+  const val = inp.value.trim().toUpperCase();
+  if (!val) { inp.className='unlock-input'; fb.textContent=''; return; }
+  const fmt = /^[A-F0-9]{4}-[A-F0-9]{4}$/;
+  if (fmt.test(val)) {
+    inp.className='unlock-input ok'; fb.textContent=''; fb.className='unlock-fb';
+  } else {
+    inp.className='unlock-input err';
+    fb.textContent='Formato: XXXX-XXXX'; fb.className='unlock-fb err';
+  }
+}
+
+async function tryUnlockExp() {
+  const entered = (document.getElementById('unlockKeyInputExp').value||'').trim().toUpperCase();
+  if (!entered) { showToast('⚠️ Ingresa la clave'); return; }
+
+  let valid = false;
+  if (_unlockMode === 'app') {
+    if (!_deviceFp) { showToast('⚠️ Código de dispositivo no listo'); return; }
+    const expected = await computeDeviceKey(_deviceFp);
+    valid = (entered === expected);
+    if (valid) localStorage.setItem('study_devkey_unlock', _deviceFp);
+  } else {
+    const keys = validTimeKeys();
+    valid = keys.includes(entered);
+    if (valid) sessionStorage.setItem('study_session_unlock', 'true');
+  }
+
+  if (valid) {
+    _unlocked = true;
+    applyUnlockState();
+    showToast('✅ Funciones desbloqueadas');
+    closeModal('modalUnlockExport');
+    if (_pendingUnlockAction) { const fn = _pendingUnlockAction; _pendingUnlockAction = null; fn(); }
+  } else {
+    const inp = document.getElementById('unlockKeyInputExp');
+    const fb  = document.getElementById('unlockFbExp');
+    inp.className='unlock-input err';
+    fb.textContent='❌ Clave incorrecta'; fb.className='unlock-fb err';
+    showToast('❌ Clave incorrecta');
+  }
+}
+
+// Punto de entrada: exige clave activa antes de ejecutar `action`.
+// Si ya está desbloqueado (mismo mecanismo que copiar/pegar JSON), ejecuta de inmediato.
+async function requireUnlock(action, reason) {
+  await initDevUnlock(); // refresca estado por si se desbloqueó desde el modal de Cargar JSON
+  if (_unlocked) { action(); return; }
+  _pendingUnlockAction = action;
+  const reasonEl = document.getElementById('unlockReasonText');
+  if (reasonEl) reasonEl.textContent = reason || 'Exportar esta clase requiere una clave de activación';
+  const inp = document.getElementById('unlockKeyInputExp');
+  inp.value = ''; inp.className = 'unlock-input';
+  document.getElementById('unlockFbExp').textContent = '';
+  openModal('modalUnlockExport');
+}
+
+async function initDevUnlock() {
+  // Determinar modo
+  _unlockMode = isApp() ? 'app' : 'browser';
+
+  if (_unlockMode === 'app') {
+    _deviceFp = await getDeviceFingerprint();
+    const el = document.getElementById('devCodeDisplay');
+    if (el) el.textContent = _deviceFp;
+    // Verificar si ya fue desbloqueado permanentemente
+    const saved = localStorage.getItem('study_devkey_unlock');
+    if (saved === _deviceFp) { _unlocked = true; }
+  } else {
+    // Navegador: nunca se guarda permanentemente, solo sesión
+    const sess = sessionStorage.getItem('study_session_unlock');
+    if (sess === 'true') { _unlocked = true; }
+  }
+  applyUnlockState();
+}
+
+function copyDevCode() {
+  if (!_deviceFp) { showToast('⚠️ Código aún calculando'); return; }
+  const fallback = () => {
+    const ta = document.createElement('textarea');
+    ta.value = _deviceFp; ta.style.cssText='position:fixed;opacity:0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); showToast('📋 Código copiado'); } catch {}
+    document.body.removeChild(ta);
+  };
+  if (navigator.clipboard && navigator.clipboard.writeText)
+    navigator.clipboard.writeText(_deviceFp).then(()=>showToast('📋 Código copiado')).catch(fallback);
+  else fallback();
+}
+
+function onUnlockInput() {
+  const inp = document.getElementById('unlockKeyInput');
+  const fb  = document.getElementById('unlockFb');
+  const val = inp.value.trim().toUpperCase();
+  if (!val) { inp.className='unlock-input'; fb.textContent=''; return; }
+  const fmt = /^[A-F0-9]{4}-[A-F0-9]{4}$/;
+  if (fmt.test(val)) {
+    inp.className='unlock-input ok'; fb.textContent=''; fb.className='unlock-fb';
+  } else {
+    inp.className='unlock-input err';
+    fb.textContent='Formato: XXXX-XXXX'; fb.className='unlock-fb err';
+  }
+}
+
+async function tryUnlock() {
+  const entered = (document.getElementById('unlockKeyInput').value||'').trim().toUpperCase();
+  if (!entered) { showToast('⚠️ Ingresa la clave'); return; }
+
+  let valid = false;
+
+  if (_unlockMode === 'app') {
+    if (!_deviceFp) { showToast('⚠️ Código de dispositivo no listo'); return; }
+    const expected = await computeDeviceKey(_deviceFp);
+    valid = (entered === expected);
+    if (valid) localStorage.setItem('study_devkey_unlock', _deviceFp);
+  } else {
+    // Navegador: verificar contra ventanas de tiempo actuales
+    const keys = validTimeKeys();
+    valid = keys.includes(entered);
+    if (valid) sessionStorage.setItem('study_session_unlock', 'true');
+  }
+
+  if (valid) {
+    _unlocked = true;
+    applyUnlockState();
+    showToast('✅ Funciones desbloqueadas');
+  } else {
+    const inp = document.getElementById('unlockKeyInput');
+    const fb  = document.getElementById('unlockFb');
+    inp.className='unlock-input err';
+    fb.textContent='❌ Clave incorrecta'; fb.className='unlock-fb err';
+    showToast('❌ Clave incorrecta');
+  }
+}
+// ════════════════════════════════════════════════════════════════
+
+function switchTab(tab) {
+  currentTab = tab;
+  document.getElementById('tabFile').classList.toggle('active',  tab === 'file');
+  document.getElementById('tabPaste').classList.toggle('active', tab === 'paste');
+  document.getElementById('panelFile').classList.toggle('active',  tab === 'file');
+  document.getElementById('panelPaste').classList.toggle('active', tab === 'paste');
+}
+
+// Drag & drop
+function onDragOver(e) { e.preventDefault(); document.getElementById('dropZone').classList.add('dragover'); }
+function onDragLeave()  { document.getElementById('dropZone').classList.remove('dragover'); }
+function onDrop(e) {
+  e.preventDefault();
+  document.getElementById('dropZone').classList.remove('dragover');
+  const file = e.dataTransfer.files[0];
+  if (file) readFile(file);
+}
+function onFileSelected(input) { if (input.files[0]) readFile(input.files[0]); }
+function readFile(file) {
+  if (!file.name.endsWith('.json') && file.type !== 'application/json') {
+    document.getElementById('fileStatus').textContent = '❌ El archivo debe ser .json';
+    parsedFileData = null; return;
+  }
+  autoFilename = file.name.replace(/\.json$/i, '');
+  if (!document.getElementById('inputContenidoName').value)
+    document.getElementById('inputContenidoName').value = autoFilename;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      parsedFileData = JSON.parse(e.target.result);
+      const det = currentType === 'contenido' ? ` • Tipo detectado: ${TYPE_MAP[detectType(parsedFileData)]?.label || 'Académico'}` : '';
+      document.getElementById('fileStatus').textContent = `✅ "${file.name}" listo${det}`;
+    } catch {
+      parsedFileData = null;
+      document.getElementById('fileStatus').textContent = '❌ El archivo no es un JSON válido';
+    }
+  };
+  reader.readAsText(file);
+}
+
+function validatePaste() {
+  const raw  = document.getElementById('pasteArea').value.trim();
+  const area = document.getElementById('pasteArea');
+  const fb   = document.getElementById('pasteFeedback');
+  if (!raw) { area.className = 'paste-area'; fb.textContent = ''; pasteValid = false; return; }
+  try {
+    const parsed = JSON.parse(raw);
+    area.className = 'paste-area ok';
+    const det = currentType === 'contenido' ? ` • Tipo: ${TYPE_MAP[detectType(parsed)]?.label || 'Académico'}` : '';
+    fb.textContent = `✅ JSON válido${det}`;
+    fb.className = 'paste-feedback ok';
+    pasteValid = true;
+  } catch (err) {
+    area.className = 'paste-area error';
+    fb.textContent = '❌ JSON inválido: ' + err.message;
+    fb.className = 'paste-feedback error';
+    pasteValid = false;
+  }
+}
+
+function saveLoader() {
+  let data = null;
+  if (currentTab === 'file') {
+    if (!parsedFileData) { showToast('⚠️ Selecciona un archivo JSON válido primero'); return; }
+    data = parsedFileData;
+  } else {
+    if (!_unlocked) { showToast('🔒 Activa tu clave para usar esta función'); return; }
+    if (!pasteValid) { showToast('⚠️ El JSON pegado no es válido'); return; }
+    data = JSON.parse(document.getElementById('pasteArea').value.trim());
+  }
+
+  if (MULTI_CFG[currentType]) {
+    const cfg = MULTI_CFG[currentType];
+    const list = loadIndex(currentType);
+    const defaultName = `${cfg.label} ${list.length + 1}`;
+    const name = document.getElementById('inputContenidoName').value.trim() || autoFilename || defaultName;
+    const id = Date.now().toString();
+    const entry = { id, name };
+    let typeMsg = '';
+    if (cfg.detect) {
+      entry.detectedType = detectType(data);
+      typeMsg = ` — ${TYPE_MAP[entry.detectedType]?.label}`;
+    }
+    localStorage.setItem(`${KEY_PREFIX}_${currentType}_${id}`, JSON.stringify(data));
+    list.push(entry);
+    saveIndex(currentType, list);
+    renderMultiList(currentType);
+    if (currentType === 'glosario') syncGlosarioMirror();
+    showToast(`✅ "${name}" guardado${typeMsg}`);
+  } else {
+    localStorage.setItem(getKey(currentType), JSON.stringify(data));
+    updateStatus(currentType, true);
+    showToast(`✅ ${TITLES[currentType].title.replace('Cargar ','')} guardado`);
+  }
+  closeLoader();
+}
+
+// ── Status ────────────────────────────────────────────────────────
+function updateStatus(type, loaded) {
+  const cap     = type.charAt(0).toUpperCase() + type.slice(1);
+  const statusEl= document.getElementById('status' + cap);
+  const box     = document.getElementById('box' + cap);
+  const sub     = box?.querySelector('.up-sub');
+  if (!statusEl || !box) return;
+  if (loaded) {
+    statusEl.textContent = '✓ Cargado';
+    statusEl.className   = 'status status-loaded';
+    box.classList.add('loaded');
+    if (sub) sub.textContent = 'Haz clic para reemplazar';
+  } else {
+    statusEl.textContent = 'Sin cargar';
+    statusEl.className   = 'status status-empty';
+    box.classList.remove('loaded');
+    if (sub) sub.textContent = 'Haz clic para cargar';
+  }
+}
+
+function openDominio() {
+  navTo(`dominio.html?s=${subjectId}&c=${classId}`);
+}
+
+function openSection(type) {
+  if (type === 'estudio') {
+    const hasGlosario = loadIndex('glosario').length > 0 || !!localStorage.getItem(getKey('glosario'));
+    if (!hasGlosario) { showToast('⚠️ Primero carga el JSON de Glosario'); return; }
+    navTo(`estudio.html?s=${subjectId}&c=${classId}`);
+    return;
+  }
+  const checkKey = getKey(type);
+  if (!localStorage.getItem(checkKey)) { showToast('⚠️ Primero carga el JSON de esta sección'); return; }
+  const pages = {
+    glosario: 'Glosario.html', cuestionario: 'cuestionario.html', tematizacion: 'Tematizacion_Vista.html', estudio: 'estudio.html'
+  };
+  navTo(`${pages[type]}?s=${subjectId}&c=${classId}`);
+}
+
+function exportClass() {
+  requireUnlock(() => {
+    const sExp = { id: subjectId, name: subject ? subject.name : subjectId, icon: subject?.icon || '📘', color: subject?.color || '#4f46e5', classes: [] };
+    const clsExp = { id: classId, name: cls ? cls.name : classId, data: {} };
+    // Tematización: dato único por clase
+    const tRaw = localStorage.getItem(getKey('tematizacion'));
+    if (tRaw) { try { clsExp.data.tematizacion = JSON.parse(tRaw); } catch {} }
+    // Glosario / Cuestionario (espejo legado, por compatibilidad con versiones anteriores)
+    ['glosario','cuestionario'].forEach(t => {
+      const raw = localStorage.getItem(getKey(t));
+      if (raw) { try { clsExp.data[t] = JSON.parse(raw); } catch {} }
+    });
+    // Multi-item: Contenido, Glosario, Cuestionario
+    ['contenido','glosario','cuestionario'].forEach(type => {
+      const idx = loadIndex(type);
+      if (idx.length) {
+        clsExp.data[`${type}s_index`] = idx;
+        clsExp.data[`${type}_items`] = {};
+        idx.forEach(item => {
+          const d = localStorage.getItem(`${KEY_PREFIX}_${type}_${item.id}`);
+          if (d) { try { clsExp.data[`${type}_items`][item.id] = JSON.parse(d); } catch {} }
+        });
+      }
+    });
+    sExp.classes.push(clsExp);
+    const payload = { version: 1, type: 'study_export', scope: 'class', exportedAt: new Date().toISOString(), subjects: [sExp] };
+    const slug = (cls?.name || 'clase').toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'');
+    const filename = `clase_${slug}.json`;
+    STUDY.shareFile(payload, filename, {
+      message: `Clase "${cls ? cls.name : classId}" - Sistema de Estudio`,
+      subject: filename,
+      onFallback: () => showToast('Clase exportada')
+    });
+  });
+}
+
+function clearAll() {
+  if (!confirm('¿Eliminar todos los datos cargados en esta clase?')) return;
+  localStorage.removeItem(getKey('tematizacion')); updateStatus('tematizacion', false);
+  // limpiar todos los items multi: contenido, glosario, cuestionario
+  ['contenido','glosario','cuestionario'].forEach(type => {
+    loadIndex(type).forEach(item => localStorage.removeItem(`${KEY_PREFIX}_${type}_${item.id}`));
+    saveIndex(type, []);
+    renderMultiList(type);
+  });
+  localStorage.removeItem(getKey('glosario'));
+  localStorage.removeItem(getKey('cuestionario'));
+  updateStatus('estudio', false);
+  showToast('🗑️ Datos eliminados');
+}
+
+function openModal(id)  { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2800);
+}
+function escHtml(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+document.querySelectorAll('.modal-overlay').forEach(m =>
+  m.addEventListener('click', e => { if (e.target === m) m.classList.remove('open'); })
+);
+
+// Inicializar
+// Tematización sigue siendo un único dato por clase
+if (localStorage.getItem(getKey('tematizacion'))) updateStatus('tematizacion', true);
+
+// Migrar glosario/cuestionario antiguos (un solo item) al nuevo formato de lista
+migrateLegacyToMulti('glosario');
+migrateLegacyToMulti('cuestionario');
+
+// Renderizar las tres listas multi-item
+['contenido','glosario','cuestionario'].forEach(type => renderMultiList(type));
+
+// Estudiar Glosario refleja si hay al menos un glosario cargado (multi-glosario o formato antiguo)
+if (loadIndex('glosario').length > 0 || localStorage.getItem(getKey('glosario'))) updateStatus('estudio', true);
+
+// ── Prueba Mix: pasa los IDs de los contenidos a PruebaMix.html ──────
+function openMixQuiz() {
+  const list = loadIndex('contenido');
+  if (list.length < 2) { showToast('⚠️ Necesitas al menos 2 contenidos para la Prueba Mix'); return; }
+  const ids = list.map(item => item.id).join(',');
+  navTo(`PruebaMix.html?s=${subjectId}&c=${classId}&ids=${ids}`);
+}
+</script>
+</body>
+</html>

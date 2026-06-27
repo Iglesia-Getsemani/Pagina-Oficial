@@ -1,0 +1,1272 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Contenido</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Lora:ital,wght@0,600;1,400&display=swap');
+  :root {
+    --ink:        #0f0f1a;
+    --ink-soft:   #4b5563;
+    --ink-faint:  #9ca3af;
+    --bg:         #f5f4f0;
+    --white:      #ffffff;
+    --violet:     #4f46e5;
+    --violet-lt:  #e0e7ff;
+    --amber:      #d97706;
+    --amber-lt:   #fef3c7;
+    --emerald:    #059669;
+    --emerald-lt: #d1fae5;
+    --rose:       #e11d48;
+    --rose-lt:    #ffe4e6;
+    --slate:      #64748b;
+    --rule:       #e5e3dc;
+    --teal:       #0891b2;
+    --teal-lt:    #e0f2fe;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Inter', system-ui, sans-serif; background: var(--bg); min-height: 100vh; color: var(--ink); font-size: 14px; line-height: 1.6; overflow-x: hidden; }
+
+  header { background: var(--ink); color: #fff; padding: 0.75rem 1rem; display: flex; align-items: center; gap: 0.5rem; position: sticky; top: 0; z-index: 50; box-shadow: 0 2px 12px rgba(0,0,0,.25); overflow: hidden; }
+  .header-back { background: transparent; border: none; color: #fff; font-size: 0.95rem; cursor: pointer; padding: 0.25rem 0.4rem; border-radius: 6px; transition: background .15s; font-family: inherit; flex-shrink: 0; white-space: nowrap; }
+  .header-back:hover { background: rgba(255,255,255,.12); }
+  .header-info h1 { font-size: 0.65rem; opacity: 0.55; font-weight: 400; letter-spacing: .4px; text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .header-info h2 { font-size: 0.9rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .header-info { flex: 1; min-width: 0; }
+  .header-badge { font-size: 0.65rem; padding: 0.15rem 0.45rem; border-radius: 99px; font-weight: 700; letter-spacing: .3px; flex-shrink: 0; white-space: nowrap; }
+
+  .page { max-width: 1080px; margin: 0 auto; padding: 2rem 1.5rem 4rem; }
+
+  /* ── Collapsible sections ── */
+  .sec { margin-bottom: 2rem; }
+  .sec-head { display: flex; align-items: center; gap: 0.6rem; margin-bottom: 1rem; cursor: pointer; user-select: none; }
+  .sec-head .s-icon { width: 34px; height: 34px; border-radius: 9px; display: flex; align-items: center; justify-content: center; font-size: 1rem; flex-shrink: 0; }
+  .sec-head h2 { font-size: 0.82rem; font-weight: 700; letter-spacing: .8px; text-transform: uppercase; color: var(--ink-soft); flex: 1; }
+  .sec-head .chev { font-size: 0.8rem; color: var(--ink-faint); transition: transform .2s; }
+  .sec-head.open .chev { transform: rotate(180deg); }
+  .sec-body { display: none; }
+  .sec-body.open { display: block; }
+
+  /* icon bg per section */
+  .si-v  .s-icon { background: #e0e7ff; }
+  .si-b  .s-icon { background: #dbeafe; }
+  .si-a  .s-icon { background: var(--amber-lt); }
+  .si-p  .s-icon { background: #f3e8ff; }
+  .si-e  .s-icon { background: #ecfdf5; }
+  .si-r  .s-icon { background: var(--rose-lt); }
+  .si-t  .s-icon { background: var(--teal-lt); }
+  .si-s  .s-icon { background: #f0fdf4; }
+  .si-g  .s-icon { background: #fef9c3; }
+  .si-d  .s-icon { background: #fff1f2; }
+
+  /* ── Grids ── */
+  .g2 { display: grid; grid-template-columns: repeat(2,1fr); gap: 1rem; }
+  .g3 { display: grid; grid-template-columns: repeat(3,1fr); gap: 1rem; }
+  .g4 { display: grid; grid-template-columns: repeat(4,1fr); gap: 0.75rem; }
+  @media(max-width:700px){ .g2,.g3,.g4 { grid-template-columns:1fr; } }
+  @media(max-width:860px){ .g3 { grid-template-columns:repeat(2,1fr); } .g4 { grid-template-columns:repeat(2,1fr); } }
+
+  /* ── Tile ── */
+  .tile { background: var(--white); border-radius: 12px; padding: 1rem 1.1rem; border: 1px solid var(--rule); }
+  .tile.av { border-top: 3px solid var(--violet); }
+  .tile.aa { border-top: 3px solid var(--amber); }
+  .tile.ae { border-top: 3px solid var(--emerald); }
+  .tile.ar { border-top: 3px solid var(--rose); }
+  .tile.as { border-top: 3px solid var(--slate); }
+  .tile.at { border-top: 3px solid var(--teal); }
+  .t-label { font-size: 0.65rem; font-weight: 700; letter-spacing: .8px; text-transform: uppercase; color: var(--ink-faint); margin-bottom: 0.4rem; }
+  .t-val { font-size: 0.88rem; line-height: 1.65; color: var(--ink); white-space: pre-wrap; }
+  .t-val.big { font-family: 'Lora', Georgia, serif; font-size: 1rem; font-style: italic; line-height: 1.7; }
+
+  /* ── Tag ── */
+  .tag-row { display: flex; flex-wrap: wrap; gap: 0.35rem; margin-top: 0.5rem; }
+  .tag { font-size: 0.72rem; padding: 0.2rem 0.65rem; background: var(--violet-lt); color: #3730a3; border-radius: 99px; font-weight: 600; }
+  .tag-amber { background: var(--amber-lt); color: #92400e; }
+  .tag-emerald { background: var(--emerald-lt); color: #065f46; }
+  .tag-rose { background: var(--rose-lt); color: #9f1239; }
+  .tag-teal { background: var(--teal-lt); color: #0e7490; }
+
+  /* ── List ── */
+  .lst { padding-left: 0; list-style: none; }
+  .lst li { font-size: 0.88rem; line-height: 1.6; padding: 0.35rem 0 0.35rem 1.1rem; position: relative; border-bottom: 1px solid var(--rule); color: var(--ink); }
+  .lst li:last-child { border-bottom: none; }
+  .lst li::before { content:''; position:absolute; left:0; top:.85rem; width:5px; height:5px; border-radius:50%; background: var(--violet); }
+
+  /* ── Sep ── */
+  .sep { font-size: 0.7rem; font-weight: 700; letter-spacing: .8px; text-transform: uppercase; color: var(--ink-faint); margin: 1.25rem 0 0.75rem; display: flex; align-items: center; gap: 0.5rem; }
+  .sep::after { content:''; flex:1; height:1px; background: var(--rule); }
+
+  /* ── Dialectic (Tesis/Anti/Sint) ── */
+  .dialectic { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1px; background: var(--rule); border-radius: 14px; overflow: hidden; border: 1px solid var(--rule); }
+  @media(max-width:750px){ .dialectic { grid-template-columns:1fr; } }
+  .dcol { background: var(--white); padding: 1.25rem 1.1rem; }
+  .dcol.dt { background: #f5f3ff; } .dcol.da { background: #fff7ed; } .dcol.ds { background: #f0fdf4; }
+  .d-lbl { font-size: 0.65rem; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.4rem; }
+  .d-lbl.t { color: var(--violet); } .d-lbl.a { color: var(--amber); } .d-lbl.s { color: var(--emerald); }
+  .d-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+  .d-dot.t { background: var(--violet); } .d-dot.a { background: var(--amber); } .d-dot.s { background: var(--emerald); }
+
+  /* ── Panel 3 col ── */
+  .panel3 { display: grid; grid-template-columns: repeat(3,1fr); gap: 1px; background: var(--rule); border-radius: 14px; overflow: hidden; border: 1px solid var(--rule); }
+  @media(max-width:680px){ .panel3 { grid-template-columns:1fr; } }
+  .p3col { background: var(--white); padding: 1.1rem; }
+  .p3col:nth-child(2) { background: #f7f9ff; }
+  .p3col:nth-child(3n) { background: #f5fdf9; }
+
+  /* ── Arg cards ── */
+  .ag { display: grid; grid-template-columns: repeat(auto-fill,minmax(260px,1fr)); gap: 0.75rem; }
+  .acard { background: var(--white); border: 1px solid var(--rule); border-left: 4px solid var(--violet); border-radius: 0 10px 10px 0; padding: 0.85rem 1rem; }
+  .ac-claim { font-size: 0.88rem; font-weight: 500; margin-bottom: 0.4rem; }
+  .ac-badges { display: flex; flex-wrap: wrap; gap: 0.35rem; }
+  .bdg { font-size: 0.66rem; padding: 0.15rem 0.55rem; border-radius: 99px; font-weight: 600; }
+  .bdg-v { background: var(--violet-lt); color: #3730a3; }
+  .bdg-e { background: var(--emerald-lt); color: #065f46; }
+  .bdg-a { background: var(--amber-lt); color: #92400e; }
+  .bdg-r { background: var(--rose-lt); color: #9f1239; }
+  .bdg-t { background: var(--teal-lt); color: #0e7490; }
+  .bdg-s { background: #f3f4f6; color: #374151; }
+
+  /* ── Prop strip ── */
+  .prop-strip { background: var(--ink); color: #fff; border-radius: 14px; padding: 1.5rem; display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem 2rem; }
+  @media(max-width:600px){ .prop-strip { grid-template-columns:1fr; } }
+  .prop-strip .t-label { color: rgba(255,255,255,.4); }
+  .prop-strip .t-val { color: #e0e7ff; }
+  .prop-strip .t-val.big { color: #fff; }
+  .prop-main { grid-column: 1/-1; border-bottom: 1px solid rgba(255,255,255,.1); padding-bottom: 1.1rem; }
+
+  /* ── Narrative (historica) ── */
+  .arc-head { background: var(--ink); color: #fff; border-radius: 12px; padding: 1rem 1.25rem; margin-bottom: 1rem; }
+  .arc-head h3 { font-size: 1rem; font-weight: 700; }
+  .arc-head p  { font-size: 0.82rem; opacity: 0.6; margin-top: 0.2rem; }
+  .seq-head { display: flex; align-items: center; gap: 0.6rem; padding: 0.6rem 0; border-bottom: 2px solid var(--rule); margin-bottom: 0.75rem; cursor: pointer; }
+  .seq-head h4 { font-size: 0.88rem; font-weight: 700; color: var(--ink-soft); flex: 1; }
+  .seq-body { display: none; padding-bottom: 0.5rem; }
+  .seq-body.open { display: block; }
+  .evt-card { background: var(--white); border: 1px solid var(--rule); border-radius: 12px; padding: 1rem 1.1rem; margin-bottom: 0.75rem; }
+  .evt-title { font-size: 0.92rem; font-weight: 700; margin-bottom: 0.5rem; color: var(--ink); }
+  .evt-desc  { font-size: 0.85rem; color: var(--ink-soft); line-height: 1.6; margin-bottom: 0.6rem; }
+  .evt-meta  { display: flex; flex-wrap: wrap; gap: 0.35rem; }
+  .evt-keys  { margin-top: 0.6rem; }
+  .evt-keys ul { list-style: none; padding: 0; }
+  .evt-keys li { font-size: 0.82rem; color: var(--ink-soft); padding: 0.2rem 0 0.2rem 1rem; position: relative; }
+  .evt-keys li::before { content:'▸'; position:absolute; left:0; color: var(--violet); }
+
+  /* ── Enseñanzas ── */
+  .ens-grid { display: grid; grid-template-columns: repeat(auto-fill,minmax(280px,1fr)); gap: 1rem; }
+  .ens-card { background: var(--white); border: 1px solid var(--rule); border-radius: 12px; padding: 1rem 1.1rem; }
+  .ens-card.moral      { border-top: 3px solid var(--violet); }
+  .ens-card.espiritual { border-top: 3px solid #8b5cf6; }
+  .ens-card.profetica  { border-top: 3px solid var(--amber); }
+  .ens-card.doctrinal  { border-top: 3px solid var(--teal); }
+  .ens-card.existencial{ border-top: 3px solid var(--rose); }
+  .ens-card.practica   { border-top: 3px solid var(--emerald); }
+  .ens-enunciado { font-size: 0.9rem; font-weight: 600; line-height: 1.5; margin-bottom: 0.6rem; }
+  .ens-cita { font-size: 0.78rem; font-style: italic; color: var(--ink-faint); border-left: 2px solid var(--rule); padding-left: 0.6rem; margin-bottom: 0.6rem; }
+  .ens-cond { background: var(--amber-lt); border-radius: 8px; padding: 0.5rem 0.75rem; font-size: 0.8rem; margin-bottom: 0.6rem; }
+  .ens-cond strong { color: var(--amber); }
+
+  /* ── Procedimental ── */
+  .paso-card { background: var(--white); border: 1px solid var(--rule); border-radius: 12px; padding: 1rem 1.1rem; margin-bottom: 0.75rem; display: flex; gap: 1rem; }
+  .paso-num  { width: 32px; height: 32px; border-radius: 50%; background: var(--violet); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.85rem; flex-shrink: 0; }
+  .paso-body { flex: 1; }
+  .paso-name { font-size: 0.92rem; font-weight: 700; margin-bottom: 0.3rem; }
+  .paso-desc { font-size: 0.85rem; color: var(--ink-soft); line-height: 1.6; }
+  .paso-meta { display: flex; flex-wrap: wrap; gap: 0.35rem; margin-top: 0.5rem; }
+  .paso-subs { margin-top: 0.5rem; }
+  .paso-subs li { font-size: 0.82rem; color: var(--ink-soft); }
+  .cond-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+  .cond-table th { background: var(--ink); color: #fff; padding: 0.5rem 0.75rem; text-align: left; font-size: 0.75rem; font-weight: 600; letter-spacing: .5px; }
+  .cond-table td { padding: 0.5rem 0.75rem; border-bottom: 1px solid var(--rule); vertical-align: top; }
+  .cond-table tr:last-child td { border-bottom: none; }
+  .cond-table tr:nth-child(even) td { background: #f9fafb; }
+
+  /* ── Prescriptivo ── */
+  .norm-card { background: var(--white); border: 1px solid var(--rule); border-radius: 12px; padding: 1rem 1.1rem; margin-bottom: 0.75rem; }
+  .norm-id   { font-size: 0.65rem; font-weight: 700; letter-spacing: .8px; text-transform: uppercase; color: var(--ink-faint); margin-bottom: 0.35rem; }
+  .norm-desc { font-size: 0.88rem; line-height: 1.6; }
+  .norm-meta { display: flex; flex-wrap: wrap; gap: 0.35rem; margin-top: 0.5rem; }
+  .sancion-grave { border-left: 4px solid var(--rose); }
+  .sancion-leve  { border-left: 4px solid var(--amber); }
+
+  /* ── Lección rompecabezas ── */
+  .leccion-pregunta { background: var(--ink); color: #fff; border-radius: 14px; padding: 1.5rem; margin-bottom: 1.5rem; }
+  .leccion-pregunta h2 { font-family: 'Lora', Georgia, serif; font-size: 1.3rem; font-style: italic; line-height: 1.5; margin-bottom: 0.5rem; }
+  .leccion-pregunta p  { font-size: 0.85rem; opacity: 0.65; line-height: 1.6; }
+  .dias-grid { display: grid; grid-template-columns: repeat(auto-fill,minmax(300px,1fr)); gap: 1rem; }
+  .dia-card  { background: var(--white); border: 1px solid var(--rule); border-radius: 14px; overflow: hidden; }
+  .dia-header { padding: 0.9rem 1.1rem 0.6rem; border-bottom: 1px solid var(--rule); display: flex; align-items: center; gap: 0.5rem; }
+  .dia-num   { width: 28px; height: 28px; border-radius: 50%; background: var(--violet); color: #fff; font-weight: 700; font-size: 0.8rem; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .dia-pieza { font-size: 0.9rem; font-weight: 700; line-height: 1.4; flex: 1; }
+  .dia-body  { padding: 0.9rem 1.1rem; }
+  .dia-field { margin-bottom: 0.75rem; }
+  .dia-field:last-child { margin-bottom: 0; }
+  .dia-ref   { font-size: 0.75rem; background: var(--violet-lt); color: #3730a3; border-radius: 8px; padding: 0.4rem 0.65rem; margin-top: 0.4rem; display: flex; gap: 0.35rem; align-items: flex-start; }
+  .dia-egw   { font-size: 0.75rem; background: var(--emerald-lt); color: #065f46; border-radius: 8px; padding: 0.4rem 0.65rem; margin-top: 0.4rem; display: flex; gap: 0.35rem; align-items: flex-start; }
+  .dia-just  { font-size: 0.8rem; font-style: italic; color: var(--ink-soft); border-left: 2px solid var(--amber); padding-left: 0.6rem; line-height: 1.5; }
+  .cierre-card { background: linear-gradient(135deg,#4f46e5 0%,#0891b2 100%); color: #fff; border-radius: 14px; padding: 1.5rem; }
+  .cierre-card .t-label { color: rgba(255,255,255,.5); }
+  .cierre-card .t-val   { color: #fff; }
+  .accion-card { margin-top: 1rem; background: rgba(255,255,255,.15); border-radius: 10px; padding: 1rem; }
+  .accion-card .t-label { color: rgba(255,255,255,.5); }
+  .accion-card .t-val   { font-size: 1rem; font-weight: 700; color: #fff; }
+
+  /* ── Analysis (Análisis rompecabezas) ── */
+  .analisis-conjunto { background: var(--white); border: 1px solid var(--rule); border-radius: 14px; padding: 1.1rem; margin-bottom: 1rem; }
+  .conjunto-head     { font-size: 0.95rem; font-weight: 700; margin-bottom: 0.4rem; display: flex; align-items: center; gap: 0.5rem; }
+  .analisis-dias-tag { font-size: 0.7rem; padding: 0.15rem 0.5rem; border-radius: 99px; background: var(--violet-lt); color: #3730a3; font-weight: 600; }
+  .elem-comun        { margin-top: 0.75rem; border-top: 1px solid var(--rule); padding-top: 0.75rem; }
+  .elem-comun-name   { font-size: 0.78rem; font-weight: 700; color: var(--ink-soft); margin-bottom: 0.3rem; }
+  .por-dia-row       { display: grid; grid-template-columns: repeat(auto-fill,minmax(180px,1fr)); gap: 0.5rem; margin-top: 0.4rem; }
+  .por-dia-item      { background: #f9fafb; border-radius: 8px; padding: 0.4rem 0.65rem; font-size: 0.78rem; }
+  .por-dia-item strong { display: block; font-size: 0.68rem; text-transform: uppercase; letter-spacing: .5px; color: var(--ink-faint); margin-bottom: 0.1rem; }
+  .distinc-grid      { display: grid; grid-template-columns: repeat(auto-fill,minmax(160px,1fr)); gap: 0.5rem; margin-top: 0.5rem; }
+  .distinc-item      { background: var(--amber-lt); border-radius: 8px; padding: 0.4rem 0.65rem; font-size: 0.78rem; }
+  .distinc-item strong { display: block; font-size: 0.68rem; text-transform: uppercase; letter-spacing: .5px; color: var(--amber); margin-bottom: 0.1rem; }
+
+  /* ── Matutina ── */
+  .mat-hero { background: linear-gradient(135deg,#fcd34d 0%,#f59e0b 55%,#c2410c 100%); color:#fff; border-radius:18px; padding:1.85rem 2rem; margin-bottom:1.5rem; position:relative; overflow:hidden; box-shadow: 0 6px 24px rgba(194,65,12,.18); }
+  .mat-hero::after { content:'🌅'; position:absolute; right:1.4rem; top:50%; transform:translateY(-50%); font-size:3rem; opacity:.28; }
+  .mat-hero .mat-fecha { font-size:.7rem; font-weight:700; letter-spacing:1px; text-transform:uppercase; opacity:.85; margin-bottom:.5rem; }
+  .mat-hero h1 { font-family:'Lora', Georgia, serif; font-size:1.5rem; font-weight:700; line-height:1.32; margin-bottom:.55rem; max-width:82%; }
+  .mat-hero .mat-tema { font-size:.85rem; font-weight:500; opacity:.92; max-width:82%; }
+
+  .verse-card { background:#fffbeb; border:1px solid #fde68a; border-left:5px solid var(--amber); border-radius:16px; padding:1.6rem 1.85rem; margin-bottom:1.5rem; position:relative; }
+  .verse-card .verse-quote-mark { font-family:'Lora', Georgia, serif; font-size:2.6rem; color:#fbbf24; line-height:0; position:absolute; top:1.1rem; left:1.1rem; opacity:.55; }
+  .verse-text { font-family:'Lora', Georgia, serif; font-size:1.18rem; font-style:italic; line-height:1.75; color:#78350f; margin-bottom:.85rem; padding-left:1.6rem; }
+  .verse-ref { font-size:.78rem; font-weight:700; color:#b45309; letter-spacing:.4px; text-align:right; text-transform:uppercase; }
+
+  .pt-strip { display:grid; grid-template-columns: 1fr 1fr; gap:1rem; margin-bottom: 0; }
+  @media(max-width:700px){ .pt-strip{ grid-template-columns:1fr; } }
+  .pt-card { border-radius:14px; padding:1.1rem 1.25rem; }
+  .pt-card.problema { background:#fff1f2; border:1px solid #fecdd3; }
+  .pt-card.tesis    { background:#ecfdf5; border:1px solid #a7f3d0; }
+  .pt-card .t-label { margin-bottom:.45rem; }
+  .pt-card.problema .t-label { color:#be123c; }
+  .pt-card.tesis    .t-label { color:#047857; }
+  .pt-card .t-val   { font-size: 0.92rem; }
+
+  .invite-card { background:#fff; border:1px solid var(--rule); border-left:4px solid var(--emerald); border-radius:0 12px 12px 0; padding:.9rem 1.15rem; margin-bottom:.65rem; display:flex; gap:.85rem; }
+  .invite-num { width:26px; height:26px; border-radius:50%; background:var(--emerald-lt); color:#065f46; font-weight:700; font-size:.78rem; display:flex; align-items:center; justify-content:center; flex-shrink:0; margin-top:.1rem; }
+  .invite-body { flex:1; }
+  .invite-text { font-weight:600; font-size:.9rem; line-height:1.5; margin-bottom:.35rem; }
+  .invite-just { font-size:.82rem; color:var(--ink-soft); line-height:1.55; border-left:2px solid var(--rule); padding-left:.6rem; }
+
+  .virt-tag { background: var(--emerald-lt); color:#065f46; }
+  .err-tag  { background: var(--rose-lt); color:#9f1239; }
+
+  .accion-check { display:flex; gap:.7rem; align-items:flex-start; background:#fff; border:1px solid var(--rule); border-radius:10px; padding:.7rem .95rem; margin-bottom:.5rem; }
+  .accion-check .chk { width:18px; height:18px; border-radius:5px; border:2px solid var(--emerald); flex-shrink:0; margin-top:.15rem; }
+  .accion-check .accion-text { font-size:.86rem; line-height:1.55; }
+
+  .cita-add-card { background: linear-gradient(135deg,#312e81 0%,#1e1b4b 100%); color:#fff; border-radius:16px; padding:1.5rem 1.75rem; }
+  .cita-add-text { font-family:'Lora', Georgia, serif; font-size:1.05rem; font-style:italic; line-height:1.7; margin-bottom:.85rem; }
+  .cita-add-attr { font-size:.78rem; opacity:.7; letter-spacing:.3px; }
+  .cita-add-attr strong { opacity:1; color:#fde68a; }
+
+  .oracion-card { background: linear-gradient(135deg,#4f46e5 0%,#7c3aed 60%,#a21caf 100%); color:#fff; border-radius:18px; padding:1.6rem 1.8rem; }
+  .oracion-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:1.25rem; margin-bottom: 1rem; }
+  @media(max-width:750px){ .oracion-grid{ grid-template-columns:1fr; } }
+  .oracion-col .t-label { color: rgba(255,255,255,.65); margin-bottom:.5rem; }
+  .oracion-col ul { list-style:none; }
+  .oracion-col li { font-size:.85rem; line-height:1.6; padding:.3rem 0 .3rem 1.05rem; position:relative; color:#fff; border-bottom:1px solid rgba(255,255,255,.12); }
+  .oracion-col li:last-child { border-bottom:none; }
+  .oracion-col li::before { content:''; position:absolute; left:0; top:.78rem; width:5px; height:5px; border-radius:50%; background:#fde68a; }
+  .oracion-obj { border-top:1px solid rgba(255,255,255,.2); padding-top:1rem; }
+  .oracion-obj .t-label { color: rgba(255,255,255,.65); margin-bottom:.4rem; }
+  .oracion-obj .t-val { font-size:1rem; font-weight:600; color:#fff; }
+
+  .resumen-banner { background:var(--ink); color:#fff; border-radius:16px; padding:1.5rem 1.85rem; font-family:'Lora', Georgia, serif; font-style:italic; font-size:1.05rem; line-height:1.7; text-align:center; position:relative; }
+  .resumen-banner::before { content:'✦'; display:block; font-size:1rem; color:#fbbf24; margin-bottom:.6rem; font-style:normal; }
+
+  .error-box { background: #fef2f2; border: 1px solid #fca5a5; border-radius: 12px; padding: 1.5rem; text-align: center; color: #dc2626; font-size: 0.9rem; }
+
+  /* ── Quiz Button (in header) ── */
+  .quiz-fab {
+    display: flex; align-items: center; justify-content: center; gap: 0.3rem;
+    background: #ff8906; color: #0f0e17;
+    border: none; border-radius: 99px;
+    padding: 0.4rem 0.7rem;
+    font-size: 0.75rem; font-weight: 700; cursor: pointer;
+    box-shadow: 0 2px 8px rgba(255,137,6,0.3);
+    transition: all 0.15s; font-family: inherit; flex-shrink: 0; white-space: nowrap;
+  }
+  .quiz-fab:hover { background: #e07a00; }
+  .quiz-fab .fab-label { display: none; }
+  @media(min-width: 420px) { .quiz-fab { padding: 0.4rem 0.9rem 0.4rem 0.7rem; } .quiz-fab .fab-label { display: inline; } }
+
+  /* ── Quiz Modal ── */
+  .quiz-overlay {
+    display: none; position: fixed; inset: 0; z-index: 500;
+    background: rgba(10,10,20,0.82); backdrop-filter: blur(4px);
+    align-items: flex-end; justify-content: center;
+    padding: 0;
+  }
+  .quiz-overlay.open { display: flex; }
+  @media(min-width:600px){ .quiz-overlay { align-items: center; padding: 1rem; } }
+  .quiz-modal {
+    background: #0f0e17; border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 20px 20px 0 0; width: 100%; max-width: 560px;
+    max-height: 92vh; overflow-y: auto; overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    box-shadow: 0 24px 64px rgba(0,0,0,0.6);
+    animation: quizSlide 0.22s ease;
+    box-sizing: border-box;
+  }
+  @media(min-width:600px){ .quiz-modal { border-radius: 20px; max-height: 90vh; } }
+  @keyframes quizSlide { from { opacity:0; transform:translateY(24px); } to { opacity:1; transform:translateY(0); } }
+
+  .qm-header {
+    padding: 1.25rem 1.4rem 0.85rem;
+    border-bottom: 1px solid rgba(255,255,255,0.07);
+    display: flex; align-items: center; gap: 0.75rem;
+  }
+  .qm-header-icon { font-size: 1.4rem; }
+  .qm-header-info { flex: 1; }
+  .qm-title { font-size: 1rem; font-weight: 700; color: #fffffe; }
+  .qm-sub { font-size: 0.72rem; color: rgba(255,255,255,0.4); margin-top: 0.1rem; }
+  .qm-close {
+    background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 8px; color: rgba(255,255,255,0.5); font-size: 1rem;
+    width: 32px; height: 32px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+    transition: all 0.15s; flex-shrink: 0;
+  }
+  .qm-close:hover { background: rgba(255,255,255,0.12); color: #fff; }
+
+  .qm-body { padding: 1rem; }
+  @media(min-width:400px){ .qm-body { padding: 1.25rem 1.4rem 1.4rem; } }
+
+  /* loading state */
+  .qm-loading {
+    display: flex; flex-direction: column; align-items: center;
+    gap: 0.75rem; padding: 2rem 0; color: rgba(255,255,255,0.4);
+    font-size: 0.85rem;
+  }
+  .qm-spinner {
+    width: 36px; height: 36px; border: 3px solid rgba(255,137,6,0.2);
+    border-top-color: #ff8906; border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* question display */
+  .qm-question-num {
+    font-size: 0.68rem; font-weight: 700; letter-spacing: 0.8px;
+    text-transform: uppercase; color: #ff8906; margin-bottom: 0.5rem;
+  }
+  .qm-question-text {
+    font-size: 1rem; font-weight: 600; line-height: 1.55;
+    color: #fffffe; margin-bottom: 1.25rem;
+  }
+  .qm-options { display: grid; gap: 0.5rem; margin-bottom: 1.1rem; }
+  .qm-opt {
+    display: flex; align-items: flex-start; gap: 0.75rem;
+    padding: 0.7rem 1rem; border: 1.5px solid rgba(255,255,255,0.1);
+    border-radius: 10px; cursor: pointer; transition: all 0.15s;
+    font-size: 0.9rem; color: rgba(255,255,255,0.8);
+    background: rgba(255,255,255,0.03); line-height: 1.45;
+    text-align: left; font-family: inherit; width: 100%;
+  }
+  .qm-opt:hover:not(:disabled) { border-color: #ff8906; background: rgba(255,137,6,0.08); color: #fffffe; }
+  .qm-opt.selected { border-color: #ff8906; background: rgba(255,137,6,0.1); color: #fffffe; }
+  .qm-opt.correct  { border-color: #22c55e; background: rgba(34,197,94,0.1); color: #fffffe; }
+  .qm-opt.incorrect { border-color: #ef4444; background: rgba(239,68,68,0.1); color: #fffffe; }
+  .qm-opt.correct-missed { border-color: #22c55e; background: rgba(34,197,94,0.06); opacity: 0.65; }
+  .qm-opt:disabled { cursor: default; }
+  .qm-opt-key {
+    width: 22px; height: 22px; border-radius: 6px; flex-shrink: 0;
+    background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15);
+    font-size: 0.72rem; font-weight: 700; display: flex; align-items: center; justify-content: center;
+    color: rgba(255,255,255,0.5); margin-top: 1px;
+  }
+
+  /* sort / group interaction */
+  .qm-sort-list { display: grid; gap: 0.5rem; margin-bottom: 1.1rem; }
+  .qm-sort-item {
+    display: flex; align-items: center; gap: 0.75rem;
+    padding: 0.75rem 0.9rem; background: rgba(255,255,255,0.04);
+    border: 1.5px solid rgba(255,255,255,0.12); border-radius: 10px;
+    font-size: 0.9rem; color: rgba(255,255,255,0.85); cursor: grab; user-select: none;
+    transition: all 0.15s; min-height: 52px;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .qm-sort-item:active { cursor: grabbing; background: rgba(255,137,6,0.08); }
+  .qm-sort-item.drag-over { border-color: #ff8906; background: rgba(255,137,6,0.1); transform: scale(1.01); }
+  .qm-sort-item.dragging  { opacity: 0.45; border-style: dashed; }
+  .qm-sort-handle { color: rgba(255,255,255,0.35); font-size: 1rem; flex-shrink: 0; }
+  .qm-sort-item.correct-pos { border-color: #22c55e; background: rgba(34,197,94,0.08); }
+  .qm-sort-item.wrong-pos  { border-color: #ef4444; background: rgba(239,68,68,0.08); }
+
+  /* ── Group: tarjeta secuencial ── */
+  .qm-gcard {
+    background: rgba(255,255,255,0.04); border: 1.5px solid rgba(255,255,255,0.1);
+    border-radius: 14px; padding: 1.25rem 1.1rem; margin-bottom: 1rem;
+    animation: fadeIn 0.18s ease;
+  }
+  .qm-gcard-progress {
+    font-size: 0.68rem; font-weight: 700; letter-spacing: 0.8px; text-transform: uppercase;
+    color: #ff8906; margin-bottom: 0.75rem;
+  }
+  .qm-gcard-item {
+    font-size: 1rem; font-weight: 600; color: #fffffe; line-height: 1.5;
+    margin-bottom: 0.9rem; padding: 0.85rem 1rem;
+    background: rgba(255,255,255,0.06); border-radius: 10px;
+    border-left: 3px solid #ff8906;
+  }
+  .qm-gcard-hint {
+    font-size: 0.72rem; color: rgba(255,255,255,0.4); margin-bottom: 0.75rem;
+  }
+  .qm-gcard-btns {
+    display: grid; gap: 0.5rem;
+  }
+  .qm-gcard-btn {
+    width: 100%; padding: 0.85rem 0.75rem; border-radius: 10px; box-sizing: border-box; word-break: break-word;
+    border: 1.5px solid rgba(255,255,255,0.14);
+    background: rgba(255,255,255,0.05); color: rgba(255,255,255,0.85);
+    font-size: 0.92rem; font-weight: 600; font-family: inherit;
+    cursor: pointer; text-align: left; transition: all 0.12s;
+    -webkit-tap-highlight-color: transparent; min-height: 52px;
+  }
+  .qm-gcard-btn:active:not(:disabled) { background: rgba(255,137,6,0.15); border-color: #ff8906; }
+  .qm-gcard-btn:disabled { cursor: default; }
+  .qm-gcard-btn.gcard-correct { border-color: #22c55e; background: rgba(34,197,94,0.14); color: #86efac; }
+  .qm-gcard-btn.gcard-wrong   { border-color: #ef4444; background: rgba(239,68,68,0.1);  color: #fca5a5; }
+  .qm-gcard-feedback {
+    margin-top: 0.75rem; font-size: 0.85rem; font-weight: 700;
+    padding: 0.4rem 0; display: none;
+  }
+  .qm-gcard-feedback.fb-ok  { display: block; color: #86efac; }
+  .qm-gcard-feedback.fb-no  { display: block; color: #fca5a5; }
+  .qm-gcard-result {
+    text-align: center; padding: 1rem 0;
+  }
+  .qm-gcard-timeout { font-size: 0.85rem; color: #fca5a5; margin-bottom: 0.5rem; }
+  .qm-gcard-score   { font-size: 1.4rem; font-weight: 800; color: #ff8906; }
+
+  /* feedback */
+  .qm-feedback {
+    padding: 0.85rem 1rem; border-radius: 10px; font-size: 0.85rem;
+    line-height: 1.6; margin-bottom: 1rem; display: none; border-left: 3px solid;
+    animation: fadeIn 0.2s ease;
+  }
+  .qm-feedback.show { display: block; }
+  .qm-feedback.correct { background: rgba(34,197,94,0.08); border-color: #22c55e; color: #86efac; }
+  .qm-feedback.incorrect { background: rgba(239,68,68,0.08); border-color: #ef4444; color: #fca5a5; }
+  .qm-fb-label { font-weight: 700; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.35rem; opacity: 0.75; }
+
+  /* timer bar */
+  .qm-timer { height: 3px; background: rgba(255,255,255,0.07); border-radius: 99px; overflow: hidden; margin-bottom: 1.25rem; }
+  .qm-timer-bar { height: 100%; background: #ff8906; border-radius: 99px; transition: width 0.5s linear, background 0.3s; }
+  .qm-timer-bar.warn { background: #ef4444; }
+
+  /* progress */
+  .qm-progress {
+    display: flex; gap: 0.3rem; flex-wrap: wrap; margin-bottom: 1rem;
+  }
+  .qm-pdot {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: rgba(255,255,255,0.12); transition: all 0.2s;
+  }
+  .qm-pdot.cur  { background: #ff8906; transform: scale(1.4); }
+  .qm-pdot.ok   { background: #22c55e; }
+  .qm-pdot.fail { background: #ef4444; }
+
+  /* actions */
+  .qm-actions { display: flex; gap: 0.6rem; flex-wrap: wrap; }
+  .qm-btn {
+    padding: 0.6rem 1.25rem; border-radius: 10px; font-size: 0.88rem;
+    font-weight: 700; cursor: pointer; border: none; transition: all 0.15s;
+    font-family: inherit;
+  }
+  .qm-btn-primary { background: #ff8906; color: #0f0e17; }
+  .qm-btn-primary:hover { background: #e07a00; }
+  .qm-btn-ghost { background: rgba(255,255,255,0.07); color: rgba(255,255,255,0.7); border: 1px solid rgba(255,255,255,0.12); }
+  .qm-btn-ghost:hover { background: rgba(255,255,255,0.12); color: #fff; }
+
+  /* result mini */
+  .qm-result {
+    text-align: center; padding: 1rem 0;
+  }
+  .qm-result-emoji { font-size: 2.5rem; margin-bottom: 0.5rem; }
+  .qm-result-score { font-size: 2.5rem; font-weight: 800; margin-bottom: 0.2rem; }
+  .qm-result-score.great { color: #22c55e; }
+  .qm-result-score.ok    { color: #ff8906; }
+  .qm-result-score.low   { color: #ef4444; }
+  .qm-result-msg { font-size: 0.85rem; color: rgba(255,255,255,0.5); margin-bottom: 1.5rem; }
+  .qm-result-stats { display: flex; justify-content: center; gap: 2rem; margin-bottom: 1.5rem; }
+  .qm-rs { text-align: center; }
+  .qm-rs .num { font-size: 1.3rem; font-weight: 700; }
+  .qm-rs .lbl { font-size: 0.7rem; color: rgba(255,255,255,0.4); margin-top: 0.1rem; }
+</style>
+</head>
+<body>
+
+<header>
+  <button class="header-back" onclick="history.back()">← Volver</button>
+  <div class="header-info">
+    <h1 id="headerSub">Clase</h1>
+    <h2 id="headerClass">Contenido</h2>
+  </div>
+  <span class="header-badge" id="headerBadge" style="display:none;"></span>
+  <button class="quiz-fab" id="quizFab" onclick="openQuiz()" style="display:none;">
+    <span>🧠</span><span class="fab-label">Practicar</span>
+  </button>
+</header>
+
+<!-- Quiz Modal -->
+<div class="quiz-overlay" id="quizOverlay" onclick="handleOverlayClick(event)">
+  <div class="quiz-modal" id="quizModal">
+    <div class="qm-header">
+      <span class="qm-header-icon" id="qmIcon">🧠</span>
+      <div class="qm-header-info">
+        <div class="qm-title" id="qmTitle">Preguntas de práctica</div>
+        <div class="qm-sub" id="qmSub">Basadas en el contenido actual</div>
+      </div>
+      <button class="qm-close" onclick="closeQuiz()">✕</button>
+    </div>
+    <div class="qm-body" id="qmBody">
+      <div class="qm-loading" id="qmLoading">
+        <div class="qm-spinner"></div>
+        <span>Generando preguntas desde el contenido…</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="page" id="root"></div>
+
+<script>
+/* ── Parámetros ──────────────────────────────────────────────────── */
+const params    = new URLSearchParams(location.search);
+const subjectId = params.get('s');
+const classId   = params.get('c');
+const cid       = params.get('cid'); // id del contenido específico
+
+const KEY_PREFIX = `study_${subjectId}_${classId}`;
+const subjects   = JSON.parse(localStorage.getItem('study_subjects') || '[]');
+const subj       = subjects.find(s => s.id === subjectId);
+const clsObj     = subj?.classes?.find(c => c.id === classId);
+
+document.getElementById('headerSub').textContent   = subj   ? `${subj.icon} ${subj.name}` : 'Asignatura';
+document.getElementById('headerClass').textContent = clsObj ? clsObj.name                 : 'Contenido';
+
+/* ── Cargar datos ─────────────────────────────────────────────────── */
+let raw = null;
+let contenidoName = '';
+if (cid) {
+  raw = localStorage.getItem(`${KEY_PREFIX}_contenido_${cid}`);
+  try {
+    const idx = JSON.parse(localStorage.getItem(`${KEY_PREFIX}_contenidos_index`) || '[]');
+    const item = idx.find(i => i.id === cid);
+    if (item) contenidoName = item.name;
+  } catch {}
+} else {
+  // fallback legacy: KEY_contenido
+  raw = localStorage.getItem(`${KEY_PREFIX}_contenido`);
+}
+if (contenidoName) {
+  document.getElementById('headerClass').textContent = contenidoName;
+}
+
+const root = document.getElementById('root');
+
+/* ── Helpers básicos ──────────────────────────────────────────────── */
+function hasVal(v) {
+  if (v === undefined || v === null || v === '') return false;
+  if (Array.isArray(v)) return v.length > 0;
+  if (typeof v === 'object') return Object.keys(v).length > 0;
+  return true;
+}
+function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function mkTile(label, content, accentCls, big) {
+  if (!hasVal(content)) return '';
+  return `<div class="tile${accentCls?' '+accentCls:''}">
+    <div class="t-label">${label}</div>
+    <div class="t-val${big?' big':''}">${esc(String(content))}</div>
+  </div>`;
+}
+function mkListTile(label, arr, accentCls) {
+  if (!hasVal(arr)) return '';
+  return `<div class="tile${accentCls?' '+accentCls:''}">
+    <div class="t-label">${label}</div>
+    <ul class="lst">${arr.map(i=>`<li>${esc(String(i))}</li>`).join('')}</ul>
+  </div>`;
+}
+function sepDiv(txt) { return `<div class="sep">${txt}</div>`; }
+function tags(arr, cls='') { return (arr||[]).map(t=>`<span class="tag ${cls}">${esc(t)}</span>`).join(''); }
+
+var _sid = 0;
+function tog(id) {
+  document.getElementById(id).classList.toggle('open');
+  document.getElementById('sh'+id).classList.toggle('open');
+}
+function togSeq(id) {
+  document.getElementById(id).classList.toggle('open');
+  document.getElementById('sh'+id).querySelector('.chev').style.transform =
+    document.getElementById(id).classList.contains('open') ? 'rotate(180deg)' : '';
+}
+function mkSection(icon, title, extraCls, bodyHTML, open) {
+  const id = 'sb' + (++_sid);
+  return `<div class="sec ${extraCls}">
+    <div class="sec-head${open?' open':''}" id="sh${id}" onclick="tog('${id}')">
+      <div class="s-icon">${icon}</div>
+      <h2>${title}</h2>
+      <span class="chev">▼</span>
+    </div>
+    <div class="sec-body${open?' open':''}" id="${id}">${bodyHTML}</div>
+  </div>`;
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   DETECCIÓN AUTOMÁTICA DE TIPO
+   ═══════════════════════════════════════════════════════════════ */
+const TYPE_MAP = {
+  narrativa_historica: { label: 'Narrativa histórica', icon: '📜', color: '#d97706', bg: '#fef3c7', keys: ['arcos'] },
+  ensenanzas:          { label: 'Enseñanzas',           icon: '🕊️', color: '#7c3aed', bg: '#f3e8ff', keys: ['ensenanzas'] },
+  procedimental:       { label: 'Procedimental',         icon: '⚙️', color: '#0891b2', bg: '#e0f2fe', keys: ['estructura_procedimental'] },
+  prescriptivo:        { label: 'Prescriptivo/Normativo',icon: '⚖️', color: '#dc2626', bg: '#ffe4e6', keys: ['fundamento_normativo'] },
+  leccion:             { label: 'Lección (rompecabezas)',icon: '🧩', color: '#059669', bg: '#d1fae5', keys: ['formato_rompecabezas_leccion'] },
+  matutina:            { label: 'Matutina',               icon: '🌅', color: '#b45309', bg: '#fef3c7', keys: ['versiculo','oracion'] },
+  academico:           { label: 'Académico/Esquema',     icon: '🎓', color: '#4f46e5', bg: '#e0e7ff', keys: ['metadatos','estructura_tesis'] },
+};
+function detectType(data) {
+  const rootKeys = Object.keys(data);
+  if (rootKeys.includes('formato_rompecabezas_leccion')) return 'leccion';
+  if (rootKeys.includes('arcos')) return 'narrativa_historica';
+  if (rootKeys.includes('ensenanzas')) return 'ensenanzas';
+  if (rootKeys.includes('estructura_procedimental')) return 'procedimental';
+  if (rootKeys.includes('fundamento_normativo') || rootKeys.includes('estructura_normativa')) return 'prescriptivo';
+  if (rootKeys.includes('versiculo') || rootKeys.includes('oracion')) return 'matutina';
+  return 'academico';
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   RENDERIZADORES POR TIPO
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ── 1. ACADÉMICO ─────────────────────────────────────────────── */
+function renderAcademico(d) {
+  let html = '';
+  const m = d.metadatos || {};
+  if (hasVal(m)) {
+    let b = '';
+    if (hasVal(m.titulo)) b += `<div class="tile av" style="margin-bottom:1rem;"><div class="t-label">Título</div><div class="t-val big">${esc(m.titulo)}</div></div>`;
+    b += `<div class="g4">`;
+    b += mkTile('Autor',             m.autor,            'as');
+    b += mkTile('Fecha',             m.fecha,            'as');
+    b += mkTile('Disciplina',        m.disciplina,       'as');
+    b += mkTile('Tipo de documento', m.tipo_documento,   'as');
+    b += mkTile('Nivel de análisis', m.nivel_de_analisis,'as');
+    b += `</div>`;
+    if (hasVal(m.palabras_clave))
+      b += `<div style="margin-top:.75rem;"><div class="t-label" style="margin-bottom:.35rem;">Palabras clave</div><div class="tag-row">${tags(m.palabras_clave)}</div></div>`;
+    html += mkSection('📋','Metadatos','si-v', b, true);
+  }
+  const ctx = d.contexto_y_campo || {};
+  if (hasVal(ctx.campo_academico)||hasVal(ctx.debate_especifico)||hasVal(ctx.tradicion_teorica)||hasVal(ctx.contexto_historico_intelectual)) {
+    let b = `<div class="g2">`;
+    b += mkTile('Campo académico', ctx.campo_academico,'av');
+    b += mkTile('Debate específico', ctx.debate_especifico,'av');
+    b += mkTile('Tradición teórica', ctx.tradicion_teorica,'as');
+    b += mkTile('Contexto histórico-intelectual', ctx.contexto_historico_intelectual,'as');
+    b += `</div>`;
+    html += mkSection('🌐','Contexto y Campo','si-b', b, true);
+  }
+  const prob = d.definicion_del_problema || {};
+  if (hasVal(prob.pregunta_central)||hasVal(prob.formulacion_del_problema)) {
+    let b = '';
+    if (hasVal(prob.pregunta_central)) b += `<div class="tile aa" style="margin-bottom:1rem;"><div class="t-label">Pregunta central</div><div class="t-val big">${esc(prob.pregunta_central)}</div></div>`;
+    b += `<div class="g3">`;
+    b += mkTile('Formulación', prob.formulacion_del_problema,'aa');
+    b += mkTile('Alcance', prob.alcance,'as');
+    b += mkTile('Limitaciones', prob.limitaciones,'as');
+    b += `</div>`;
+    html += mkSection('❓','Definición del Problema','si-a', b, true);
+  }
+  const et = d.estructura_tesis || {};
+  const tesis = et.tesis||{}; const anti = et.antitesis||{}; const sint = et.sintesis||{};
+  if (hasVal(et)) {
+    let tc='', ac='', sc='';
+    if (hasVal(tesis)) { tc+=`<div class="d-lbl t"><span class="d-dot t"></span>Tesis</div>`; if (hasVal(tesis.afirmaciones)) tc+=`<ul class="lst">${tesis.afirmaciones.map(i=>`<li>${esc(i)}</li>`).join('')}</ul>`; if (hasVal(tesis.tipo)) tc+=`<div style="margin-top:.5rem;">${mkTile('Tipo',tesis.tipo)}</div>`; if (hasVal(tesis.estatus)) tc+=`<div style="margin-top:.5rem;">${mkTile('Estatus',tesis.estatus)}</div>`; }
+    if (hasVal(anti)) { ac+=`<div class="d-lbl a"><span class="d-dot a"></span>Antítesis</div>`; if (hasVal(anti.posiciones_opuestas)) ac+=`<ul class="lst">${anti.posiciones_opuestas.map(i=>`<li>${esc(i)}</li>`).join('')}</ul>`; if (hasVal(anti.paradigma_dominante)) ac+=`<div style="margin-top:.5rem;">${mkTile('Paradigma dominante',anti.paradigma_dominante)}</div>`; if (hasVal(anti.supuestos_cuestionados)) ac+=`<div style="margin-top:.5rem;"><ul class="lst">${anti.supuestos_cuestionados.map(i=>`<li>${esc(i)}</li>`).join('')}</ul></div>`; }
+    if (hasVal(sint)) { sc+=`<div class="d-lbl s"><span class="d-dot s"></span>Síntesis</div>`; if (hasVal(sint.propuesta_integradora)) sc+=mkTile('Propuesta',sint.propuesta_integradora); if (hasVal(sint.reformulacion_del_problema)) sc+=`<div style="margin-top:.5rem;">${mkTile('Reformulación del problema',sint.reformulacion_del_problema)}</div>`; if (hasVal(sint.aporte_novedoso)) sc+=`<div style="margin-top:.5rem;">${mkTile('Aporte novedoso',sint.aporte_novedoso)}</div>`; }
+    if (tc||ac||sc) html += mkSection('⚖️','Tesis — Antítesis — Síntesis','si-p', `<div class="dialectic"><div class="dcol dt">${tc}</div><div class="dcol da">${ac}</div><div class="dcol ds">${sc}</div></div>`, true);
+  }
+  const mc = d.marco_conceptual || {};
+  if (hasVal(mc.supuestos_ontologicos)||hasVal(mc.supuestos_epistemologicos)) {
+    const b=`<div class="panel3"><div class="p3col"><div class="t-label">Ontológicos</div><div class="t-val">${esc(mc.supuestos_ontologicos||'')}</div></div><div class="p3col"><div class="t-label">Epistemológicos</div><div class="t-val">${esc(mc.supuestos_epistemologicos||'')}</div></div><div class="p3col"><div class="t-label">Normativos</div><div class="t-val">${esc(mc.supuestos_normativos||'')}</div></div></div>`;
+    html += mkSection('🧠','Marco Conceptual','si-e', b, false);
+  }
+  const arg = d.argumentacion || {};
+  let argBody = '';
+  if (hasVal(arg.estructura_logica)&&arg.estructura_logica.length) {
+    argBody += `<div class="ag">`;
+    arg.estructura_logica.forEach(a => { if (!hasVal(a.afirmacion)) return; argBody+=`<div class="acard"><div class="ac-claim">${esc(a.afirmacion)}</div><div class="ac-badges">${hasVal(a.tipo_de_argumento)?`<span class="bdg bdg-v">${esc(a.tipo_de_argumento)}</span>`:''}</div></div>`; });
+    argBody += `</div>`;
+  }
+  if (hasVal(arg.evidencias)&&arg.evidencias.length) {
+    argBody += sepDiv('Evidencias')+`<div class="ag">`;
+    arg.evidencias.forEach(e => { argBody+=`<div class="acard" style="border-left-color:var(--emerald)"><div class="ac-claim">${esc(e.descripcion||'')}</div><div class="ac-badges">${hasVal(e.tipo)?`<span class="bdg bdg-e">${esc(e.tipo)}</span>`:''}</div></div>`; });
+    argBody += `</div>`;
+  }
+  if (argBody) html += mkSection('🔎','Argumentación','si-s', argBody, false);
+  const diag = d.diagnostico||{};
+  if (hasVal(diag.problema_identificado)||hasVal(diag.fallas_estructurales)) {
+    let b='';
+    if (hasVal(diag.problema_identificado)) b+=`<div class="tile ar" style="margin-bottom:1rem;"><div class="t-label">Problema identificado</div><div class="t-val big">${esc(diag.problema_identificado)}</div></div>`;
+    b+=`<div class="g2">`;
+    b+=mkListTile('Fallas estructurales',diag.fallas_estructurales,'ar');
+    b+=mkListTile('Consecuencias',diag.consecuencias,'as');
+    b+=`</div>`;
+    html += mkSection('🩺','Diagnóstico','si-r', b, false);
+  }
+  const prop = d.propuesta||{};
+  if (hasVal(prop.solucion_propuesta)) {
+    let b=`<div class="prop-strip">`;
+    if (hasVal(prop.solucion_propuesta)) b+=`<div class="prop-main"><div class="t-label">Solución propuesta</div><div class="t-val big">${esc(prop.solucion_propuesta)}</div></div>`;
+    if (hasVal(prop.tipo_de_intervencion))       b+=`<div><div class="t-label">Tipo de intervención</div><div class="t-val">${esc(prop.tipo_de_intervencion)}</div></div>`;
+    if (hasVal(prop.nivel_de_intervencion))      b+=`<div><div class="t-label">Nivel de intervención</div><div class="t-val">${esc(prop.nivel_de_intervencion)}</div></div>`;
+    if (hasVal(prop.mecanismo_de_implementacion))b+=`<div><div class="t-label">Mecanismo de implementación</div><div class="t-val">${esc(prop.mecanismo_de_implementacion)}</div></div>`;
+    if (hasVal(prop.impacto_esperado))           b+=`<div><div class="t-label">Impacto esperado</div><div class="t-val">${esc(prop.impacto_esperado)}</div></div>`;
+    b+=`</div>`;
+    html += mkSection('💡','Propuesta','si-g', b, false);
+  }
+  const impl = d.implicaciones||{};
+  if (hasVal(impl.implicaciones_teoricas)||hasVal(impl.implicaciones_practicas)||hasVal(impl.implicaciones_politicas_o_normativas)) {
+    const b=`<div class="panel3"><div class="p3col"><div class="t-label">Implicaciones teóricas</div><div class="t-val">${esc(impl.implicaciones_teoricas||'')}</div></div><div class="p3col"><div class="t-label">Implicaciones prácticas</div><div class="t-val">${esc(impl.implicaciones_practicas||'')}</div></div><div class="p3col"><div class="t-label">Implicaciones políticas o normativas</div><div class="t-val">${esc(impl.implicaciones_politicas_o_normativas||'')}</div></div></div>`;
+    html += mkSection('🌀','Implicaciones','si-t', b, false);
+  }
+  const lim = d.limitaciones_y_futuras_investigaciones||{};
+  if (hasVal(lim.limitaciones_reconocidas)||hasVal(lim.lineas_futuras_de_investigacion)) {
+    let b=`<div class="g3">`;
+    b+=mkListTile('Limitaciones reconocidas',lim.limitaciones_reconocidas,'as');
+    b+=mkListTile('Preguntas no resueltas',lim.preguntas_no_resueltas,'aa');
+    b+=mkListTile('Líneas futuras',lim.lineas_futuras_de_investigacion,'av');
+    b+=`</div>`;
+    html += mkSection('🔭','Limitaciones y Futuras Investigaciones','si-t', b, false);
+  }
+  return html || `<div class="error-box">El archivo JSON está vacío o no tiene campos reconocibles.</div>`;
+}
+
+/* ── 2. NARRATIVA HISTÓRICA (formatopt1) ──────────────────────── */
+function renderNarrativa(d) {
+  let html = '';
+  const fuente = d.fuente||{};
+  if (hasVal(fuente)) {
+    let b=`<div class="g3">`;
+    b+=mkTile('Título', fuente.titulo,'av');
+    b+=mkTile('Subtítulo', fuente.subtitulo,'as');
+    b+=mkTile('Autor', fuente.autor,'as');
+    b+=mkTile('Fecha', fuente.fecha_fuente,'as');
+    b+=mkTile('Tipo de fuente', fuente.tipo_fuente,'as');
+    b+=mkTile('Idioma', fuente.idioma,'as');
+    b+=`</div>`;
+    html += mkSection('📚','Fuente','si-v', b, true);
+  }
+  const arcos = d.arcos||[];
+  arcos.forEach((arc, ai) => {
+    let body = `<div class="arc-head"><h3>${esc(arc.titulo||`Arco ${ai+1}`)}</h3><p>${esc(arc.descripcion||'')}</p></div>`;
+    (arc.secuencias||[]).forEach((seq, si) => {
+      const seqId = `seq_${ai}_${si}`;
+      let seqBody = '';
+      (seq.eventos||[]).forEach(evt => {
+        let evtHtml = `<div class="evt-card">
+          <div class="evt-title">${esc(evt.titulo||'')}</div>
+          <div class="evt-desc">${esc(evt.descripcion||'')}</div>
+          <div class="evt-meta">`;
+        if (hasVal(evt.tipo)) evtHtml+=`<span class="bdg bdg-v">${esc(evt.tipo)}</span>`;
+        if (hasVal(evt.fecha_aproximada)) evtHtml+=`<span class="bdg bdg-s">📅 ${esc(evt.fecha_aproximada)}</span>`;
+        if (hasVal(evt.lugar?.nombre)) evtHtml+=`<span class="bdg bdg-t">📍 ${esc(evt.lugar.nombre)}</span>`;
+        if (hasVal(evt.actores)&&evt.actores.length) evtHtml+=evt.actores.map(a=>`<span class="bdg bdg-a">${esc(a)}</span>`).join('');
+        evtHtml += `</div>`;
+        if (hasVal(evt.elementos_clave)&&evt.elementos_clave.length) {
+          evtHtml+=`<div class="evt-keys"><ul>${evt.elementos_clave.map(k=>`<li>${esc(k)}</li>`).join('')}</ul></div>`;
+        }
+        evtHtml+=`</div>`;
+        seqBody += evtHtml;
+      });
+      body += `<div>
+        <div class="seq-head" id="sh${seqId}" onclick="togSeq('${seqId}')">
+          <h4>${esc(seq.titulo||`Secuencia ${si+1}`)}</h4>
+          <span class="bdg bdg-s">${(seq.eventos||[]).length} eventos</span>
+          <span class="chev" style="margin-left:0.5rem; font-size:0.8rem; color:var(--ink-faint);">▼</span>
+        </div>
+        <div class="seq-body open" id="${seqId}">${seqBody}</div>
+      </div>`;
+    });
+    html += mkSection('📜', arc.titulo||`Arco ${ai+1}`, 'si-a', body, ai===0);
+  });
+  return html || `<div class="error-box">No se encontraron arcos en el JSON.</div>`;
+}
+
+/* ── 3. ENSEÑANZAS (formatopt2) ───────────────────────────────── */
+function renderEnsenanzas(d) {
+  let html = '';
+  const fuente = d.fuente||{};
+  if (hasVal(fuente)) {
+    let b=`<div class="g3">`;
+    b+=mkTile('Título', fuente.titulo,'av');
+    b+=mkTile('Capítulo', fuente.capitulo,'as');
+    b+=mkTile('Autor', fuente.autor,'as');
+    b+=mkTile('Marco ideológico', fuente.marco_ideologico,'as');
+    b+=mkTile('Idioma', fuente.idioma,'as');
+    b+=`</div>`;
+    html += mkSection('📚','Fuente','si-v', b, true);
+  }
+  // Agrupar por tipo
+  const ensenanzas = d.ensenanzas||[];
+  const grupos = {};
+  ensenanzas.forEach(e => { const t=e.tipo||'otro'; if(!grupos[t]) grupos[t]=[]; grupos[t].push(e); });
+  const tipoLabels = { moral:'Moral',espiritual:'Espiritual',profetica:'Profética',doctrinal:'Doctrinal',existencial:'Existencial',practica:'Práctica' };
+  const tipoIcono  = { moral:'🤝',espiritual:'✨',profetica:'🔮',doctrinal:'📖',existencial:'🪞',practica:'🛠️' };
+  const siCls      = { moral:'si-v',espiritual:'si-p',profetica:'si-a',doctrinal:'si-t',existencial:'si-r',practica:'si-s' };
+  for (const [tipo, items] of Object.entries(grupos)) {
+    let b = `<div class="ens-grid">`;
+    items.forEach(e => {
+      b+=`<div class="ens-card ${tipo}">`;
+      b+=`<div class="ens-enunciado">${esc(e.enunciado||'')}</div>`;
+      if (hasVal(e.cita_textual)) b+=`<div class="ens-cita">${esc(e.cita_textual)}</div>`;
+      if (e.condicion?.tiene_condicion) {
+        b+=`<div class="ens-cond"><strong>Si:</strong> ${esc(e.condicion.si||'')} <br><strong>Entonces:</strong> ${esc(e.condicion.entonces||'')}</div>`;
+      }
+      b+=`<div class="ac-badges" style="margin-top:0.4rem;">`;
+      if (hasVal(e.dirigida_a)) b+=`<span class="bdg bdg-v">${esc(e.dirigida_a)}</span>`;
+      if (hasVal(e.tono))       b+=`<span class="bdg bdg-a">${esc(e.tono)}</span>`;
+      if (hasVal(e.alcance_temporal)) b+=`<span class="bdg bdg-s">${esc(e.alcance_temporal)}</span>`;
+      b+=`</div></div>`;
+    });
+    b+=`</div>`;
+    html += mkSection(tipoIcono[tipo]||'📌', tipoLabels[tipo]||tipo, siCls[tipo]||'si-v', b, true);
+  }
+  return html || `<div class="error-box">No se encontraron enseñanzas en el JSON.</div>`;
+}
+
+/* ── 4. PROCEDIMENTAL ─────────────────────────────────────────── */
+function renderProcedimental(d) {
+  let html = '';
+  const meta = d.metadatos||{};
+  if (hasVal(meta)) {
+    let b=`<div class="g3">`;
+    b+=mkTile('Título',          meta.titulo,'av');
+    b+=mkTile('Autor/Entidad',   meta.autor_o_entidad,'as');
+    b+=mkTile('Tipo de documento',meta.tipo_documento,'as');
+    b+=mkTile('Versión',         meta.version,'as');
+    b+=mkTile('Ámbito',          meta.ambito_de_aplicacion,'as');
+    b+=mkTile('Fecha',           meta.fecha,'as');
+    b+=`</div>`;
+    html += mkSection('📋','Metadatos','si-v', b, true);
+  }
+  const prop = d.proposito||{};
+  if (hasVal(prop)) {
+    let b='';
+    if (hasVal(prop.objetivo_general)) b+=`<div class="tile av" style="margin-bottom:1rem;"><div class="t-label">Objetivo general</div><div class="t-val big">${esc(prop.objetivo_general)}</div></div>`;
+    if (hasVal(prop.resultado_esperado_final)) b+=mkTile('Resultado esperado',''+prop.resultado_esperado_final,'ae');
+    if (hasVal(prop.objetivos_especificos)&&prop.objetivos_especificos.length) b+=mkListTile('Objetivos específicos',prop.objetivos_especificos,'as');
+    html += mkSection('🎯','Propósito','si-a', b, true);
+  }
+  const dest = d.destinatarios||{};
+  if (hasVal(dest)) {
+    let b=`<div class="g3">`;
+    b+=mkTile('Perfil de usuario', dest.perfil_usuario,'at');
+    b+=mkTile('Nivel de conocimiento', dest.nivel_de_conocimiento_requerido,'as');
+    b+=`</div>`;
+    if (hasVal(dest.roles_implicados)&&dest.roles_implicados.length) b+=`<div style="margin-top:.75rem;"><div class="tag-row">${dest.roles_implicados.map(r=>`<span class="tag tag-teal">${esc(r)}</span>`).join('')}</div></div>`;
+    html += mkSection('👥','Destinatarios','si-t', b, false);
+  }
+  const req = d.requisitos_previos||{};
+  if (hasVal(req)) {
+    let b=`<div class="g3">`;
+    b+=mkListTile('Conocimientos previos', req.conocimientos_previos,'av');
+    b+=mkListTile('Materiales/Recursos',   req.materiales_o_recursos,'aa');
+    b+=mkListTile('Condiciones iniciales', req.condiciones_iniciales,'as');
+    b+=`</div>`;
+    html += mkSection('📦','Requisitos previos','si-b', b, false);
+  }
+  const pasos = d.estructura_procedimental||[];
+  if (pasos.length) {
+    let b='';
+    pasos.forEach((p,i) => {
+      b+=`<div class="paso-card">
+        <div class="paso-num">${i+1}</div>
+        <div class="paso-body">
+          <div class="paso-name">${esc(p.nombre_del_paso||`Paso ${i+1}`)}</div>
+          <div class="paso-desc">${esc(p.descripcion_operativa||'')}</div>
+          <div class="paso-meta">`;
+      if (hasVal(p.responsable))  b+=`<span class="bdg bdg-v">👤 ${esc(p.responsable)}</span>`;
+      if (hasVal(p.tiempo_estimado)) b+=`<span class="bdg bdg-t">⏱ ${esc(p.tiempo_estimado)}</span>`;
+      if (hasVal(p.resultado_parcial_esperado)) b+=`<span class="bdg bdg-e">✓ ${esc(p.resultado_parcial_esperado)}</span>`;
+      b+=`</div>`;
+      if (hasVal(p.subpasos)&&p.subpasos.length) b+=`<div class="paso-subs"><ul class="lst">${p.subpasos.map(s=>`<li>${esc(String(s))}</li>`).join('')}</ul></div>`;
+      b+=`</div></div>`;
+    });
+    html += mkSection('⚙️','Pasos del procedimiento','si-e', b, true);
+  }
+  const conds = d.condiciones_y_decisiones||[];
+  if (conds.length) {
+    let b=`<table class="cond-table"><thead><tr><th>Condición</th><th>Si se cumple</th><th>Si no se cumple</th></tr></thead><tbody>`;
+    conds.forEach(c => { b+=`<tr><td>${esc(c.condicion||'')}</td><td>${esc(c.si_se_cumple||'')}</td><td>${esc(c.si_no_se_cumple||'')}</td></tr>`; });
+    b+=`</tbody></table>`;
+    html += mkSection('🔀','Condiciones y Decisiones','si-a', b, false);
+  }
+  const crit = d.criterios_de_validacion||{};
+  if (hasVal(crit)) {
+    let b=`<div class="g3">`;
+    b+=mkListTile('Indicadores de éxito', crit.indicadores_de_exito,'ae');
+    b+=mkListTile('Errores comunes',       crit.errores_comunes,     'ar');
+    b+=mkListTile('Mecanismos de verificación', crit.mecanismos_de_verificacion,'as');
+    b+=`</div>`;
+    html += mkSection('✅','Criterios de Validación','si-s', b, false);
+  }
+  const prods = d.productos_generados||[];
+  if (prods.length) {
+    let b=`<div class="g3">`;
+    prods.forEach(p => { if (!hasVal(p.nombre_producto)) return; b+=`<div class="tile at"><div class="t-label">${esc(p.formato||'Producto')}</div><div class="t-val" style="font-weight:600;">${esc(p.nombre_producto)}</div><div class="t-val" style="margin-top:.3rem;">${esc(p.descripcion||'')}</div></div>`; });
+    b+=`</div>`;
+    html += mkSection('📦','Productos generados','si-t', b, false);
+  }
+  return html || `<div class="error-box">El JSON procedimental está vacío.</div>`;
+}
+
+/* ── 5. PRESCRIPTIVO/NORMATIVO ────────────────────────────────── */
+function renderPrescriptivo(d) {
+  let html = '';
+  const meta = d.metadatos||{};
+  if (hasVal(meta)) {
+    let b=`<div class="g3">`;
+    b+=mkTile('Título',           meta.titulo,'av');
+    b+=mkTile('Autoridad emisora',meta.autoridad_emisora,'as');
+    b+=mkTile('Fecha de emisión', meta.fecha_emision,'as');
+    b+=mkTile('Jurisdicción',     meta.jurisdiccion,'as');
+    b+=mkTile('Tipo de documento',meta.tipo_documento,'as');
+    b+=mkTile('Estado de vigencia',meta.estado_vigencia,'ae');
+    b+=`</div>`;
+    html += mkSection('📋','Metadatos','si-v', b, true);
+  }
+  const fund = d.fundamento_normativo||{};
+  if (hasVal(fund)) {
+    let b='';
+    if (hasVal(fund.objetivo_general)) b+=`<div class="tile av" style="margin-bottom:1rem;"><div class="t-label">Objetivo general</div><div class="t-val big">${esc(fund.objetivo_general)}</div></div>`;
+    b+=`<div class="g2">`;
+    b+=mkListTile('Base legal superior', fund.base_legal_superior,'as');
+    b+=mkListTile('Principios rectores', fund.principios_rectores,'at');
+    b+=`</div>`;
+    html += mkSection('⚖️','Fundamento Normativo','si-a', b, true);
+  }
+  const amb = d.ambito_de_aplicacion||{};
+  if (hasVal(amb)) {
+    let b=`<div class="g2">`;
+    b+=mkListTile('Sujetos obligados',   amb.sujetos_obligados,'ar');
+    b+=mkListTile('Sujetos beneficiarios',amb.sujetos_beneficiarios,'ae');
+    b+=mkTile('Territorialidad', amb.territorialidad,'as');
+    b+=mkTile('Alcance material', amb.alcance_material,'as');
+    b+=`</div>`;
+    html += mkSection('🌍','Ámbito de Aplicación','si-t', b, true);
+  }
+  const est = d.estructura_normativa||{};
+  const mandatos = est.mandatos||[];
+  if (mandatos.length) {
+    let b='';
+    mandatos.forEach(m => {
+      if (!hasVal(m.descripcion)) return;
+      b+=`<div class="norm-card"><div class="norm-id">${esc(m.id_mandato||'')} · ${esc(m.tipo||'')}</div>
+        <div class="norm-desc">${esc(m.descripcion)}</div>
+        <div class="norm-meta">`;
+      if (hasVal(m.responsable)) b+=`<span class="bdg bdg-v">👤 ${esc(m.responsable)}</span>`;
+      if (hasVal(m.plazos))      b+=`<span class="bdg bdg-t">⏱ ${esc(m.plazos)}</span>`;
+      b+=`</div></div>`;
+    });
+    html += mkSection('📌','Mandatos','si-e', b, false);
+  }
+  const prohibs = est.prohibiciones||[];
+  if (prohibs.length) {
+    let b='';
+    prohibs.forEach(p => {
+      if (!hasVal(p.descripcion)) return;
+      b+=`<div class="norm-card" style="border-left:4px solid var(--rose)"><div class="norm-id">${esc(p.id_prohibicion||'')}</div>
+        <div class="norm-desc">${esc(p.descripcion)}</div>
+        <div class="norm-meta">${hasVal(p.sujeto_afectado)?`<span class="bdg bdg-r">${esc(p.sujeto_afectado)}</span>`:''}</div></div>`;
+    });
+    html += mkSection('🚫','Prohibiciones','si-r', b, false);
+  }
+  const perms = est.permisos||[];
+  if (perms.length) {
+    let b=`<div class="g3">`;
+    perms.forEach(p => { if (!hasVal(p.descripcion)) return; b+=mkTile(p.id_permiso||'Permiso', p.descripcion,'ae'); });
+    b+=`</div>`;
+    html += mkSection('✅','Permisos','si-s', b, false);
+  }
+  const reg = d.regimen_sancionatorio||{};
+  const infracs = reg.infracciones||[];
+  if (infracs.length) {
+    let b=`<div class="g2">`;
+    infracs.forEach(inf => {
+      const grav = (inf.gravedad||'').toLowerCase();
+      b+=`<div class="norm-card ${grav==='grave'?'sancion-grave':grav==='leve'?'sancion-leve':''}">
+        <div class="norm-id">${esc(inf.id_infraccion||'')} · <span class="bdg bdg-r">${esc(inf.gravedad||'')}</span></div>
+        <div class="norm-desc">${esc(inf.descripcion||'')}</div></div>`;
+    });
+    b+=`</div>`;
+    html += mkSection('⚠️','Infracciones y Sanciones','si-d', b, false);
+  }
+  const exceps = d.excepciones||[];
+  if (exceps.length) {
+    let b=`<div class="g2">`;
+    exceps.forEach(e => { if (!hasVal(e.descripcion)) return; b+=`<div class="tile as"><div class="t-label">Condición</div><div class="t-val">${esc(e.descripcion)}</div>${hasVal(e.condiciones)?`<div style="margin-top:.4rem;"><div class="t-label">Condiciones</div><div class="t-val">${esc(e.condiciones)}</div></div>`:''}</div>`; });
+    b+=`</div>`;
+    html += mkSection('📎','Excepciones','si-g', b, false);
+  }
+  return html || `<div class="error-box">El JSON prescriptivo está vacío.</div>`;
+}
+
+/* ── 6. LECCIÓN ROMPECABEZAS ──────────────────────────────────── */
+function renderLeccion(d) {
+  const lec = d.formato_rompecabezas_leccion||{};
+  let html = '';
+
+  // Pregunta inicial
+  const preg = lec.pregunta_inicial||{};
+  if (hasVal(preg.texto)) {
+    html += `<div class="leccion-pregunta">
+      <h2>${esc(preg.texto)}</h2>
+      ${hasVal(preg.por_que_importa)?`<p>${esc(preg.por_que_importa)}</p>`:''}
+    </div>`;
+  }
+
+  // Días
+  const piezas = lec.piezas_diarias||{};
+  const diasNums = Object.keys(piezas).filter(k => k.startsWith('dia_')).sort();
+  if (diasNums.length) {
+    let b = `<div class="dias-grid">`;
+    diasNums.forEach((dk, i) => {
+      const d2 = piezas[dk];
+      if (!hasVal(d2)) return;
+      const num = i+1;
+      b+=`<div class="dia-card">
+        <div class="dia-header">
+          <div class="dia-num">${num}</div>
+          <div class="dia-pieza">${esc(d2.pieza||'')}</div>
+        </div>
+        <div class="dia-body">`;
+      if (hasVal(d2.profundizacion)) b+=`<div class="dia-field"><div class="t-label">Profundización</div><div class="t-val">${esc(d2.profundizacion)}</div></div>`;
+      if (hasVal(d2.justificacion))  b+=`<div class="dia-field"><div class="dia-just">${esc(d2.justificacion)}</div></div>`;
+      const ref = d2.referencia_biblica||{};
+      if (hasVal(ref.libro_capitulo_versiculo)) {
+        b+=`<div class="dia-ref">📖 <span><strong>${esc(ref.libro_capitulo_versiculo)}</strong>${hasVal(ref.parte_que_aporta)?` — ${esc(ref.parte_que_aporta)}`:''}</span></div>`;
+      }
+      const egw = d2.cita_egw||{};
+      if (hasVal(egw.referencia)||hasVal(egw.frase_o_idea_clave)) {
+        b+=`<div class="dia-egw">✍️ <span><strong>${esc(egw.referencia||'')}</strong>${hasVal(egw.frase_o_idea_clave)?` — ${esc(egw.frase_o_idea_clave)}`:''}</span></div>`;
+      }
+      b+=`</div></div>`;
+    });
+    b+=`</div>`;
+    html += mkSection('🧩','Piezas diarias','si-e', b, true);
+  }
+
+  // Cierre día 7
+  const cierre = lec.cierre_dia_7||{};
+  if (hasVal(cierre.integracion)||hasVal(cierre.respuesta_final_a_la_pregunta_inicial)) {
+    let b=`<div class="cierre-card">`;
+    if (hasVal(cierre.integracion)) b+=`<div style="margin-bottom:1rem;"><div class="t-label">Integración de piezas</div><div class="t-val">${esc(cierre.integracion)}</div></div>`;
+    if (hasVal(cierre.respuesta_final_a_la_pregunta_inicial)) b+=`<div style="margin-bottom:1rem;"><div class="t-label">Respuesta final</div><div class="t-val big">${esc(cierre.respuesta_final_a_la_pregunta_inicial)}</div></div>`;
+    if (hasVal(cierre.accion_semanal_unica)) b+=`<div class="accion-card"><div class="t-label">Acción semanal</div><div class="t-val">${esc(cierre.accion_semanal_unica)}</div></div>`;
+    b+=`</div>`;
+    html += mkSection('🎯','Cierre y Respuesta Final','si-s', b, true);
+  }
+
+  // Análisis
+  const analisis = lec.Analisis||{};
+  const conjuntos = analisis.conjuntos||[];
+  if (conjuntos.length) {
+    let b='';
+    if (hasVal(analisis.descripcion)) b+=`<div class="t-val" style="margin-bottom:1rem;color:var(--ink-soft);">${esc(analisis.descripcion)}</div>`;
+    conjuntos.forEach(conj => {
+      b+=`<div class="analisis-conjunto">
+        <div class="conjunto-head">📊 ${esc(conj.nombre||'')}
+          <div class="tag-row">${(conj.dias||[]).map(d3=>`<span class="analisis-dias-tag">${esc(d3)}</span>`).join('')}</div>
+        </div>`;
+      // Elementos comunes
+      (conj.elementos_comunes||[]).forEach(ec => {
+        b+=`<div class="elem-comun">
+          <div class="elem-comun-name">🔗 ${esc(ec.elemento||'')}</div>
+          <div class="t-val" style="font-size:0.82rem;margin-bottom:.4rem;">${esc(ec.descripcion_general||'')}</div>
+          <div class="por-dia-row">`;
+        for (const [dia, val] of Object.entries(ec.por_dia||{})) {
+          b+=`<div class="por-dia-item"><strong>${esc(dia)}</strong>${esc(String(val))}</div>`;
+        }
+        b+=`</div></div>`;
+      });
+      // Elementos distintivos
+      const dist = conj.elementos_distintivos||{};
+      if (Object.keys(dist).length) {
+        b+=`<div class="elem-comun"><div class="elem-comun-name">✨ Elementos distintivos</div><div class="distinc-grid">`;
+        for (const [dia, items] of Object.entries(dist)) {
+          (items||[]).forEach(it => { b+=`<div class="distinc-item"><strong>${esc(dia)}</strong>${esc(it)}</div>`; });
+        }
+        b+=`</div></div>`;
+      }
+      b+=`</div>`;
+    });
+    html += mkSection('📊','Análisis comparativo','si-p', b, false);
+  }
+
+  return html || `<div class="error-box">No se encontró contenido de lección en el JSON.</div>`;
+}
+
+/* ── 7. MATUTINA ──────────────────────────────────────────────── */
+function renderMatutina(d) {
+  let html = '';
+
+  // Hero: título / fecha / tema_principal
+  if (hasVal(d.titulo) || hasVal(d.fecha) || hasVal(d.tema_principal)) {
+    html += `<div class="mat-hero">
+      ${hasVal(d.fecha) ? `<div class="mat-fecha">📅 ${esc(d.fecha)}</div>` : ''}
+      ${hasVal(d.titulo) ? `<h1>${esc(d.titulo)}</h1>` : ''}
+      ${hasVal(d.tema_principal) ? `<div class="mat-tema">${esc(d.tema_principal)}</div>` : ''}
+    </div>`;
+  }
+
+  // Versículo
+  const v = d.versiculo || {};
+  if (hasVal(v.texto) || hasVal(v.referencia)) {
+    html += `<div class="verse-card">
+      <span class="verse-quote-mark">&ldquo;</span>
+      ${hasVal(v.texto) ? `<div class="verse-text">${esc(v.texto)}</div>` : ''}
+      ${hasVal(v.referencia) ? `<div class="verse-ref">${esc(v.referencia)}</div>` : ''}
+    </div>`;
+  }
+
+  // Problema y Lección central
+  if (hasVal(d.problema_planteado) || hasVal(d.leccion_central)) {
+    let b = `<div class="pt-strip">`;
+    if (hasVal(d.problema_planteado)) b += `<div class="pt-card problema"><div class="t-label">⚠️ Problema planteado</div><div class="t-val">${esc(d.problema_planteado)}</div></div>`;
+    if (hasVal(d.leccion_central))    b += `<div class="pt-card tesis"><div class="t-label">✦ Lección central</div><div class="t-val">${esc(d.leccion_central)}</div></div>`;
+    b += `</div>`;
+    html += mkSection('❓','Problema y Lección Central','si-a', b, true);
+  }
+
+  // Invitaciones (array de objetos {accion, justificacion})
+  const inv = d.invitaciones || [];
+  if (inv.length) {
+    let b = '';
+    inv.forEach((item, i) => {
+      if (!hasVal(item)) return;
+      const texto = typeof item === 'string' ? item : (item.accion || '');
+      const just  = typeof item === 'string' ? '' : (item.justificacion || '');
+      if (!hasVal(texto)) return;
+      b += `<div class="invite-card">
+        <div class="invite-num">${i+1}</div>
+        <div class="invite-body">
+          <div class="invite-text">${esc(texto)}</div>
+          ${hasVal(just) ? `<div class="invite-just">${esc(just)}</div>` : ''}
+        </div>
+      </div>`;
+    });
+    if (b) html += mkSection('🙌','Invitaciones','si-e', b, true);
+  }
+
+  // Virtudes y conductas a evitar
+  const virt = d.virtudes_promovidas || [];
+  const cond = d.conductas_a_evitar || [];
+  if (virt.length || cond.length) {
+    let b = `<div class="g2">`;
+    if (virt.length) b += `<div class="tile ae"><div class="t-label">Virtudes promovidas</div><div class="tag-row">${tags(virt,'virt-tag')}</div></div>`;
+    if (cond.length) b += `<div class="tile ar"><div class="t-label">Conductas a evitar</div><div class="tag-row">${tags(cond,'err-tag')}</div></div>`;
+    b += `</div>`;
+    html += mkSection('⚖️','Virtudes y Conductas a Evitar','si-p', b, true);
+  }
+
+  // Argumentos
+  const args = d.argumentos || [];
+  if (args.length) {
+    const badgeMap = { biblico:'bdg-v', social:'bdg-t', moral:'bdg-a', ejemplo:'bdg-e', experiencia:'bdg-r', doctrinal:'bdg-s' };
+    let b = `<div class="ag">`;
+    args.forEach(a => {
+      if (!hasVal(a.contenido)) return;
+      const cls = badgeMap[(a.tipo||'').toLowerCase()] || 'bdg-s';
+      b += `<div class="acard"><div class="ac-claim">${esc(a.contenido)}</div><div class="ac-badges">${hasVal(a.tipo)?`<span class="bdg ${cls}">${esc(a.tipo)}</span>`:''}</div></div>`;
+    });
+    b += `</div>`;
+    html += mkSection('🔎','Argumentos','si-b', b, false);
+  }
+
+  // Aplicaciones prácticas
+  const aplic = d.aplicaciones_practicas || [];
+  if (aplic.length) {
+    let b = '';
+    aplic.forEach(a => { if (!hasVal(a)) return; b += `<div class="accion-check"><div class="chk"></div><div class="accion-text">${esc(a)}</div></div>`; });
+    html += mkSection('✅','Aplicaciones Prácticas','si-s', b, true);
+  }
+
+  // Cita adicional
+  const cita = d.cita_adicional || {};
+  if (hasVal(cita.texto)) {
+    const attr = [cita.autor, cita.obra].filter(hasVal).join(', ');
+    const b = `<div class="cita-add-card">
+      <div class="cita-add-text">&ldquo;${esc(cita.texto)}&rdquo;</div>
+      ${attr ? `<div class="cita-add-attr">— <strong>${esc(attr)}</strong></div>` : ''}
+    </div>`;
+    html += mkSection('📖','Cita Adicional','si-t', b, false);
+  }
+
+  // Oración
+  const or_ = d.oracion || {};
+  if (hasVal(or_.reconocimientos) || hasVal(or_.peticiones) || hasVal(or_.objetivo)) {
+    const col = (label, arr) => hasVal(arr) ? `<div class="oracion-col"><div class="t-label">${label}</div><ul>${arr.map(i=>`<li>${esc(i)}</li>`).join('')}</ul></div>` : '';
+    let b = `<div class="oracion-card">
+      <div class="oracion-grid">
+        ${col('🙏 Reconocimientos', or_.reconocimientos)}
+        ${col('🤲 Peticiones', or_.peticiones)}
+      </div>
+      ${hasVal(or_.objetivo) ? `<div class="oracion-obj"><div class="t-label">Objetivo espiritual</div><div class="t-val">${esc(or_.objetivo)}</div></div>` : ''}
+    </div>`;
+    html += mkSection('🙏','Oración','si-r', b, true);
+  }
+
+  return html || `<div class="error-box">No se encontró contenido de matutina en el JSON.</div>`;
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   INIT — se llama desde Contenido_Practica.js una vez que carga
+   ═══════════════════════════════════════════════════════════════ */
+function initContenido() {
+  if (!raw) {
+    root.innerHTML = `<div class="error-box">⚠️ No hay contenido cargado.<br>Vuelve y carga el JSON desde la sección de contenidos.</div>`;
+    return;
+  }
+  try {
+    const data = JSON.parse(raw);
+    const tipo  = detectType(data);
+    const cfg   = TYPE_MAP[tipo];
+
+    const badge = document.getElementById('headerBadge');
+    badge.style.display = 'inline-block';
+    badge.textContent   = `${cfg.icon} ${cfg.label}`;
+    badge.style.background = cfg.bg;
+    badge.style.color      = cfg.color;
+
+    const renderers = {
+      academico:           renderAcademico,
+      narrativa_historica: renderNarrativa,
+      ensenanzas:          renderEnsenanzas,
+      procedimental:       renderProcedimental,
+      prescriptivo:        renderPrescriptivo,
+      leccion:             renderLeccion,
+      matutina:            renderMatutina,
+    };
+    root.innerHTML = (renderers[tipo] || renderAcademico)(data);
+
+    // Pasar datos al motor de práctica y mostrar botón
+    _quizData = data;
+    _quizType = tipo;
+    const fab = document.getElementById('quizFab');
+    if (fab) fab.style.display = 'flex';
+
+  } catch(e) {
+    root.innerHTML = `<div class="error-box">❌ El JSON no es válido: ${e.message}</div>`;
+  }
+}
+</script>
+<script src="Contenido_Practica.js"></script>
+</body>
+</html>

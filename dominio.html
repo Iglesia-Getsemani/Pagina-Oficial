@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>Índice de Dominio</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Segoe UI', system-ui, sans-serif; background: #0d0d14; min-height: 100vh; color: #e8e8f0; }
+
+header {
+  background: #0d0d14;
+  border-bottom: 1px solid rgba(255,255,255,0.07);
+  padding: 0.9rem 1.5rem;
+  display: flex; align-items: center; gap: 1rem;
+  position: sticky; top: 0; z-index: 50;
+}
+.header-back {
+  background: transparent; border: 1px solid rgba(255,255,255,0.14);
+  color: #e8e8f0; font-size: 0.85rem; cursor: pointer;
+  padding: 0.3rem 0.75rem; border-radius: 6px; transition: background 0.15s;
+}
+.header-back:hover { background: rgba(255,255,255,0.07); }
+.header-info h1 { font-size: 0.75rem; opacity: 0.4; font-weight: 400; letter-spacing: 0.5px; }
+.header-info h2 { font-size: 1rem; font-weight: 700; }
+
+/* ── TABS ── */
+.tabs {
+  display: flex; gap: 0;
+  background: rgba(255,255,255,0.03);
+  border-bottom: 1px solid rgba(255,255,255,0.07);
+  position: sticky; top: 57px; z-index: 40;
+}
+.tab-btn {
+  flex: 1; padding: 0.75rem 0.5rem;
+  background: transparent; border: none; color: rgba(255,255,255,0.45);
+  font-size: 0.85rem; font-weight: 600; cursor: pointer;
+  border-bottom: 2px solid transparent; transition: all 0.2s;
+  display: flex; align-items: center; justify-content: center; gap: 0.4rem;
+}
+.tab-btn.active { color: #e8e8f0; border-bottom-color: #a78bfa; }
+.tab-btn:hover:not(.active) { color: rgba(255,255,255,0.7); background: rgba(255,255,255,0.03); }
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+
+.page { max-width: 760px; margin: 0 auto; padding: 2rem 1.25rem 4rem; }
+
+.hero {
+  display: flex; flex-direction: column; align-items: center;
+  padding: 2.5rem 1rem 2rem; text-align: center; position: relative;
+}
+.hero-label {
+  font-size: 0.7rem; font-weight: 700; letter-spacing: 1.2px;
+  text-transform: uppercase; color: rgba(255,255,255,0.35);
+  margin-bottom: 0.75rem;
+}
+.score-ring {
+  position: relative; width: 160px; height: 160px; margin-bottom: 1.25rem;
+}
+.score-ring svg { transform: rotate(-90deg); }
+.ring-bg { fill: none; stroke: rgba(255,255,255,0.07); stroke-width: 10; }
+.ring-fill { fill: none; stroke-width: 10; stroke-linecap: round; transition: stroke-dashoffset 1.2s cubic-bezier(.4,0,.2,1); }
+.ring-center {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+}
+.ring-number { font-size: 2.8rem; font-weight: 800; line-height: 1; }
+.ring-max { font-size: 0.7rem; color: rgba(255,255,255,0.35); margin-top: 0.15rem; }
+.hero-title { font-size: 1.2rem; font-weight: 700; margin-bottom: 0.35rem; }
+.hero-sub { font-size: 0.82rem; color: rgba(255,255,255,0.45); max-width: 340px; line-height: 1.5; }
+
+.penalties {
+  display: flex; gap: 0.6rem; flex-wrap: wrap; justify-content: center;
+  margin: 1rem 0 0;
+}
+.penalty-badge {
+  display: inline-flex; align-items: center; gap: 0.35rem;
+  font-size: 0.72rem; font-weight: 600; padding: 0.3rem 0.7rem;
+  border-radius: 99px;
+}
+.penalty-badge.bad { background: rgba(239,68,68,0.15); color: #fca5a5; border: 1px solid rgba(239,68,68,0.25); }
+.penalty-badge.ok  { background: rgba(34,197,94,0.12); color: #86efac; border: 1px solid rgba(34,197,94,0.2); }
+
+.section-title {
+  font-size: 0.68rem; font-weight: 700; letter-spacing: 1.1px;
+  text-transform: uppercase; color: rgba(255,255,255,0.28);
+  margin: 2rem 0 0.85rem; padding-bottom: 0.5rem;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+
+.factors { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 0.75rem; margin-bottom: 0.5rem; }
+.factor-card {
+  background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 12px; padding: 1rem 1.1rem;
+}
+.factor-top { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.6rem; }
+.factor-icon { font-size: 1.1rem; }
+.factor-name { font-size: 0.8rem; font-weight: 600; }
+.factor-value { font-size: 1.5rem; font-weight: 800; }
+.factor-sub { font-size: 0.7rem; color: rgba(255,255,255,0.38); margin-top: 0.15rem; }
+.factor-bar-wrap { height: 4px; background: rgba(255,255,255,0.08); border-radius: 99px; margin-top: 0.6rem; overflow: hidden; }
+.factor-bar { height: 100%; border-radius: 99px; transition: width 1s ease; }
+.c-green  { color: #4ade80; } .c-yellow { color: #facc15; } .c-red { color: #f87171; } .c-blue { color: #60a5fa; } .c-purple { color: #a78bfa; }
+.b-green  { background: #4ade80; } .b-yellow { background: #facc15; } .b-red { background: #f87171; } .b-blue { background: #60a5fa; } .b-purple { background: #a78bfa; }
+
+.quiz-list { display: flex; flex-direction: column; gap: 0.6rem; }
+.quiz-row {
+  background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 10px; padding: 0.85rem 1.1rem;
+  display: flex; align-items: center; gap: 1rem;
+}
+.quiz-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+.quiz-name { font-size: 0.88rem; font-weight: 600; flex: 1; }
+.quiz-meta { font-size: 0.73rem; color: rgba(255,255,255,0.38); }
+.quiz-score { font-size: 1rem; font-weight: 800; min-width: 42px; text-align: right; }
+.quiz-pills { display: flex; gap: 0.35rem; flex-wrap: wrap; margin-top: 0.3rem; }
+.pill {
+  font-size: 0.65rem; font-weight: 700; padding: 0.15rem 0.5rem;
+  border-radius: 99px;
+}
+.pill-red { background: rgba(239,68,68,0.15); color: #fca5a5; border: 1px solid rgba(239,68,68,0.2); }
+.pill-yellow { background: rgba(250,204,21,0.12); color: #fde047; border: 1px solid rgba(250,204,21,0.2); }
+.pill-green { background: rgba(74,222,128,0.12); color: #86efac; border: 1px solid rgba(74,222,128,0.2); }
+.pill-purple { background: rgba(167,139,250,0.12); color: #c4b5fd; border: 1px solid rgba(167,139,250,0.2); }
+
+.hist-list { display: flex; flex-direction: column; gap: 0.4rem; }
+.hist-row {
+  background: rgba(255,255,255,0.025); border: 1px solid rgba(255,255,255,0.05);
+  border-radius: 8px; padding: 0.65rem 1rem;
+  display: flex; align-items: center; gap: 0.75rem;
+}
+.hist-date { font-size: 0.72rem; color: rgba(255,255,255,0.32); min-width: 90px; }
+.hist-quiz { font-size: 0.8rem; flex: 1; }
+.hist-pct { font-size: 0.88rem; font-weight: 700; }
+.hist-time { font-size: 0.72rem; color: rgba(255,255,255,0.35); }
+
+/* ── GLOSARIO SPECIFIC ── */
+.glos-row {
+  background: rgba(167,139,250,0.04); border: 1px solid rgba(167,139,250,0.12);
+  border-radius: 10px; padding: 0.85rem 1.1rem;
+  display: flex; align-items: center; gap: 1rem;
+}
+.glos-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+.glos-name { font-size: 0.88rem; font-weight: 600; flex: 1; }
+.glos-meta { font-size: 0.73rem; color: rgba(255,255,255,0.38); }
+.glos-score { font-size: 1rem; font-weight: 800; min-width: 48px; text-align: right; }
+
+.formula-box {
+  background: rgba(99,102,241,0.07); border: 1px solid rgba(99,102,241,0.2);
+  border-radius: 12px; padding: 1.1rem 1.25rem; margin-top: 0.5rem;
+  font-size: 0.78rem; color: rgba(255,255,255,0.5); line-height: 1.8;
+}
+.formula-box strong { color: rgba(255,255,255,0.75); }
+.formula-eq { font-family: 'Courier New', monospace; font-size: 0.82rem; color: #a5b4fc; margin: 0.4rem 0; display: block; }
+
+.empty { text-align: center; padding: 3.5rem 1rem; color: rgba(255,255,255,0.28); }
+.empty .e-icon { font-size: 2.5rem; margin-bottom: 0.75rem; }
+.empty p { font-size: 0.9rem; line-height: 1.6; }
+
+.btn-clear {
+  background: transparent; border: 1px solid rgba(239,68,68,0.25);
+  color: #fca5a5; font-size: 0.78rem; padding: 0.35rem 0.8rem;
+  border-radius: 7px; cursor: pointer; transition: background 0.15s;
+  margin-top: 1.5rem;
+}
+.btn-clear:hover { background: rgba(239,68,68,0.08); }
+
+/* ── GLOSARIO RING (purple tint) ── */
+.ring-fill-glos { stroke: #a78bfa; }
+</style>
+<script src="_nav.js"></script>
+  <script src="cordova.js" onerror="void 0"></script>
+  <script src="_share.js" onerror="void 0"></script>
+</head>
+<body>
+
+<header>
+  <button class="header-back" onclick="navBack()">← Volver</button>
+  <div class="header-info">
+    <h1 id="hSub">Clase</h1>
+    <h2>📊 Índice de Dominio</h2>
+  </div>
+</header>
+
+<!-- TABS -->
+<div class="tabs">
+  <button class="tab-btn active" id="tabBtnQuiz" onclick="switchTab('quiz')">📋 Cuestionarios</button>
+  <button class="tab-btn" id="tabBtnGlos" onclick="switchTab('glos')">📖 Glosarios</button>
+</div>
+
+<!-- TAB: CUESTIONARIOS -->
+<div class="tab-panel active" id="panelQuiz">
+  <div class="page" id="pageQuiz">
+    <div class="empty"><div class="e-icon">⏳</div><p>Calculando…</p></div>
+  </div>
+</div>
+
+<!-- TAB: GLOSARIOS -->
+<div class="tab-panel" id="panelGlos">
+  <div class="page" id="pageGlos">
+    <div class="empty"><div class="e-icon">⏳</div><p>Calculando…</p></div>
+  </div>
+</div>
+
+<script>
+const params    = new URLSearchParams(location.search);
+const subjectId = params.get('s');
+const classId   = params.get('c');
+const KEY_PREFIX = `study_${subjectId}_${classId}`;
+
+const subjects = JSON.parse(localStorage.getItem('study_subjects') || '[]');
+const subject  = subjects.find(s => s.id === subjectId);
+const cls      = subject?.classes?.find(c => c.id === classId);
+
+document.getElementById('hSub').textContent = cls
+  ? `${subject?.icon || ''} ${subject?.name || ''} · ${cls.name}`
+  : 'Clase';
+
+/* ══════════════════════════════════════════════
+   TAB SWITCHING
+   ══════════════════════════════════════════════ */
+function switchTab(tab) {
+  document.getElementById('tabBtnQuiz').classList.toggle('active', tab === 'quiz');
+  document.getElementById('tabBtnGlos').classList.toggle('active', tab === 'glos');
+  document.getElementById('panelQuiz').classList.toggle('active', tab === 'quiz');
+  document.getElementById('panelGlos').classList.toggle('active', tab === 'glos');
+}
+
+/* ══════════════════════════════════════════════
+   HELPERS COMPARTIDOS
+   ══════════════════════════════════════════════ */
+function fmtDate(ts) {
+  const d = new Date(ts);
+  return d.toLocaleDateString('es-CO', { day:'2-digit', month:'short' }) +
+         ' ' + d.toLocaleTimeString('es-CO', { hour:'2-digit', minute:'2-digit' });
+}
+function fmtMs(ms) {
+  if (!ms && ms !== 0) return '0.00s';
+  const totalSec = ms / 1000;
+  const m = Math.floor(totalSec / 60);
+  const s = totalSec % 60;
+  return m > 0 ? `${m}m ${s.toFixed(2)}s` : `${s.toFixed(2)}s`;
+}
+function scoreColor(n) {
+  if (n >= 75) return { c: 'c-green', b: 'b-green' };
+  if (n >= 50) return { c: 'c-yellow', b: 'b-yellow' };
+  return { c: 'c-red', b: 'b-red' };
+}
+function masteryLabel(n) {
+  if (n >= 85) return { label: '¡Dominio excelente!', emoji: '🏆' };
+  if (n >= 70) return { label: 'Buen dominio', emoji: '💪' };
+  if (n >= 50) return { label: 'Dominio en progreso', emoji: '📈' };
+  if (n >= 30) return { label: 'Dominio inicial', emoji: '📚' };
+  return { label: 'Sin dominio aún', emoji: '🌱' };
+}
+function escH(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+/* ══════════════════════════════════════════════
+   ── CUESTIONARIOS ──
+   ══════════════════════════════════════════════ */
+function scoreQuizAttempt(attempt) {
+  const total = attempt.total || 0;
+  if (!total) return { score: 0, components: {} };
+
+  const answers = attempt.answers || [];
+  const answeredCount = answers.filter(a => a.answered).length;
+  const correctCount  = attempt.correct || 0;
+  const incomplete    = answeredCount < total;
+
+  const avgMs = attempt.avgTimeMs !== undefined
+    ? attempt.avgTimeMs
+    : ((attempt.avgTimeSec || 0) * 1000);
+
+  const A = (correctCount / total) * 80;
+
+  if (correctCount === 0) {
+    return { score: 0, components: { A: 0, T: 0, C: 0 }, incomplete, correctCount, total, answeredCount, avgMs };
+  }
+
+  const avgSec = avgMs / 1000;
+  let T;
+  if (avgSec <= 3)       T = 10;
+  else if (avgSec >= 15) T = 0;
+  else                   T = Math.max(0, 10 - ((avgSec - 3) / 12) * 10);
+
+  const C = (answeredCount / total) * 10;
+  const score = Math.min(100, Math.round(A + T + C));
+
+  return {
+    score,
+    components: { A: Math.round(A), T: Math.round(T), C: Math.round(C) },
+    incomplete, correctCount, total, answeredCount, avgMs
+  };
+}
+
+function analyzeQuizHistory(history) {
+  const byQuiz = {};
+  history.forEach(attempt => {
+    const key = attempt.quizId || 'legacy';
+    if (!byQuiz[key]) byQuiz[key] = { name: attempt.quizName || 'Cuestionario', attempts: [] };
+    byQuiz[key].attempts.push(attempt);
+  });
+
+  const quizResults = Object.entries(byQuiz).map(([qid2, data]) => {
+    const scored = data.attempts.map(a => ({ attempt: a, ...scoreQuizAttempt(a) }));
+    scored.sort((a, b) => b.score - a.score);
+    const best = scored[0];
+    return {
+      qid: qid2,
+      name: data.name,
+      attemptCount: data.attempts.length,
+      best,
+      score: best.score,
+      incomplete: best.incomplete,
+      components: best.components,
+      correctCount: best.correctCount,
+      total: best.total,
+      avgMs: best.avgMs,
+      lastDate: Math.max(...data.attempts.map(a => a.timestamp))
+    };
+  });
+
+  const totalQuizzes    = quizResults.length;
+  const incompleteCount = quizResults.filter(q => q.incomplete).length;
+  const avgScore        = totalQuizzes
+    ? Math.round(quizResults.reduce((s, q) => s + q.score, 0) / totalQuizzes)
+    : 0;
+
+  let globalPenalty = 0;
+  const majorityIncomplete = incompleteCount / totalQuizzes > 0.5;
+  if (majorityIncomplete) globalPenalty = 15;
+
+  const idMastery = Math.max(0, Math.min(100, avgScore - globalPenalty));
+
+  return { quizResults, totalQuizzes, incompleteCount, majorityIncomplete, idMastery, avgScore, globalPenalty };
+}
+
+function renderQuiz() {
+  const histKey = `${KEY_PREFIX}_quiz_history`;
+  const history = JSON.parse(localStorage.getItem(histKey) || '[]');
+  const page = document.getElementById('pageQuiz');
+
+  if (!history.length) {
+    page.innerHTML = `
+      <div class="empty">
+        <div class="e-icon">📋</div>
+        <p>Aún no has completado ningún cuestionario en esta clase.<br><br>
+        Responde un cuestionario para ver tu Índice de Dominio.</p>
+      </div>`;
+    return;
+  }
+
+  const {
+    quizResults, totalQuizzes, incompleteCount, majorityIncomplete,
+    idMastery, avgScore, globalPenalty
+  } = analyzeQuizHistory(history);
+
+  const { label, emoji } = masteryLabel(idMastery);
+  const sc = scoreColor(idMastery);
+
+  const R = 70, C2 = 80;
+  const circ = 2 * Math.PI * R;
+  const dashOffset = circ * (1 - idMastery / 100);
+  const ringColor = idMastery >= 75 ? '#4ade80' : idMastery >= 50 ? '#facc15' : '#f87171';
+
+  const avgA = Math.round(quizResults.reduce((s, q) => s + (q.components.A || 0), 0) / totalQuizzes);
+  const avgT = Math.round(quizResults.reduce((s, q) => s + (q.components.T || 0), 0) / totalQuizzes);
+  const avgC = Math.round(quizResults.reduce((s, q) => s + (q.components.C || 0), 0) / totalQuizzes);
+  const avgAvgMs = Math.round(quizResults.reduce((s, q) => s + (q.avgMs || 0), 0) / totalQuizzes);
+
+  let html = `
+  <div class="hero">
+    <div class="hero-label">Índice de Dominio · Cuestionarios</div>
+    <div class="score-ring">
+      <svg width="160" height="160" viewBox="0 0 160 160">
+        <circle class="ring-bg" cx="${C2}" cy="${C2}" r="${R}"/>
+        <circle class="ring-fill" cx="${C2}" cy="${C2}" r="${R}"
+          stroke="${ringColor}"
+          stroke-dasharray="${circ}"
+          stroke-dashoffset="${circ}"
+          id="ringCircleQuiz"/>
+      </svg>
+      <div class="ring-center">
+        <div class="ring-number ${sc.c}">${idMastery}</div>
+        <div class="ring-max">de 100</div>
+      </div>
+    </div>
+    <div class="hero-title">${emoji} ${label}</div>
+    <div class="hero-sub">${totalQuizzes} cuestionario${totalQuizzes!==1?'s':''} analizados · ${history.length} intento${history.length!==1?'s':''} totales</div>
+    <div class="penalties">
+      ${majorityIncomplete
+        ? `<span class="penalty-badge bad">⚠️ Mayoría incompletos −${globalPenalty} pts</span>`
+        : `<span class="penalty-badge ok">✓ Completitud aceptable</span>`}
+      ${incompleteCount > 0
+        ? `<span class="penalty-badge bad">⚠️ ${incompleteCount} cuestionario${incompleteCount!==1?'s':''} incompleto${incompleteCount!==1?'s':''}</span>`
+        : `<span class="penalty-badge ok">✓ Sin cuestionarios incompletos</span>`}
+      ${avgAvgMs / 1000 >= 3
+        ? `<span class="penalty-badge bad">🐢 Respuesta lenta (${fmtMs(avgAvgMs)} prom.)</span>`
+        : `<span class="penalty-badge ok">⚡ Respuesta rápida (${fmtMs(avgAvgMs)} prom.)</span>`}
+    </div>
+  </div>
+
+  <div class="section-title">Desglose por factor</div>
+  <div class="factors">
+    <div class="factor-card">
+      <div class="factor-top"><span class="factor-icon">🎯</span><span class="factor-name">Exactitud</span></div>
+      <div class="factor-value ${scoreColor(avgA/80*100).c}">${avgA}<span style="font-size:1rem;opacity:.5">/80</span></div>
+      <div class="factor-sub">% de respuestas correctas × 80</div>
+      <div class="factor-bar-wrap"><div class="factor-bar ${scoreColor(avgA/80*100).b}" style="width:${avgA/80*100}%"></div></div>
+    </div>
+    <div class="factor-card">
+      <div class="factor-top"><span class="factor-icon">⚡</span><span class="factor-name">Velocidad</span></div>
+      <div class="factor-value ${scoreColor(avgT/10*100).c}">${avgT}<span style="font-size:1rem;opacity:.5">/10</span></div>
+      <div class="factor-sub">Bonus si promedio ≤ 3s</div>
+      <div class="factor-bar-wrap"><div class="factor-bar ${scoreColor(avgT/10*100).b}" style="width:${avgT/10*100}%"></div></div>
+    </div>
+    <div class="factor-card">
+      <div class="factor-top"><span class="factor-icon">✅</span><span class="factor-name">Completitud</span></div>
+      <div class="factor-value ${scoreColor(avgC/10*100).c}">${avgC}<span style="font-size:1rem;opacity:.5">/10</span></div>
+      <div class="factor-sub">Proporcional a preguntas respondidas</div>
+      <div class="factor-bar-wrap"><div class="factor-bar ${scoreColor(avgC/10*100).b}" style="width:${avgC/10*100}%"></div></div>
+    </div>
+  </div>
+
+  <div class="section-title">Resultados por cuestionario</div>
+  <div class="quiz-list">`;
+
+  quizResults.forEach(q => {
+    const sc2 = scoreColor(q.score);
+    const pct = Math.round((q.correctCount / q.total) * 100);
+    const pills = [];
+    if (q.incomplete)  pills.push(`<span class="pill pill-red">Incompleto</span>`);
+    if (q.avgMs / 1000 >= 3) pills.push(`<span class="pill pill-yellow">Lento · ${fmtMs(Math.round(q.avgMs))}/preg</span>`);
+    if (pct < 50)      pills.push(`<span class="pill pill-red">${pct}% correctas</span>`);
+    if (q.correctCount === 0) pills.push(`<span class="pill pill-red">0 correctas</span>`);
+    if (!q.incomplete && q.avgMs / 1000 < 3 && pct >= 80) pills.push(`<span class="pill pill-green">Dominado</span>`);
+    html += `
+    <div class="quiz-row">
+      <div class="quiz-dot" style="background:${q.score>=75?'#4ade80':q.score>=50?'#facc15':'#f87171'}"></div>
+      <div style="flex:1;min-width:0;">
+        <div class="quiz-name">${escH(q.name)}</div>
+        <div class="quiz-meta">${q.attemptCount} intento${q.attemptCount!==1?'s':''} · ${q.correctCount}/${q.total} correctas · ${fmtMs(Math.round(q.avgMs))} prom.</div>
+        ${pills.length ? `<div class="quiz-pills">${pills.join('')}</div>` : ''}
+      </div>
+      <div class="quiz-score ${sc2.c}">${q.score}</div>
+    </div>`;
+  });
+
+  html += `</div>`;
+
+  html += `<div class="section-title">Historial de intentos</div><div class="hist-list">`;
+  const sortedHist = [...history].sort((a,b) => b.timestamp - a.timestamp).slice(0, 20);
+  sortedHist.forEach(a => {
+    const aCorrect = a.correct || 0;
+    const aTotal = a.total || 1;
+    const pct = Math.round(aCorrect / aTotal * 100);
+    const sc3 = scoreColor(pct);
+    const aAvgMs = a.avgTimeMs !== undefined ? a.avgTimeMs : ((a.avgTimeSec || 0) * 1000);
+    const partialTag = a.partial ? ' <span style="color:#fca5a5;font-size:0.65rem;">(parcial)</span>' : '';
+    html += `
+    <div class="hist-row">
+      <div class="hist-date">${fmtDate(a.timestamp)}</div>
+      <div class="hist-quiz">${escH(a.quizName || 'Cuestionario')}${partialTag}</div>
+      <div class="hist-time">${fmtMs(aAvgMs)}/preg</div>
+      <div class="hist-pct ${sc3.c}">${pct}%</div>
+    </div>`;
+  });
+  html += `</div>`;
+
+  html += `
+  <div class="section-title">Cómo se calcula</div>
+  <div class="formula-box">
+    <strong>Por cada cuestionario (mejor intento):</strong><br>
+    <span class="formula-eq">Score = A(80) + T(10) + C(10)</span>
+    🎯 <strong>A – Exactitud</strong>: % de respuestas correctas × 80<br>
+    ⚡ <strong>T – Velocidad</strong>: 10 pts si promedio ≤ 3s; penaliza si tarda más<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;<em>(solo aplica si hay al menos 1 respuesta correcta)</em><br>
+    ✅ <strong>C – Completitud</strong>: pts proporcionales a preguntas respondidas<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;<em>(solo aplica si hay al menos 1 respuesta correcta)</em><br>
+    ⚠️ <strong>Si no hay respuestas correctas → 0 pts totales</strong><br><br>
+    <strong>Índice de Dominio global:</strong><br>
+    <span class="formula-eq">IDominio = promedio(scores) − penalización_global</span>
+    ⚠️ Si más del 50% de los cuestionarios están incompletos → −15 pts adicionales
+  </div>
+
+  <button class="btn-clear" onclick="clearQuizHistory()">🗑️ Borrar historial de cuestionarios</button>`;
+
+  page.innerHTML = html;
+
+  requestAnimationFrame(() => {
+    const circle = document.getElementById('ringCircleQuiz');
+    if (circle) {
+      requestAnimationFrame(() => {
+        circle.style.transition = 'stroke-dashoffset 1.2s cubic-bezier(.4,0,.2,1)';
+        circle.style.strokeDashoffset = dashOffset;
+      });
+    }
+  });
+}
+
+function clearQuizHistory() {
+  if (!confirm('¿Borrar todo el historial de cuestionarios de esta clase? No se puede deshacer.')) return;
+  localStorage.removeItem(`${KEY_PREFIX}_quiz_history`);
+  renderQuiz();
+}
+
+/* ══════════════════════════════════════════════
+   ── GLOSARIOS ──
+   ══════════════════════════════════════════════ */
+function analyzeGlosHistory(history) {
+  // Agrupar por glosario (nombre)
+  const byGlos = {};
+  history.forEach(session => {
+    const names = (session.glosarioNames && session.glosarioNames.length)
+      ? session.glosarioNames
+      : ['Glosario'];
+    const key = names.join(' + ');
+    if (!byGlos[key]) byGlos[key] = { name: key, sessions: [] };
+    byGlos[key].sessions.push(session);
+  });
+
+  const glosResults = Object.entries(byGlos).map(([key, data]) => {
+    const sessions = data.sessions;
+    const avgAcc = Math.round(sessions.reduce((s, se) => s + (se.accuracy || 0), 0) / sessions.length);
+    const bestAcc = Math.max(...sessions.map(se => se.accuracy || 0));
+    const totalAnswers = sessions.reduce((s, se) => s + (se.totalAnswers || 0), 0);
+    const totalCorrect = sessions.reduce((s, se) => s + (se.correctCount || 0), 0);
+    return {
+      name: data.name,
+      sessionCount: sessions.length,
+      avgAcc,
+      bestAcc,
+      totalAnswers,
+      totalCorrect,
+      lastDate: Math.max(...sessions.map(se => se.timestamp))
+    };
+  });
+
+  // IDominio glosario = promedio de las mejores precisiones por glosario
+  const totalGlos = glosResults.length;
+  const idGlos = totalGlos
+    ? Math.round(glosResults.reduce((s, g) => s + g.bestAcc, 0) / totalGlos)
+    : 0;
+
+  return { glosResults, totalGlos, idGlos };
+}
+
+function renderGlos() {
+  const histKey = `${KEY_PREFIX}_glosario_history`;
+  const history = JSON.parse(localStorage.getItem(histKey) || '[]');
+  const page = document.getElementById('pageGlos');
+
+  if (!history.length) {
+    page.innerHTML = `
+      <div class="empty">
+        <div class="e-icon">📖</div>
+        <p>Aún no has completado ninguna sesión de glosario en esta clase.<br><br>
+        Estudia un glosario y termina la sesión para ver tu dominio aquí.</p>
+      </div>`;
+    return;
+  }
+
+  const { glosResults, totalGlos, idGlos } = analyzeGlosHistory(history);
+
+  const { label, emoji } = masteryLabel(idGlos);
+  const sc = scoreColor(idGlos);
+
+  const R = 70, C2 = 80;
+  const circ = 2 * Math.PI * R;
+  const dashOffset = circ * (1 - idGlos / 100);
+  const ringColor = '#a78bfa'; // purple for glossaries
+
+  // Calcular totales
+  const totalSessions = history.length;
+  const globalAcc = totalSessions
+    ? Math.round(history.reduce((s, h) => s + (h.accuracy || 0), 0) / totalSessions)
+    : 0;
+  const totalAnswers = history.reduce((s, h) => s + (h.totalAnswers || 0), 0);
+  const totalCorrect = history.reduce((s, h) => s + (h.correctCount || 0), 0);
+
+  let html = `
+  <div class="hero">
+    <div class="hero-label">Índice de Dominio · Glosarios</div>
+    <div class="score-ring">
+      <svg width="160" height="160" viewBox="0 0 160 160">
+        <circle class="ring-bg" cx="${C2}" cy="${C2}" r="${R}"/>
+        <circle class="ring-fill ring-fill-glos" cx="${C2}" cy="${C2}" r="${R}"
+          stroke-dasharray="${circ}"
+          stroke-dashoffset="${circ}"
+          id="ringCircleGlos"/>
+      </svg>
+      <div class="ring-center">
+        <div class="ring-number c-purple">${idGlos}</div>
+        <div class="ring-max">de 100</div>
+      </div>
+    </div>
+    <div class="hero-title">${emoji} ${label}</div>
+    <div class="hero-sub">${totalGlos} glosario${totalGlos!==1?'s':''} · ${totalSessions} sesión${totalSessions!==1?'es':''} completada${totalSessions!==1?'s':''}</div>
+    <div class="penalties">
+      ${globalAcc >= 80
+        ? `<span class="penalty-badge ok">✓ Alta precisión global (${globalAcc}%)</span>`
+        : globalAcc >= 60
+          ? `<span class="penalty-badge ok">📈 Precisión en progreso (${globalAcc}%)</span>`
+          : `<span class="penalty-badge bad">⚠️ Precisión baja (${globalAcc}%)</span>`}
+      <span class="penalty-badge ok">📝 ${totalCorrect} de ${totalAnswers} correctas en total</span>
+    </div>
+  </div>
+
+  <div class="section-title">Desglose por factor</div>
+  <div class="factors">
+    <div class="factor-card">
+      <div class="factor-top"><span class="factor-icon">🎯</span><span class="factor-name">Precisión global</span></div>
+      <div class="factor-value ${scoreColor(globalAcc).c}">${globalAcc}<span style="font-size:1rem;opacity:.5">%</span></div>
+      <div class="factor-sub">Promedio de todas las sesiones</div>
+      <div class="factor-bar-wrap"><div class="factor-bar ${scoreColor(globalAcc).b}" style="width:${globalAcc}%"></div></div>
+    </div>
+    <div class="factor-card">
+      <div class="factor-top"><span class="factor-icon">🏆</span><span class="factor-name">Mejor precisión</span></div>
+      <div class="factor-value c-purple">${Math.max(...history.map(h => h.accuracy || 0))}<span style="font-size:1rem;opacity:.5">%</span></div>
+      <div class="factor-sub">Tu mejor sesión registrada</div>
+      <div class="factor-bar-wrap"><div class="factor-bar b-purple" style="width:${Math.max(...history.map(h => h.accuracy || 0))}%"></div></div>
+    </div>
+    <div class="factor-card">
+      <div class="factor-top"><span class="factor-icon">📚</span><span class="factor-name">Sesiones</span></div>
+      <div class="factor-value c-blue">${totalSessions}</div>
+      <div class="factor-sub">Sesiones de estudio completadas</div>
+      <div class="factor-bar-wrap"><div class="factor-bar b-blue" style="width:${Math.min(totalSessions/10*100,100)}%"></div></div>
+    </div>
+  </div>
+
+  <div class="section-title">Resultados por glosario</div>
+  <div class="quiz-list">`;
+
+  glosResults.forEach(g => {
+    const dotColor = g.bestAcc >= 75 ? '#a78bfa' : g.bestAcc >= 50 ? '#facc15' : '#f87171';
+    const accColor = g.bestAcc >= 75 ? 'c-purple' : g.bestAcc >= 50 ? 'c-yellow' : 'c-red';
+    const pills = [];
+    if (g.bestAcc >= 80) pills.push(`<span class="pill pill-purple">Dominado</span>`);
+    if (g.bestAcc < 50)  pills.push(`<span class="pill pill-red">Necesita repaso</span>`);
+    html += `
+    <div class="quiz-row">
+      <div class="quiz-dot" style="background:${dotColor}"></div>
+      <div style="flex:1;min-width:0;">
+        <div class="quiz-name">${escH(g.name)}</div>
+        <div class="quiz-meta">${g.sessionCount} sesión${g.sessionCount!==1?'es':''} · ${g.totalCorrect}/${g.totalAnswers} correctas en total</div>
+        ${pills.length ? `<div class="quiz-pills">${pills.join('')}</div>` : ''}
+      </div>
+      <div class="quiz-score ${accColor}">${g.bestAcc}%</div>
+    </div>`;
+  });
+
+  html += `</div>`;
+
+  html += `<div class="section-title">Historial de sesiones</div><div class="hist-list">`;
+  const sortedHist = [...history].sort((a,b) => b.timestamp - a.timestamp).slice(0, 30);
+  sortedHist.forEach(s => {
+    const acc = s.accuracy || 0;
+    const accColor = acc >= 75 ? 'c-purple' : acc >= 50 ? 'c-yellow' : 'c-red';
+    const names = (s.glosarioNames || ['Glosario']).join(' + ');
+    html += `
+    <div class="hist-row">
+      <div class="hist-date">${fmtDate(s.timestamp)}</div>
+      <div class="hist-quiz">${escH(names)}</div>
+      <div class="hist-time">${s.correctCount || 0}/${s.totalAnswers || 0}</div>
+      <div class="hist-pct ${accColor}">${acc}%</div>
+    </div>`;
+  });
+  html += `</div>`;
+
+  html += `
+  <div class="section-title">Cómo se calcula</div>
+  <div class="formula-box">
+    <strong>Índice de Dominio · Glosarios:</strong><br>
+    <span class="formula-eq">IDominio = promedio(mejor precisión por glosario)</span>
+    🎯 <strong>Por cada glosario</strong>: se toma la mejor precisión de todas sus sesiones<br>
+    📊 <strong>Precisión</strong>: respuestas correctas ÷ total respondidas × 100<br>
+    📖 <strong>Sesión</strong>: una partida completa hasta presionar "Terminar sesión"<br>
+    🏆 <strong>Dominio excelente</strong>: ≥ 85% · <strong>Buen dominio</strong>: ≥ 70%
+  </div>
+
+  <button class="btn-clear" onclick="clearGlosHistory()">🗑️ Borrar historial de glosarios</button>`;
+
+  page.innerHTML = html;
+
+  requestAnimationFrame(() => {
+    const circle = document.getElementById('ringCircleGlos');
+    if (circle) {
+      requestAnimationFrame(() => {
+        circle.style.transition = 'stroke-dashoffset 1.2s cubic-bezier(.4,0,.2,1)';
+        circle.style.strokeDashoffset = dashOffset;
+      });
+    }
+  });
+}
+
+function clearGlosHistory() {
+  if (!confirm('¿Borrar todo el historial de glosarios de esta clase? No se puede deshacer.')) return;
+  localStorage.removeItem(`${KEY_PREFIX}_glosario_history`);
+  renderGlos();
+}
+
+/* ══════════════════════════════════════════════
+   INIT
+   ══════════════════════════════════════════════ */
+renderQuiz();
+renderGlos();
+</script>
+</body>
+</html>

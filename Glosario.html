@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>Glosario</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', system-ui, sans-serif; background: #f0f2f5; min-height: 100vh; color: #1a1a2e; }
+
+  header { background: #1a1a2e; color: #fff; padding: 1rem 2rem; display: flex; align-items: center; gap: 1rem; }
+  .header-back { background: transparent; border: none; color: #fff; font-size: 1.1rem; cursor: pointer; padding: 0.2rem 0.5rem; border-radius: 6px; transition: background 0.15s; }
+  .header-back:hover { background: rgba(255,255,255,0.1); }
+  .header-info h1 { font-size: 0.85rem; opacity: 0.7; font-weight: 400; }
+  .header-info h2 { font-size: 1.1rem; font-weight: 600; }
+
+  .container { max-width: 860px; margin: 0 auto; padding: 2rem 1.5rem; }
+
+  .toolbar { background: #fff; border-radius: 12px; box-shadow: 0 1px 4px rgba(0,0,0,0.07); padding: 1rem 1.25rem; margin-bottom: 1.5rem; display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: center; }
+  .search-wrap { flex: 1; min-width: 180px; position: relative; }
+  .search-wrap input { width: 100%; padding: 0.5rem 0.75rem 0.5rem 2.2rem; border: 1.5px solid #d1d5db; border-radius: 8px; font-size: 0.9rem; outline: none; transition: border 0.15s; }
+  .search-wrap input:focus { border-color: #4f46e5; }
+  .search-wrap .icon { position: absolute; left: 0.65rem; top: 50%; transform: translateY(-50%); font-size: 0.95rem; pointer-events: none; }
+
+  .groups-wrap { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+  .group-btn { padding: 0.3rem 0.75rem; border-radius: 99px; border: 1.5px solid #d1d5db; background: transparent; font-size: 0.8rem; font-weight: 500; cursor: pointer; transition: all 0.15s; color: #374151; }
+  .group-btn:hover { border-color: #4f46e5; color: #4f46e5; }
+  .group-btn.active { background: #4f46e5; border-color: #4f46e5; color: #fff; }
+
+  .stats { font-size: 0.8rem; color: #6b7280; margin-bottom: 0.75rem; }
+
+  .glossary-grid { display: grid; gap: 0.75rem; }
+
+  .term-card { background: #fff; border-radius: 12px; box-shadow: 0 1px 4px rgba(0,0,0,0.06); padding: 1rem 1.25rem; display: flex; align-items: flex-start; gap: 1rem; transition: box-shadow 0.15s; }
+  .term-card:hover { box-shadow: 0 3px 12px rgba(0,0,0,0.1); }
+  .term-letter { width: 40px; height: 40px; border-radius: 10px; background: #e0e7ff; color: #4f46e5; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 1.1rem; flex-shrink: 0; text-transform: uppercase; }
+  .term-body { flex: 1; }
+  .term-name { font-size: 1rem; font-weight: 600; margin-bottom: 0.3rem; color: #1a1a2e; }
+  .term-def { font-size: 0.88rem; line-height: 1.6; color: #374151; }
+  .term-group { display: inline-block; margin-top: 0.5rem; font-size: 0.72rem; font-weight: 600; padding: 0.15rem 0.5rem; border-radius: 99px; background: #f3f4f6; color: #6b7280; letter-spacing: 0.3px; }
+
+  mark { background: #fef08a; color: inherit; border-radius: 2px; }
+
+  .alpha-divider { font-size: 0.7rem; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: #9ca3af; padding: 0.5rem 0 0.25rem; border-bottom: 1px solid #e5e7eb; margin-bottom: 0.5rem; }
+
+  .empty-box { text-align: center; padding: 3rem; color: #9ca3af; }
+  .empty-box .em { font-size: 2rem; margin-bottom: 0.5rem; }
+
+  .error-box { background: #fef2f2; border: 1px solid #fca5a5; border-radius: 10px; padding: 1.5rem; text-align: center; color: #dc2626; }
+
+  .view-toggle { display: flex; gap: 0.3rem; }
+  .view-toggle button { padding: 0.35rem 0.6rem; border: 1.5px solid #d1d5db; background: transparent; border-radius: 6px; cursor: pointer; font-size: 0.85rem; transition: all 0.15s; }
+  .view-toggle button.active { background: #4f46e5; border-color: #4f46e5; color: #fff; }
+</style>
+  <script src="_nav.js"></script>
+  <script src="cordova.js" onerror="void 0"></script>
+  <script src="_share.js" onerror="void 0"></script>
+</head>
+<body>
+
+<header>
+  <button class="header-back" onclick="navBack()">← Volver</button>
+  <div class="header-info">
+    <h1 id="headerSub">Glosario</h1>
+    <h2 id="headerClass">Términos y Definiciones</h2>
+  </div>
+</header>
+
+<div class="container">
+  <div class="toolbar">
+    <div class="search-wrap">
+      <span class="icon">🔍</span>
+      <input type="text" id="searchInput" placeholder="Buscar término o definición..." oninput="renderList()">
+    </div>
+    <div class="groups-wrap" id="groupsWrap"></div>
+    <div class="view-toggle">
+      <button id="viewCard" class="active" onclick="setView('card')" title="Tarjetas">▦</button>
+      <button id="viewAlpha" onclick="setView('alpha')" title="Alfabético">Aa</button>
+    </div>
+  </div>
+
+  <div class="stats" id="stats"></div>
+  <div class="glossary-grid" id="glossaryGrid"></div>
+</div>
+
+<script>
+const params = new URLSearchParams(location.search);
+const subjectId = params.get('s');
+const classId = params.get('c');
+const gid = params.get('gid');
+const KEY_PREFIX = `study_${subjectId}_${classId}`;
+const KEY = gid ? `${KEY_PREFIX}_glosario_${gid}` : `${KEY_PREFIX}_glosario`;
+
+const subjects = JSON.parse(localStorage.getItem('study_subjects') || '[]');
+const subject = subjects.find(s => s.id === subjectId);
+const cls = subject?.classes?.find(c => c.id === classId);
+
+// Si se abrió un glosario específico de la lista, usar su nombre en el encabezado
+let glosarioName = null;
+if (gid) {
+  try {
+    const idx = JSON.parse(localStorage.getItem(`${KEY_PREFIX}_glosarios_index`) || '[]');
+    const item = idx.find(i => i.id === gid);
+    if (item) glosarioName = item.name;
+  } catch {}
+}
+
+document.getElementById('headerSub').textContent = cls ? cls.name : 'Clase';
+document.getElementById('headerClass').textContent = glosarioName
+  ? `${subject ? subject.icon + ' ' : ''}${glosarioName}`
+  : (subject ? `${subject.icon} ${subject.name}` : 'Glosario');
+
+const raw = localStorage.getItem(KEY);
+const grid = document.getElementById('glossaryGrid');
+
+let terms = [];
+let activeGroup = 'all';
+let viewMode = 'card';
+let groupColors = {};
+const PALETTE = ['#e0e7ff','#dcfce7','#fef9c3','#fce7f3','#e0f2fe','#f3e8ff','#ffe4e6','#f0fdf4'];
+const PALETTE_TEXT = ['#3730a3','#166534','#854d0e','#9d174d','#0369a1','#7e22ce','#9f1239','#14532d'];
+
+if (!raw) {
+  grid.innerHTML = `<div class="error-box">⚠️ No hay glosario cargado para esta clase.<br>Vuelve y carga el JSON de glosario.</div>`;
+} else {
+  try {
+    const data = JSON.parse(raw);
+    terms = (data.glosario || data || []).filter(t => t.termino);
+    terms.sort((a, b) => a.termino.localeCompare(b.termino, 'es'));
+    buildGroupButtons();
+    renderList();
+  } catch {
+    grid.innerHTML = `<div class="error-box">❌ El JSON de glosario no es válido.</div>`;
+  }
+}
+
+function buildGroupButtons() {
+  const groups = ['all', ...new Set(terms.map(t => t.grupo).filter(Boolean))];
+  groups.forEach((g, i) => {
+    if (g !== 'all') {
+      groupColors[g] = { bg: PALETTE[i % PALETTE.length], text: PALETTE_TEXT[i % PALETTE_TEXT.length] };
+    }
+  });
+  const wrap = document.getElementById('groupsWrap');
+  wrap.innerHTML = groups.map(g => `
+    <button class="group-btn ${g === activeGroup ? 'active' : ''}" onclick="setGroup('${g}')">
+      ${g === 'all' ? 'Todos' : escH(g)}
+    </button>
+  `).join('');
+}
+
+function setGroup(g) {
+  activeGroup = g;
+  document.querySelectorAll('.group-btn').forEach(b => b.classList.remove('active'));
+  event.target.classList.add('active');
+  renderList();
+}
+
+function setView(v) {
+  viewMode = v;
+  document.getElementById('viewCard').classList.toggle('active', v === 'card');
+  document.getElementById('viewAlpha').classList.toggle('active', v === 'alpha');
+  renderList();
+}
+
+function highlight(text, q) {
+  if (!q) return escH(text);
+  const regex = new RegExp(`(${q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')})`, 'gi');
+  return escH(text).replace(regex, '<mark>$1</mark>');
+}
+
+function renderList() {
+  const q = document.getElementById('searchInput').value.trim().toLowerCase();
+  let filtered = terms.filter(t => {
+    const matchGroup = activeGroup === 'all' || t.grupo === activeGroup;
+    const matchQ = !q || t.termino.toLowerCase().includes(q) || (t.definicion||'').toLowerCase().includes(q);
+    return matchGroup && matchQ;
+  });
+
+  document.getElementById('stats').textContent = `${filtered.length} término${filtered.length !== 1 ? 's' : ''}${q ? ` para "${q}"` : ''}`;
+
+  if (!filtered.length) {
+    grid.innerHTML = `<div class="empty-box"><div class="em">🔍</div>No se encontraron términos.</div>`;
+    return;
+  }
+
+  if (viewMode === 'alpha') {
+    const byLetter = {};
+    filtered.forEach(t => {
+      const l = t.termino[0].toUpperCase();
+      if (!byLetter[l]) byLetter[l] = [];
+      byLetter[l].push(t);
+    });
+    grid.innerHTML = Object.keys(byLetter).sort().map(l => `
+      <div class="alpha-divider">${l}</div>
+      ${byLetter[l].map(t => termHTML(t, q)).join('')}
+    `).join('');
+  } else {
+    grid.innerHTML = filtered.map(t => termHTML(t, q)).join('');
+  }
+}
+
+function termHTML(t, q) {
+  const letter = t.termino[0].toUpperCase();
+  const gc = groupColors[t.grupo];
+  const groupTag = t.grupo
+    ? `<span class="term-group" style="${gc ? `background:${gc.bg};color:${gc.text};` : ''}">${escH(t.grupo)}</span>`
+    : '';
+  return `<div class="term-card">
+    <div class="term-letter">${letter}</div>
+    <div class="term-body">
+      <div class="term-name">${highlight(t.termino, q)}</div>
+      <div class="term-def">${highlight(t.definicion || '', q)}</div>
+      ${groupTag}
+    </div>
+  </div>`;
+}
+
+function escH(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+</script>
+</body>
+</html>
